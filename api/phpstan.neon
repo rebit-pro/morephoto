@@ -1,0 +1,20 @@
+parameters:
+    level: 6
+    paths:
+        - api/public/local
+    excludePaths:
+        - api/public/local/cache/*
+        - api/public/local/tmp/*
+    ignoreErrors:
+        # Bitrix специфичные ошибки
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::GetList\(\)#'
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::fetch\(\)#'
+        - '#Undefined variable: \$_SESSION#'
+        - '#Class [a-zA-Z0-9\\_]+Table not found#'
+    bootstrapFiles:
+        - api/public/bitrix/modules/main/include/prolog_before.php
+    scanDirectories:
+        - api/public/bitrix/modules
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    reportUnmatchedIgnoredErrors: false
