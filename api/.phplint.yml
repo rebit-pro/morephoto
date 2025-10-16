@@ -1,0 +1,8 @@
+path: ./public/local/modules
+jobs: 10
+cache: var/phplint.json
+extensions:
+  - php
+exclude:
+  - vendor
+  - public/bitrix

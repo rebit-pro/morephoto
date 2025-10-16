@@ -1,0 +1,60 @@
+FROM php:8.4-fpm
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libonig-dev \
+    libicu-dev \
+    libxml2-dev \
+    libpq-dev \
+    curl \
+    libldap2-dev \
+    unzip \
+    git \
+    gnupg2 \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+        gd \
+        bcmath \
+        exif \
+        mysqli \
+        opcache \
+        pdo \
+        pdo_mysql \
+        intl \
+        soap \
+        sockets \
+        zip \
+    && pecl install memcache xdebug \
+    && docker-php-ext-enable memcache xdebug \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN apt update && apt install -y iputils-ping
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs \
+ && npm install -g npm@latest \
+ && npm cache clean --force
+
+# Включаем нужные настройки PHP
+RUN mv $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
+
+# Копируем конфигурации PHP
+COPY ./common/php/conf.d /usr/local/etc/php/conf.d
+COPY ./development/php/conf.d /usr/local/etc/php/conf.d
+COPY ./common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+WORKDIR /app
+
+# Создать пользователя rebit-pro и его домашнюю папку
+RUN useradd -m -s /bin/bash rebit-pro
+
+# Установить владельца для /app
+RUN chown -R rebit-pro:www-data /app
+
+RUN mkdir -p /var/lib/php/sessions && chown -R rebit-pro:www-data /var/lib/php/sessions
+
+CMD ["php-fpm"]

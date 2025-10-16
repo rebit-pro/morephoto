@@ -1,0 +1,152 @@
+services:
+    frontend:
+        build:
+            context: frontend/docker
+            dockerfile: development/nginx/Dockerfile
+        networks:
+            - traefik-public
+            - default
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=traefik-public
+            - traefik.http.routers.frontend.rule=Host(`front.orteka.loc`) || Host(`www.front.orteka.loc`)
+            - traefik.http.routers.frontend.entryPoints=https
+            - traefik.http.routers.frontend.tls=true
+            - traefik.http.services.frontend.loadBalancer.server.port=80
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.permanent=true
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.regex=^(https?://)www\.front..orteka\.loc/(.*)$$
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.replacement=$${1}front.orteka.loc/$${2}
+            - traefik.http.routers.frontend.middlewares=frontend-redirect
+
+    frontend-node:
+        build:
+            context: frontend/docker
+            dockerfile: development/node/Dockerfile
+        environment:
+            NODE_ENV: development
+            VITE_API_BASE_URL: /api
+            HOST: 0.0.0.0 # Важно для Vite!
+        command: sh -c "npm run dev" # Явное указание хоста
+        volumes:
+            - ./frontend:/app
+        ports:
+            - "5173:5173"  # Проброс порта Vite
+        tty: true
+
+    frontend-node-cli:
+        build:
+            context: frontend/docker
+            dockerfile: development/node/Dockerfile
+        volumes:
+            - ./frontend:/app
+
+    api:
+        build:
+            context: api/docker
+            dockerfile: development/nginx/Dockerfile
+        volumes:
+            - ./api:/app
+        networks:
+            - traefik-public
+            - default
+        labels:
+            - traefik.enable=true
+            - traefik.docker.network=traefik-public
+            - traefik.http.routers.orteka.rule=Host(`orteka.loc`) || Host(`www.orteka.loc`)
+            - traefik.http.routers.orteka.entryPoints=https
+            - traefik.http.routers.orteka.tls=true
+            - traefik.http.services.orteka.loadBalancer.server.port=80
+            #- traefik.http.middlewares.orteka-redirect.redirectRegex.regex=^(https?://)www.localhost/(.*)$$
+            - traefik.http.middlewares.orteka-redirect.redirectRegex.replacement=$${1}localhost/$${2}
+            - traefik.http.middlewares.orteka-redirect.redirectRegex.permanent=true
+            - traefik.http.middlewares.orteka-redirect.redirectRegex.regex=^(https?://)www\.orteka\.loc/(.*)$$
+            - traefik.http.middlewares.orteka-redirect.redirectRegex.replacement=$${1}orteka.loc/$${2}
+            - traefik.http.routers.orteka.middlewares=orteka-redirect
+
+    api-php-fpm:
+        build:
+            context: api/docker
+            dockerfile: development/php-fpm/Dockerfile
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        ports:  # Добавьте это!
+            - "3307:3307"
+            #- "9003:9003"  # Добавьте эту строку
+        volumes:
+            - ./api:/app
+        environment:
+            APP_DEBUG: 1
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+            PHP_IDE_CONFIG: "serverName=API"
+
+    api-php-cli:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        volumes:
+            - ./api:/app
+        environment:
+            APP_DEBUG: 1
+
+    api-mysql:
+        build:
+            context: api/docker
+            dockerfile: development/mysql/Dockerfile
+        restart: always
+        environment:
+            MYSQL_DATABASE: app
+            MYSQL_USER: app
+            MYSQL_PASSWORD: secrets
+            MYSQL_ROOT_PASSWORD: rootpassword
+        volumes:
+            - api-mysql:/var/lib/mysql
+        ports:
+            - "33069:3306"
+
+    api-memcached:
+        image: memcached:latest
+        restart: always
+        command: memcached -m 64m -vv
+        ports:
+            - "11211:11211"
+        networks:
+            - default
+
+    api-rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        ports:
+            - "5672:5672"    # порт для приложений (AMQP)
+            - "15672:15672"  # веб-интерфейс RabbitMQ
+        environment:
+            RABBITMQ_DEFAULT_USER: guest
+            RABBITMQ_DEFAULT_PASS: guest
+
+    redis:
+        image: redis:7.0-alpine
+        container_name: redis
+        restart: always
+        networks:
+            - default
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/data
+        command: redis-server --save 60 1 --loglevel warning
+
+    benchmark:
+        build:
+            context: benchmark
+        network_mode: host
+
+volumes:
+    api-mysql:
+    redis-data:
+
+networks:
+    traefik-public:
+        external: true
+        driver: bridge

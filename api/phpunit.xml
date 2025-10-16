@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="public/local/modules/orteka.share/tests/bootstrap.php"
+         colors="true"
+         stopOnFailure="false"
+         failOnWarning="false"
+         failOnRisky="false">
+    <testsuites>
+        <testsuite name="Orteka Share Helper Tests">
+            <directory>public/local/modules/orteka.share/tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

@@ -1,0 +1,14 @@
+/xxx
+/.vscode
+/.idea
+.env
+
+**/tests/
+/api/public/
+/api/log/
+/api/tcp:/
+/api/.phplint.cache/
+/api/.phpunit.result.cache/
+/api/.phpunit.result.cache
+/dump.sql.7z
+/dump.sql.7z:Zone.Identifier

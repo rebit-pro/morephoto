@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<ruleset name="Project Rules">
+    <description>PHP_CodeSniffer ruleset for the project</description>
+
+    <!-- Базовый стандарт -->
+    <rule ref="PSR12"/>
+
+    <!-- Игнорируемые папки и файлы -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>public/local/vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
+    <exclude-pattern>storage/*</exclude-pattern>
+    <exclude-pattern>public/bitrix/*</exclude-pattern>
+    <exclude-pattern>public/local/modules/orteka.core/test/*</exclude-pattern>
+
+    <!-- Включаем файлы PHP -->
+    <file>./public/local/modules</file>
+
+    <!-- Настройки отчета -->
+    <config name="report_format" value="full"/>
+    <config name="colors" value="1"/>
+    <config name="show_warnings" value="1"/>
+    <config name="show_progress" value="1"/>
+
+    <!-- Основные изменения -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Правила для переноса строк -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <!-- Уменьшите лимит для активации переносов -->
+            <property name="lineLimit" value="150"/>
+            <property name="absoluteLineLimit" value="200"/>
+        </properties>
+    </rule>
+
+    <!-- Правила для конкатенации -->
+    <rule ref="Squiz.Strings.ConcatenationSpacing">
+        <properties>
+            <property name="spacing" value="1"/> <!-- Требует пробелы вокруг точки -->
+            <property name="ignoreNewlines" value="true"/> <!-- Разрешает переносы -->
+        </properties>
+    </rule>
+
+    <!-- Дополнительные правила форматирования -->
+    <rule ref="PSR2.Methods.FunctionCallSignature">
+        <properties>
+            <property name="indent" value="4"/>
+        </properties>
+    </rule>
+
+    <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace">
+        <properties>
+            <property name="ignoreBlankLines" value="false"/>
+        </properties>
+    </rule>
+
+    <rule ref="PSR12.Namespaces.CompoundNamespaceDepth">
+        <properties>
+            <property name="maxDepth" value="4"/>
+        </properties>
+    </rule>
+
+    <rule ref="Squiz.Strings.ConcatenationSpacing">
+        <properties>
+            <property name="spacing" value="1"/>
+            <property name="ignoreNewlines" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="200"/>
+            <property name="absoluteLineLimit" value="250"/>
+            <property name="ignoreComments" value="false"/>
+        </properties>
+    </rule>
+
+    <!-- ИЛИ точечное исключение только для конкретного правила -->
+    <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+        <exclude-pattern>*/local/components/*/*</exclude-pattern>
+    </rule>
+
+    <!-- Или исключить только для компонентов -->
+    <rule ref="PSR1.Files.SideEffects.FoundWithSymbols">
+        <exclude-pattern>*/local/components/*/*</exclude-pattern>
+    </rule>
+</ruleset>
