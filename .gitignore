@@ -4,7 +4,11 @@
 .env
 
 **/tests/
-/api/public/
+**/vendor/
+**/logs/
+/api/public/bitrix/
+/api/public/upload/
+/api/public/include/
 /api/log/
 /api/tcp:/
 /api/.phplint.cache/
@@ -12,3 +16,6 @@
 /api/.phpunit.result.cache
 /dump.sql.7z
 /dump.sql.7z:Zone.Identifier
+**.php-cs-fixer.cache
+**test.php
+**.htaccess

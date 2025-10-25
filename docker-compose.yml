@@ -9,13 +9,13 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=traefik-public
-            - traefik.http.routers.frontend.rule=Host(`front.orteka.loc`) || Host(`www.front.orteka.loc`)
+            - traefik.http.routers.frontend.rule=Host(`morephoto.loc`) || Host(`www.morephoto.loc`)
             - traefik.http.routers.frontend.entryPoints=https
             - traefik.http.routers.frontend.tls=true
             - traefik.http.services.frontend.loadBalancer.server.port=80
             - traefik.http.middlewares.frontend-redirect.redirectRegex.permanent=true
-            - traefik.http.middlewares.frontend-redirect.redirectRegex.regex=^(https?://)www\.front..orteka\.loc/(.*)$$
-            - traefik.http.middlewares.frontend-redirect.redirectRegex.replacement=$${1}front.orteka.loc/$${2}
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.regex=^(https?://)www\.morephoto\.loc/(.*)$$
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.replacement=$${1}morephoto.loc/$${2}
             - traefik.http.routers.frontend.middlewares=frontend-redirect
 
     frontend-node:
@@ -24,7 +24,7 @@ services:
             dockerfile: development/node/Dockerfile
         environment:
             NODE_ENV: development
-            VITE_API_BASE_URL: /api
+            VITE_API_BASE_URL: https://api.morephoto.loc
             HOST: 0.0.0.0 # Важно для Vite!
         command: sh -c "npm run dev" # Явное указание хоста
         volumes:
@@ -52,16 +52,14 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=traefik-public
-            - traefik.http.routers.orteka.rule=Host(`orteka.loc`) || Host(`www.orteka.loc`)
-            - traefik.http.routers.orteka.entryPoints=https
-            - traefik.http.routers.orteka.tls=true
-            - traefik.http.services.orteka.loadBalancer.server.port=80
-            #- traefik.http.middlewares.orteka-redirect.redirectRegex.regex=^(https?://)www.localhost/(.*)$$
-            - traefik.http.middlewares.orteka-redirect.redirectRegex.replacement=$${1}localhost/$${2}
-            - traefik.http.middlewares.orteka-redirect.redirectRegex.permanent=true
-            - traefik.http.middlewares.orteka-redirect.redirectRegex.regex=^(https?://)www\.orteka\.loc/(.*)$$
-            - traefik.http.middlewares.orteka-redirect.redirectRegex.replacement=$${1}orteka.loc/$${2}
-            - traefik.http.routers.orteka.middlewares=orteka-redirect
+            - traefik.http.routers.morephoto.rule=Host(`api.morephoto.loc`) || Host(`www.api.morephoto.loc`)
+            - traefik.http.routers.morephoto.entryPoints=https
+            - traefik.http.routers.morephoto.tls=true
+            - traefik.http.services.morephoto.loadBalancer.server.port=80
+            - traefik.http.middlewares.morephoto-redirect.redirectRegex.permanent=true
+            - traefik.http.middlewares.morephoto-redirect.redirectRegex.regex=^(https?://)www\.api.morephoto\.loc/(.*)$$
+            - traefik.http.middlewares.morephoto-redirect.redirectRegex.replacement=$${1}api.morephoto.loc/$${2}
+            - traefik.http.routers.morephoto.middlewares=morephoto-redirect
 
     api-php-fpm:
         build:
@@ -115,36 +113,8 @@ services:
         networks:
             - default
 
-    api-rabbitmq:
-        image: rabbitmq:3-management
-        container_name: rabbitmq
-        ports:
-            - "5672:5672"    # порт для приложений (AMQP)
-            - "15672:15672"  # веб-интерфейс RabbitMQ
-        environment:
-            RABBITMQ_DEFAULT_USER: guest
-            RABBITMQ_DEFAULT_PASS: guest
-
-    redis:
-        image: redis:7.0-alpine
-        container_name: redis
-        restart: always
-        networks:
-            - default
-        ports:
-            - "6379:6379"
-        volumes:
-            - redis-data:/data
-        command: redis-server --save 60 1 --loglevel warning
-
-    benchmark:
-        build:
-            context: benchmark
-        network_mode: host
-
 volumes:
     api-mysql:
-    redis-data:
 
 networks:
     traefik-public:

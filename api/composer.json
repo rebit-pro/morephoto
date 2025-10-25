@@ -21,7 +21,7 @@
     },
     "require-dev": {
       "roave/security-advisories": "dev-latest",
-      "friendsofphp/php-cs-fixer": "^v3.68",
+      "friendsofphp/php-cs-fixer": "^3.75.0",
       "phpunit/phpunit": "^12.0",
       "overtrue/phplint": "^9.5",
       "squizlabs/php_codesniffer": "^3.12",
@@ -48,7 +48,7 @@
     },
     "autoload-dev": {
       "psr-4": {
-        "Orteka\\Share\\Tests\\": "public/local/modules/orteka.share/tests/"
+        "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
       }
     }
 }
