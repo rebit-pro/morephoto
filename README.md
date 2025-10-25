@@ -62,9 +62,9 @@ morephoto/
    docker compose up -d
    Доступ к приложению
 
-Frontend: http://localhost:3000
+Frontend: [http://localhost:3000](https://api.morephoto.loc)
 
-Backend API: http://localhost:80
+Backend API: [http://localhost:80](https://morephoto.loc)
 
 База данных: localhost:3306
 
