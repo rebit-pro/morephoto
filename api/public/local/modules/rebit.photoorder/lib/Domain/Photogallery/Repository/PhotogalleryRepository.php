@@ -24,6 +24,7 @@ final class PhotogalleryRepository
     {
         return PhotogalleryTable::query()
             ->setSelect($this->getSelectFields())
+            ->where('ACTIVE', 'Y')
             ->where('CODE', $code)
             ->setCacheTtl(self::TTL)
             ->exec()
