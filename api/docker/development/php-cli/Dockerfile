@@ -61,8 +61,5 @@ RUN composer global require squizlabs/php_codesniffer && \
 
 WORKDIR /app
 
-# Создать пользователя rebit-pro и его домашнюю папку
-RUN useradd -m -s /bin/bash rebit-pro
-
 # Установить владельца для /app
-RUN chown -R rebit-pro:rebit-pro /app
+RUN chown -R www-data:www-data /app

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\PhotoOrder\Controller;
 
+use Bitrix\Main\ArgumentException;
+use Bitrix\Main\ObjectPropertyException;
+use Bitrix\Main\SystemException;
 use Rebit\PhotoOrder\Application\Photogallery\UseCase\PhotogalleryUseCase;
 use Rebit\PhotoOrder\Domain\Photogallery\Dto\Request\PhotogalleryRequestDto;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
@@ -17,6 +20,11 @@ final class PhotoController extends BaseJsonController
         parent::__construct();
     }
 
+    /**
+     * @throws ObjectPropertyException
+     * @throws SystemException
+     * @throws ArgumentException
+     */
     public function handleAction(PhotogalleryRequestDto $dto): ControllerJson
     {
         return $this->json($this->useCase->execute($dto));

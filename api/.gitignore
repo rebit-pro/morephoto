@@ -1,3 +1,5 @@
 /var/*
 /vendor
 /tcp
+public/upload
+public/bitrix

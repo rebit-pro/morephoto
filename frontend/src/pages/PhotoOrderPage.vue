@@ -81,7 +81,12 @@ export default {
         const rawPhotos = payload?.photos ?? payload?.data?.photos ?? []
         // Маппим в локальную структуру
         photos.value = rawPhotos.map((p, i) => {
-          const src = (p.src && (p.src.startsWith('http') ? p.src : ('https://api.morephoto.loc' + p.src))) || p.url || ''
+          const src =
+            (p.src && (p.src.startsWith('http')
+              ? p.src
+              : (import.meta.env.VITE_APP_AUTH_URL + p.src))) ||
+            p.url ||
+            ''
           return {
             id: p.id ?? i,
             src,

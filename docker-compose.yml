@@ -24,7 +24,7 @@ services:
             dockerfile: development/node/Dockerfile
         environment:
             NODE_ENV: development
-            VITE_API_BASE_URL: https://api.morephoto.loc
+            VITE_APP_AUTH_URL: https://api.morephoto.loc
             HOST: 0.0.0.0 # Важно для Vite!
         command: sh -c "npm run dev" # Явное указание хоста
         volumes:
@@ -74,6 +74,7 @@ services:
             - ./api:/app
         environment:
             APP_DEBUG: 1
+            APP_ENV: "local"
             REDIS_HOST: redis
             REDIS_PORT: 6379
             PHP_IDE_CONFIG: "serverName=API"

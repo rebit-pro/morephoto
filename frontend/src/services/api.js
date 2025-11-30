@@ -1,10 +1,7 @@
 // src/services/api.js
 import axios from 'axios'
 
-const baseURL =
-    (import.meta?.env?.VITE_ENDPOINT_URL && String(import.meta.env.VITE_ENDPOINT_URL)) ||
-    (import.meta?.env?.VITE_API_BASE_URL && String(import.meta.env.VITE_API_BASE_URL)) ||
-    ''
+const baseURL = import.meta.env.VITE_APP_AUTH_URL || ''
 
 const api = axios.create({
     baseURL,

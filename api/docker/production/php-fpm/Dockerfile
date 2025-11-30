@@ -41,3 +41,10 @@ COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 WORKDIR /app
 
 COPY ./ ./
+
+RUN mkdir -p /app \
+    && chown -R www-data:www-data /app \
+    && mkdir -p /var/lib/php/sessions \
+    && chown -R www-data:www-data /var/lib/php/sessions
+
+CMD ["php-fpm"]

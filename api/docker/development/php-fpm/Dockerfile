@@ -49,12 +49,9 @@ COPY ./common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 WORKDIR /app
 
-# Создать пользователя rebit-pro и его домашнюю папку
-RUN useradd -m -s /bin/bash rebit-pro
-
 # Установить владельца для /app
-RUN chown -R rebit-pro:www-data /app
+RUN chown -R www-data:www-data /app
 
-RUN mkdir -p /var/lib/php/sessions && chown -R rebit-pro:www-data /var/lib/php/sessions
+RUN mkdir -p /var/lib/php/sessions && chown -R www-data:www-data /var/lib/php/sessions
 
 CMD ["php-fpm"]
