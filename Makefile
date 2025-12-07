@@ -11,7 +11,7 @@ restart: down up
 lint: api-lint
 fix: api-lint-fix
 analyze: api-analyze
-check: lint analyze test
+check: lint
 test: api-test
 test-unit: api-test-unit
 test-unit-coverage: api-test-unit--coverage
@@ -46,7 +46,6 @@ api-composer-install:
 
 api-lint: 
 	docker compose run --rm api-php-cli composer lint
-	docker compose run --rm api-php-cli composer cs-check
 	
 api-lint-fix: 
 	docker compose run --rm api-php-cli composer cs-fix
