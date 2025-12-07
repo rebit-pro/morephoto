@@ -76,7 +76,7 @@ services:
             target: /app/public/upload
         deploy:
           mode: replicated
-          replicas: 1
+          replicas: 2
           update_config:
             parallelism: 1
             delay: 5s
