@@ -43,7 +43,7 @@ jobs:
         run: |
           # Ключевой момент: задаем тег и номер сборки
           export REGISTRY=${{ secrets.REGISTRY }}
-          export IMAGE_TAG=${GITHUB_SHA::8}  # Используем короткий хеш коммита
+          export IMAGE_TAG: ${{ github.sha }}  # Используем хеш коммита в качестве тега
           export BUILD_NUMBER=${GITHUB_RUN_NUMBER} # Используем номер запуска workflow
           make build
 
