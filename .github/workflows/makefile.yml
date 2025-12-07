@@ -59,23 +59,29 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-and-push
     environment: production
+
     steps:
       - uses: actions/checkout@v4
-      - name: 🚀 Deploy to Swarm
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.DEPLOY_USER || 'deploy' }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.PORT || 22 }}
-          script: |
-            cd /home/deploy/site
-            # Передаем в make те же динамические значения
-            export REGISTRY="${{ secrets.REGISTRY }}"
-            export IMAGE_TAG="${{ github.sha }}"  # Полный хеш тоже подойдет
-            export BUILD_NUMBER="${{ github.run_number }}"
-            export HOST="${{ secrets.HOST }}"
-            export REGISTRY_HOST="${{ secrets.REGISTRY_HOST }}"
-            export REGISTRY_USER="${{ secrets.REGISTRY_USER }}"
-            export TOKEN_GIT_HUB="${{ secrets.TOKEN_GIT_HUB }}"
-            make deploy
+
+      - name: 🔑 Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.PORT }}" "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
+        env:
+          # важно: ничего не логируем
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: 🚀 Deploy via make
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
+          IMAGE_TAG: ${{ github.sha }}
+          BUILD_NUMBER: ${{ github.run_number }}
+          HOST: ${{ secrets.HOST }}
+          PORT: ${{ secrets.PORT }}
+          REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          TOKEN_GIT_HUB: ${{ secrets.TOKEN_GIT_HUB }}
+        run: |
+          make deploy
