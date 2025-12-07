@@ -64,7 +64,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT || 22 }}
           script: |
-            cd /путь/на/сервере
+            cd /home/deploy/site
             # Передаем в make те же динамические значения
             export REGISTRY="${{ secrets.REGISTRY }}"
             export IMAGE_TAG="${{ github.sha }}"  # Полный хеш тоже подойдет
