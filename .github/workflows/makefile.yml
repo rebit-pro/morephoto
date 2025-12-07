@@ -16,6 +16,9 @@ jobs:
       - name: Build dev images (for checks)
         run: docker compose build --pull
 
+      - name: Install PHP dependencies
+        run: docker compose run --rm api-php-cli composer install --no-interaction --no-progress
+
       - name: Run check
         run: make check
       # Добавьте другие тесты, если нужно, например: make test
