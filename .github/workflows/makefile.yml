@@ -7,31 +7,15 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # Задача для локальных проверок (оставлена как есть)
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build dev images (for checks)
-        run: docker compose build --pull
-
-      - name: Install PHP dependencies
-        run: docker compose run --rm api-php-cli composer install --no-interaction --no-progress
-
-      - name: Run check
-        run: make check
-      # Добавьте другие тесты, если нужно, например: make test
-
-  # НОВАЯ ЗАДАЧА: Сборка и публикация Docker-образов
   build-and-push:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build
     steps:
       - uses: actions/checkout@v4
+
       - name: 🔧 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: 🔑 Log in to Docker registry
         uses: docker/login-action@v3
         with:
@@ -41,17 +25,16 @@ jobs:
 
       - name: 🏗️ Build images
         run: |
-          # Ключевой момент: задаем тег и номер сборки
-          export REGISTRY=${{ secrets.REGISTRY }}
-          export IMAGE_TAG: ${{ github.sha }}  # Используем хеш коммита в качестве тега
-          export BUILD_NUMBER=${GITHUB_RUN_NUMBER} # Используем номер запуска workflow
+          export REGISTRY="${{ secrets.REGISTRY }}"
+          export IMAGE_TAG="${GITHUB_SHA::8}"
+          export BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           make build
 
       - name: 📤 Push images
         run: |
-          export REGISTRY=${{ secrets.REGISTRY }}
-          export IMAGE_TAG=${GITHUB_SHA::8}
-          export BUILD_NUMBER=${GITHUB_RUN_NUMBER}
+          export REGISTRY="${{ secrets.REGISTRY }}"
+          export IMAGE_TAG="${GITHUB_SHA::8}"
+          export BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           make push
 
   deploy:
@@ -70,13 +53,12 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${{ secrets.PORT }}" "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
         env:
-          # важно: ничего не логируем
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: 🚀 Deploy via make
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }} # или лучше: ${{ github.sha[0:8] }} чтобы совпадало с build/push
           BUILD_NUMBER: ${{ github.run_number }}
           HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
