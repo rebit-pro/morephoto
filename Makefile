@@ -133,8 +133,8 @@ deploy:
 		ssh $(REMOTE) -p $(PORT) 'echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin'; \
 	fi
 	ssh $(REMOTE) -p $(PORT) 'ln -sfn $(RELEASE_DIR) $(LINK_DIR)'
-	#ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && REGISTRY="$(REGISTRY)" IMAGE_TAG="$(IMAGE_TAG)" docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
-	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && REGISTRY="$(REGISTRY)" IMAGE_TAG="$(IMAGE_TAG)"  docker stack deploy --compose-file docker-compose.yml $(STACK_NAME) --with-registry-auth --prune'
+	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && REGISTRY="$(REGISTRY)" IMAGE_TAG="$(IMAGE_TAG)" docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
+	#ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && REGISTRY="$(REGISTRY)" IMAGE_TAG="$(IMAGE_TAG)"  docker stack deploy --compose-file docker-compose.yml $(STACK_NAME) --with-registry-auth --prune'
 
 # Rollback на указанный билд: make rollback ROLLBACK_BUILD_NUMBER=123
 rollback:

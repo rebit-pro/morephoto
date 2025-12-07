@@ -48,10 +48,18 @@ services:
             - traefik.http.routers.api.tls=true
             - traefik.http.routers.api.tls.certResolver=letsEncrypt
           mode: replicated
-          replicas: 1
+          replicas: 2
           update_config:
             parallelism: 1
             delay: 5s
+            order: start-first  # Сначала запустить новый, затем остановить старый
+        healthcheck:
+          test: [ "CMD", "curl", "-f", "http://localhost/health" ]
+          interval: 10s
+          timeout: 5s
+          retries: 3
+          start_period: 30s
+          start_interval: 5s
 
     api-php-fpm:
         image: ${REGISTRY}/morephoto-api-php-fpm:${IMAGE_TAG}
@@ -72,6 +80,12 @@ services:
           update_config:
             parallelism: 1
             delay: 5s
+            order: start-first
+        healthcheck:
+          test: [ "CMD-SHELL", "php-fpm-healthcheck" ] # Или свой скрипт
+          interval: 10s
+          timeout: 5s
+          retries: 3
 
     api-mysql:
         image: percona:8.0
