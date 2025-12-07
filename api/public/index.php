@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"] . "/bitrix/header.php");
-$APPLICATION->SetTitle("Новости банка");
+$APPLICATION->SetTitle("Новости банка test");
 ?><? $APPLICATION->IncludeComponent(
     "bitrix:news.list",
     ".default",
