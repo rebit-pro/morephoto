@@ -42,6 +42,9 @@ WORKDIR /app
 
 COPY ./ ./
 
+RUN cd public/local \
+    && composer install --no-dev --optimize-autoloader
+
 RUN mkdir -p /app \
     && chown -R www-data:www-data /app \
     && mkdir -p /var/lib/php/sessions \
