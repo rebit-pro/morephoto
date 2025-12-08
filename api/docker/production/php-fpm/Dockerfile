@@ -38,6 +38,14 @@ RUN apt-get update && apt-get install -y \
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
 COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
+# 2. Установка Composer (v2)
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+RUN curl -sS https://getcomposer.org/installer | php -- \
+    --install-dir=/usr/local/bin \
+    --filename=composer \
+    --version=2.8.8
+
 WORKDIR /app
 
 COPY ./ ./
