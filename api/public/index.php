@@ -3,7 +3,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/bitrix/header.php';
 
 /** @var $APPLICATION */
 
-$APPLICATION->SetTitle('Rebit Photo Order API 2');
+$APPLICATION->SetTitle('Rebit Photo Order API 204');
 ?>
 
 
