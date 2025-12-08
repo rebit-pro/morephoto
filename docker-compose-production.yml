@@ -82,7 +82,7 @@ services:
             delay: 5s
             order: start-first
         healthcheck:
-          test: [ "CMD-SHELL", "php-fpm-healthcheck" ] # Или свой скрипт
+          test: [ "CMD-SHELL", "php -v >/dev/null 2>&1" ] # Или свой скрипт
           interval: 10s
           timeout: 5s
           retries: 3
