@@ -3,7 +3,7 @@
     <v-row class="mb-4" align="center">
       <v-col cols="12" md="8">
         <h1 v-if="collectionName">{{ collectionName }}</h1>
-        <h1 v-else>Выбор фотографий</h1>
+        <h1 v-else>Выбор фотографий новый</h1>
         <div class="small-muted">Код коллекции: {{ code }}</div>
       </v-col>
       <v-col cols="12" md="4" class="d-flex justify-end">
