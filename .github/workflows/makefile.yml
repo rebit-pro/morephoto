@@ -24,17 +24,21 @@ jobs:
           password: ${{ secrets.TOKEN_GIT_HUB }}
 
       - name: 🏗️ Build images
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
         run: |
-          export REGISTRY="${{ secrets.REGISTRY }}"
-          export IMAGE_TAG="${GITHUB_SHA::8}"
-          export BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          IMAGE_TAG="${GITHUB_SHA::8}"
+          BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          export REGISTRY IMAGE_TAG BUILD_NUMBER
           make build
 
       - name: 📤 Push images
+        env:
+          REGISTRY: ${{ secrets.REGISTRY }}
         run: |
-          export REGISTRY="${{ secrets.REGISTRY }}"
-          export IMAGE_TAG="${GITHUB_SHA::8}"
-          export BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          IMAGE_TAG="${GITHUB_SHA::8}"
+          BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
+          export REGISTRY IMAGE_TAG BUILD_NUMBER
           make push
 
   deploy:
@@ -45,6 +49,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: 🔢 Get short SHA
+        id: vars
+        run: echo "short_sha=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
 
       - name: 🔑 Setup SSH key
         run: |
@@ -58,7 +66,7 @@ jobs:
       - name: 🚀 Deploy via make
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
-          IMAGE_TAG: ${{ github.sha }} # или лучше: ${{ github.sha[0:8] }} чтобы совпадало с build/push
+          IMAGE_TAG: ${{ steps.vars.outputs.short_sha }}
           BUILD_NUMBER: ${{ github.run_number }}
           HOST: ${{ secrets.HOST }}
           PORT: ${{ secrets.PORT }}
