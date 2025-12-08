@@ -1,6 +1,6 @@
 <template>
   <v-card class="pa-4">
-    <h3>Итог заказа</h3>
+    <h3>Итог заказа: </h3>
     <div v-if="selectedItems.length===0" class="grey--text pa-6">Пока нет выбранных фотографий</div>
 
     <v-list v-else>
