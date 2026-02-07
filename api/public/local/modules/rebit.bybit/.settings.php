@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+use Bitrix\Main\DI\ServiceLocator;
+use Rebit\PhotoOrder\Domain\Photogallery\Repository\PhotogalleryRepository;
+use Rebit\PhotoOrder\Application\Photogallery\UseCase\PhotogalleryUseCase;
+
+return [
+    'services' => [
+        'value' => [
+
+        ],
+        'readonly' => true,
+    ],
+];

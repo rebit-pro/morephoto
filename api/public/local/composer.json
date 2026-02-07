@@ -40,12 +40,14 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Rebit\\Dev\\": "modules/rebit.dev/lib"
+            "Rebit\\Dev\\": "modules/rebit.dev/lib",
+            "Rebit\\Bybit\\": "modules/rebit.bybit/lib"
         }
     },
     "autoload": {
         "psr-4": {
-            "Rebit\\Share\\": "modules/rebit.share/lib"
+            "Rebit\\Share\\": "modules/rebit.share/lib",
+            "Rebit\\Bybit\\": "modules/rebit.bybit/lib"
         }
     },
     "config": {

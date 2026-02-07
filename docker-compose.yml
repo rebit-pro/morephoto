@@ -78,6 +78,7 @@ services:
             REDIS_HOST: redis
             REDIS_PORT: 6379
             PHP_IDE_CONFIG: "serverName=API"
+            BY_BIT_P2P_API_KEY: "your_bybit_api_key"
 
     api-php-cli:
         build:
