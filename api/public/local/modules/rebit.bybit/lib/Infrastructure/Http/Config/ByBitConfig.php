@@ -4,50 +4,32 @@ declare(strict_types=1);
 
 namespace Rebit\Bybit\Infrastructure\Http\Config;
 
-final class ByBitConfig
+final readonly class ByBitConfig
 {
-    private const int DEFAULT_RECV_WINDOW_MS = 5000;
-
     public function __construct(
-        private readonly string $baseUri,
-        private readonly string $apiKey,
-        private readonly string $signatureSecret,
-        private readonly int $recvWindowMs = self::DEFAULT_RECV_WINDOW_MS,
-    ) {
-        if ('' === trim($this->baseUri)) {
-            throw new \InvalidArgumentException('ByBit baseUri is empty.');
-        }
+        private string $apiKey,
+        private string $apiSecret, // Нужен для HMAC_SHA256 подписи
+        private string $baseUrl = 'https://api.bybit.com',
+        private int $recvWindow = 5000,
+    ) {}
 
-        if ('' === trim($this->apiKey)) {
-            throw new \InvalidArgumentException('ByBit apiKey is empty.');
-        }
-
-        if ('' === trim($this->signatureSecret)) {
-            throw new \InvalidArgumentException('ByBit signature secret is empty.');
-        }
-
-        if (0 >= $this->recvWindowMs) {
-            throw new \InvalidArgumentException('ByBit recvWindowMs must be positive.');
-        }
-    }
-
-    public function baseUri(): string
-    {
-        return $this->baseUri;
-    }
-
-    public function apiKey(): string
+    public function getApiKey(): string
     {
         return $this->apiKey;
     }
 
-    public function signatureSecret(): string
+    public function getApiSecret(): string
     {
-        return $this->signatureSecret;
+        return $this->apiSecret;
     }
 
-    public function recvWindowMs(): int
+    public function getBaseUrl(): string
     {
-        return $this->recvWindowMs;
+        return $this->baseUrl;
+    }
+
+    public function getRecvWindow(): int
+    {
+        return $this->recvWindow;
     }
 }

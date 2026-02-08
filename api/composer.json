@@ -48,7 +48,8 @@
     },
     "autoload-dev": {
       "psr-4": {
-        "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
+        "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/",
+        "Rebit\\Bybit\\": "public/local/modules/rebit.bybit/lib/"
       }
     }
 }
