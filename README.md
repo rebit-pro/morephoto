@@ -11,7 +11,6 @@
 ### Backend
 - **Bitrix CMS** - система управления контентом
 - **PHP 8.4** - серверный язык программирования
-- **Slim Framework 4** - RESTful API
 - **PHP-DI** - контейнер зависимостей
 
 ### Базы данных и кеширование
@@ -25,18 +24,16 @@
 - **PHP-FPM 8.4** - обработка PHP
 
 ## 📁 Структура проекта
-
+```
 morephoto/
 ├── frontend/ # Vue 3 приложение
 ├── api/
 │ ├── public/
 │ │ ├── bitrix/ # Ядро Bitrix CMS
 │ │ └── local/ # Кастомные модули
-├── gateway/ # Конфигурация Nginx
 ├── mysql/ # Конфигурация БД
 └── docker-compose.yml # Docker окружение
-
-
+```
 ## 🛠️ Быстрый старт
 
 ### Предварительные требования
@@ -133,16 +130,6 @@ make push
 
 # Деплой на сервер
 make deploy
-🤝 Участие в разработке
-Форкните репозиторий
-
-Создайте feature ветку (git checkout -b feature/amazing-feature)
-
-Закоммитьте изменения (git commit -m 'Add amazing feature')
-
-Запушьте ветку (git push origin feature/amazing-feature)
-
-Откройте Pull Request
 
 📄 Лицензия
 Этот проект является частной разработкой компании Rebit.
