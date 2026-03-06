@@ -58,7 +58,7 @@ morephoto/
    ```bash
    docker compose up -d
    Доступ к приложению
-
+   ```
 Frontend: [http://localhost:3000](https://api.morephoto.loc)
 
 Backend API: [http://localhost:80](https://morephoto.loc)
@@ -68,7 +68,7 @@ Backend API: [http://localhost:80](https://morephoto.loc)
 🔧 Разработка
 Основные команды
 
-
+```bash
       # Установка зависимостей
       make api-composer-install
    
@@ -80,11 +80,9 @@ Backend API: [http://localhost:80](https://morephoto.loc)
       
       # Проверка стиля кода
       make lint
-
+```
 Контейнеры разработки
 frontend - Vue 3 dev server (порт 3000)
-
-gateway - Nginx шлюз (порт 80)
 
 api-php-fpm - PHP обработчик
 
@@ -105,23 +103,12 @@ PHP_CodeSniffer - проверка стиля кода
 
 PHPLint - проверка синтаксиса
 
-📚 Документация
-Подробная документация доступна в соответствующих разделах:
-
-Frontend приложение
-
-API Backend
-
-База данных
-
-Инфраструктура
-
 Процесс разработки
 
 🚀 Деплой
 Система использует версионирование образов Docker для zero-downtime деплоя:
 
-bash
+```bash
 # Сборка образов
 make build
 
@@ -130,6 +117,7 @@ make push
 
 # Деплой на сервер
 make deploy
+```
 
 📄 Лицензия
 Этот проект является частной разработкой компании Rebit.
