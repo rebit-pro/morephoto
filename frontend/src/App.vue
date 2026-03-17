@@ -1,19 +1,11 @@
 <template>
-  <v-app>
-    <v-main>
-      <v-container class="pa-4">
-        <router-view />
-      </v-container>
-    </v-main>
-  </v-app>
+  <RouterView />
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
-</script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router';
+import { useThemeHandler } from '@/composables/useThemeHandler';
 
-<style>
-/* можно добавить общие правила */
-</style>
+// Initialize theme handling
+useThemeHandler();
+</script>

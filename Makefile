@@ -4,7 +4,7 @@ ifneq (,$(wildcard .env))
     export $(shell sed 's/=.*//' .env)
 endif
 
-init: api-clear docker-down-clear docker-pull docker-build docker-up api-init
+init: api-clear docker-down-clear docker-pull docker-build docker-up
 up: docker-up
 down: docker-down
 restart: down up
@@ -33,10 +33,16 @@ docker-pull:
 	docker compose pull
 
 docker-build:
-	docker compose build --pull
+	DOCKER_BUILDKIT=1 BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose build --pull
+
+# frontend
+frontend-init: frontend-yarn-install
+
+frontend-yarn-install:
+	docker compose run --rm frontend-node-cli npm install
 
 # api
-api-clear: 
+api-clear:
 	docker run --rm -v ${PWD}/api:/app -w /app alpine:3.21 sh -c 'rm -rf var/*'
 
 api-init: api-composer-install
@@ -44,22 +50,22 @@ api-init: api-composer-install
 api-composer-install:
 	docker compose run --rm api-php-cli composer install
 
-api-lint: 
+api-lint:
 	docker compose run --rm api-php-cli composer lint
-	
-api-lint-fix: 
+
+api-lint-fix:
 	docker compose run --rm api-php-cli composer cs-fix
-	
-api-analyze: 
+
+api-analyze:
 	docker compose run --rm api-php-cli composer psalm --show-info=true
-	
-api-test: 
+
+api-test:
 	docker compose run --rm api-php-cli composer test
-	
-api-test-unit: 
+
+api-test-unit:
 	docker compose run --rm api-php-cli composer test -- --testsuite=unit
-	
-api-test-unit-coverage: 
+
+api-test-unit-coverage:
 	docker compose run --rm api-php-cli composer test-coverage -- --testsuite=unit
 
 api-test-functional:

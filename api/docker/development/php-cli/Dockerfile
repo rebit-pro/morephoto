@@ -49,15 +49,13 @@ COPY ./development/php/conf.d /usr/local/etc/php/conf.d
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
 # Установка последней версии Composer v2
-RUN curl -sS https://getcomposer.org/installer | php -- \
-    --install-dir=/usr/local/bin \
-    --filename=composer \
-    --version=2.8.8
+#RUN curl -sS https://getcomposer.org/installer | php -- \
+#    --install-dir=/usr/local/bin \
+#    --filename=composer \
+#    --version=2.8.8
 
-# Установка PHP_CodeSniffer и phpcbf
-RUN composer global require squizlabs/php_codesniffer && \
-    ln -s /root/.composer/vendor/bin/phpcs /usr/local/bin/phpcs && \
-    ln -s /root/.composer/vendor/bin/phpcbf /usr/local/bin/phpcbf
+# Заменить RUN curl ... на:
+COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /app
 
