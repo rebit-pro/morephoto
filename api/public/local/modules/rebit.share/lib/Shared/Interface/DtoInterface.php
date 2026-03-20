@@ -7,6 +7,4 @@ namespace Rebit\Share\Shared\Interface;
 /**
  * Маркерный интерфейс. Помогает идентифицировать DTO
  */
-interface DtoInterface
-{
-}
+interface DtoInterface {}

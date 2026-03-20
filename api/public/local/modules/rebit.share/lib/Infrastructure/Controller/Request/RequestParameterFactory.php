@@ -26,8 +26,10 @@ final readonly class RequestParameterFactory
      * @var array<class-string<RequestMapperInterface>>
      */
     private const array MAPPER_CLASSES = [
+        RequestToCollectionMapper::class,
         RequestToDtoMapper::class,
         RequestToEntityMapper::class,
+        RequestFileToDtoMapper::class,
     ];
 
     /**
@@ -55,7 +57,7 @@ final readonly class RequestParameterFactory
     public function createParameter(string $className): Parameter
     {
         foreach ($this->mappers as $mapper) {
-            if ($mapper->supports($className)) {
+            if ($mapper->support($className)) {
                 return new Parameter(
                     $className,
                     fn() => $mapper->map($className),
@@ -74,7 +76,7 @@ final readonly class RequestParameterFactory
     public function support(string $className): bool
     {
         foreach ($this->mappers as $mapper) {
-            if ($mapper->supports($className)) {
+            if ($mapper->support($className)) {
                 return true;
             }
         }

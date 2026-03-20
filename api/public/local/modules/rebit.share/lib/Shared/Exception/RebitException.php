@@ -7,6 +7,4 @@ namespace Rebit\Share\Shared\Exception;
 /**
  * Базовый класс для всех наших исключений
  */
-class RebitException extends \Exception
-{
-}
+class RebitException extends \Exception {}

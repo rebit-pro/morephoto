@@ -18,8 +18,7 @@ final class JsonExceptionResponse extends AbstractResponse
     public function __construct(
         private readonly \Throwable $exception,
         private readonly bool $debug = false,
-    ) {
-    }
+    ) {}
 
     protected function buildResponse(): ControllerJson
     {

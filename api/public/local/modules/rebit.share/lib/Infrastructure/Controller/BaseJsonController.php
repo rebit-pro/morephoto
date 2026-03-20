@@ -7,7 +7,7 @@ namespace Rebit\Share\Infrastructure\Controller;
 use Rebit\Share\Infrastructure\Controller\Responses\JsonResponse;
 use Rebit\Share\Infrastructure\Controller\Serializers\CommonSerializer;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
-use Rebit\Share\Shared\Interface\ResultDtoInterface;
+use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 
 /**

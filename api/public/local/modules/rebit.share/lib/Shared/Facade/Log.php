@@ -16,6 +16,10 @@ use Psr\Log\LoggerInterface;
 /**
  * Фасад для битриксового monolog-логгера
  *
+ * Использование:
+ * 1. В легаси-коде как фасад
+ * 2. В новых модулях только через DI: Log::getLogger(указать канал)
+ *
  *  В .settings можно указать разные настройки для каждого из каналов, если указать в замыкание LogChannelEnum $channel
  *
  * @method static void alert(string $message, array $context = [])

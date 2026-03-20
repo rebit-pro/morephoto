@@ -6,6 +6,7 @@ namespace Rebit\Share\Infrastructure\Controller\Normalizer;
 
 use Bitrix\Main\Type\Date;
 use Bitrix\Main\Type\DateTime;
+use Rebit\Share\Infrastructure\Controller\Attribute\SkipWhenNull;
 use Rebit\Share\Shared\Interface\NormalizerInterface;
 
 /**
@@ -20,8 +21,7 @@ final readonly class ObjectNormalizer implements NormalizerInterface
         private NormalizerInterface $dateTimeNormalizer,
         private NormalizerInterface $dateNormalizer,
         private NormalizerInterface $scalarNormalizer,
-    ) {
-    }
+    ) {}
 
     public function normalize(mixed $data): mixed
     {
@@ -43,17 +43,39 @@ final readonly class ObjectNormalizer implements NormalizerInterface
 
     private function normalizeObjectProperties(object $data): array
     {
-        return $this->normalizeArray(get_object_vars($data));
+        $properties = get_object_vars($data);
+        $filteredProperties = [];
+
+        foreach ($properties as $property => $value) {
+            if (null === $value && $this->shouldSkipNull($data, $property)) {
+                continue;
+            }
+            $filteredProperties[$property] = $value;
+        }
+
+        return $this->normalizeArray($filteredProperties);
     }
 
     private function normalizeArray(array $array): array
     {
-        return array_map(function ($item) {
+        return array_map(function($item) {
             return match (true) {
                 is_object($item) => $this->normalize($item),
                 is_array($item) => $this->normalizeArray($item),
                 default => $this->scalarNormalizer->normalize($item),
             };
         }, $array);
+    }
+
+    private function shouldSkipNull(object $object, string $property): bool
+    {
+        try {
+            $reflection = new \ReflectionProperty($object, $property);
+            $attributes = $reflection->getAttributes(SkipWhenNull::class);
+
+            return [] !== $attributes;
+        } catch (\ReflectionException) {
+            return false;
+        }
     }
 }

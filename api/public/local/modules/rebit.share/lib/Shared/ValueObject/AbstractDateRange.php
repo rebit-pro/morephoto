@@ -67,7 +67,5 @@ abstract class AbstractDateRange
      * Точка расширения для нормализации границ в наследниках.
      * По умолчанию ничего не делает.
      */
-    protected function normalize(): void
-    {
-    }
+    protected function normalize(): void {}
 }

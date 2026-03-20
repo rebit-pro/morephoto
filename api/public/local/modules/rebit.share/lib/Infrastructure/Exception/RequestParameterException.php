@@ -6,6 +6,4 @@ namespace Rebit\Share\Infrastructure\Exception;
 
 use Rebit\Share\Shared\Exception\RebitException;
 
-final class RequestParameterException extends RebitException
-{
-}
+final class RequestParameterException extends RebitException {}

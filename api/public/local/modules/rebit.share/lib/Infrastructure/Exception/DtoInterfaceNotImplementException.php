@@ -6,6 +6,4 @@ namespace Rebit\Share\Infrastructure\Exception;
 
 use Rebit\Share\Shared\Exception\RebitException;
 
-final class DtoInterfaceNotImplementException extends RebitException
-{
-}
+final class DtoInterfaceNotImplementException extends RebitException {}

@@ -19,7 +19,7 @@ use Rebit\Share\Shared\Facade\Log;
  * Используйте:
  *      initModuleRouting() - в конструкторе модуля для инициализации
  *      installModuleRouting() - для установки роутинга
- *      uninstallModuleRouting - для удаления роутинга
+ *      uninstallModuleRouting() - для удаления роутинга
  */
 trait ModuleRoutingTrait
 {

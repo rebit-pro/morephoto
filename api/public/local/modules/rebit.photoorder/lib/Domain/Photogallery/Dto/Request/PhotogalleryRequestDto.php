@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\PhotoOrder\Domain\Photogallery\Dto\Request;
 
-use Rebit\Share\Shared\Interface\RequestDtoInterface;
+use Rebit\Share\Application\Interface\RequestDtoInterface;
 
 final class PhotogalleryRequestDto implements RequestDtoInterface
 {

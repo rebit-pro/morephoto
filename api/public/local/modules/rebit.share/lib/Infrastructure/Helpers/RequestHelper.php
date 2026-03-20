@@ -8,16 +8,29 @@ use Bitrix\Main\HttpRequest;
 
 final class RequestHelper
 {
+    private const string DOMAIN = 'rebit.local';
+
     /**
-     * Собирает входящие поля со всех типов запросов
+     * Собирает входящие поля запроса.
+     *
+     * JSON body и form-данные (POST) не смешиваются:
+     * если есть JSON body — GET + JSON, иначе — GET + POST.
+     * Тело запроса (JSON/POST) имеет приоритет над GET при совпадении ключей.
      *
      * @return array<string, mixed>
      */
     public static function collectRequestValues(HttpRequest $request): array
     {
+        $jsonValues = $request->getJsonList()->getValues();
+        if ([] !== $jsonValues) {
+            return array_merge(
+                $request->getQueryList()->getValues(),
+                $jsonValues,
+            );
+        }
+
         return array_merge(
-            $request->getValues(),
-            $request->getJsonList()->getValues(),
+            $request->getQueryList()->getValues(),
             $request->getPostList()->getValues(),
         );
     }
@@ -29,8 +42,15 @@ final class RequestHelper
 
     public static function getFullUrl(string $pageUri = '/'): string
     {
-        $prefix = str_contains($pageUri, 'orteka.ru') ? '' : self::getSiteUrl();
+        if (self::isExternalUrl($pageUri)) {
+            return $pageUri;
+        }
 
-        return $prefix . $pageUri;
+        return self::getSiteUrl() . $pageUri;
+    }
+
+    private static function isExternalUrl(string $url): bool
+    {
+        return str_contains($url, self::DOMAIN);
     }
 }

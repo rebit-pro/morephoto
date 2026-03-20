@@ -110,7 +110,7 @@ final class ControllerBuilder
                 throw new ObjectException(
                     sprintf(
                         'Cannot resolve scalar parameter "%s" in constructor of %s. '
-                            . 'Only DI-resolvable dependencies are allowed.',
+                        . 'Only DI-resolvable dependencies are allowed.',
                         $parameter->getName(),
                         $reflectionClass->getName(),
                     ),
@@ -124,7 +124,12 @@ final class ControllerBuilder
                 try {
                     $args[] = $serviceLocator->get($className);
                 } catch (\Throwable $e) {
-                    Log::debug('error', ['message' => $e->getMessage(), 'trace' => $e->getTrace()]);
+                    Log::error('Failed to resolve dependency for controller constructor', [
+                        'controller' => $reflectionClass->getName(),
+                        'parameter' => $parameter->getName(),
+                        'dependency' => $className,
+                        'error' => $e->getMessage(),
+                    ]);
                     throw new ObjectException(
                         sprintf(
                             'Dependency "%s" required by parameter "%s" in %s not found in DI container',
