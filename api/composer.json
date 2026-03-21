@@ -17,6 +17,7 @@
         "ramsey/uuid": "^4.7",
         "webmozart/assert": "^1.11",
       "ext-intl": "*",
+      "ext-openssl": "*",
         "predis/predis": "^3.0"
     },
     "require-dev": {

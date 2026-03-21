@@ -8,6 +8,7 @@ use Bitrix\Main\ArgumentException;
 use Bitrix\Main\HttpRequest;
 use Bitrix\Main\ORM\Objectify\EntityObject;
 use Bitrix\Main\SystemException;
+use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
 use Rebit\Share\Infrastructure\Exception\RequestParameterException;
 use Rebit\Share\Infrastructure\Helpers\RequestHelper;
 use Rebit\Share\Infrastructure\Interface\RequestMapperInterface;
@@ -19,10 +20,9 @@ final readonly class RequestToEntityMapper implements RequestMapperInterface
 {
     public function __construct(
         private HttpRequest $request,
-    ) {
-    }
+    ) {}
 
-    public function supports(string $className): bool
+    public function support(string $className): bool
     {
         return is_subclass_of($className, EntityObject::class);
     }
@@ -31,6 +31,7 @@ final readonly class RequestToEntityMapper implements RequestMapperInterface
      * @param class-string $className
      *
      * @throws ArgumentException
+     * @throws EntityNotFoundException
      * @throws RequestParameterException
      * @throws SystemException
      */
@@ -42,7 +43,15 @@ final readonly class RequestToEntityMapper implements RequestMapperInterface
         }
 
         $id = (int)array_values($values)[0];
+        if ($id <= 0) {
+            throw new RequestParameterException('ID сущности должен быть положительным числом');
+        }
 
-        return $className::$dataClass::getById($id)->fetchObject();
+        $entity = $className::$dataClass::getById($id)->fetchObject();
+        if (null === $entity) {
+            throw new EntityNotFoundException();
+        }
+
+        return $entity;
     }
 }

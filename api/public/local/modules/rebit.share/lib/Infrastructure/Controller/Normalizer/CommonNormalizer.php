@@ -15,8 +15,7 @@ final readonly class CommonNormalizer implements NormalizerInterface
     public function __construct(
         private NormalizerInterface $objectNormalizer,
         private NormalizerInterface $scalarNormalizer,
-    ) {
-    }
+    ) {}
 
     public function normalize(mixed $data): mixed
     {

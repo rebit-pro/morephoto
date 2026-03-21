@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Controller\Serializers;
 
-use Rebit\Share\Infrastructure\Controller\Normalizer\CommonNormalizer;
-use Rebit\Share\Infrastructure\Controller\Normalizer\DateNormalizer;
-use Rebit\Share\Infrastructure\Controller\Normalizer\DateTimeNormalizer;
-use Rebit\Share\Infrastructure\Controller\Normalizer\EnumNormalizer;
-use Rebit\Share\Infrastructure\Controller\Normalizer\ObjectNormalizer;
-use Rebit\Share\Infrastructure\Controller\Normalizer\ScalarNormalizer;
 use Rebit\Share\Shared\Interface\NormalizerInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
+use Rebit\Share\Infrastructure\Helpers\JsonSerializerHelper;
 
 /**
  * Сериализует данные в JSON-строку. Основной сериализатор.
@@ -20,8 +15,7 @@ final readonly class CommonSerializer implements SerializerInterface
 {
     public function __construct(
         private NormalizerInterface $commonNormalizer,
-    ) {
-    }
+    ) {}
 
     /**
      * Создает дефолтовый сериализатор.
@@ -29,22 +23,15 @@ final readonly class CommonSerializer implements SerializerInterface
      */
     public static function createDefault(): SerializerInterface
     {
-        return new self(new CommonNormalizer(
-            new ObjectNormalizer(
-                new EnumNormalizer(),
-                new DateTimeNormalizer(),
-                new DateNormalizer(),
-                new ScalarNormalizer(),
-            ),
-            new ScalarNormalizer(),
-        ));
+        // Логика создания дефолта перемещена в helper — здесь остаётся совместимый API.
+        return JsonSerializerHelper::createDefaultSerializer();
     }
 
     public function serialize(
         mixed $data,
-        int $jsonOptions = JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
-        | JSON_UNESCAPED_UNICODE,
+        int $jsonOptions = JsonSerializerHelper::DEFAULT_JSON_OPTIONS,
     ): string {
-        return json_encode($this->commonNormalizer->normalize($data), $jsonOptions);
+        // Делегируем реальную сериализацию helper-у.
+        return JsonSerializerHelper::serialize($this->commonNormalizer, $data, $jsonOptions);
     }
 }

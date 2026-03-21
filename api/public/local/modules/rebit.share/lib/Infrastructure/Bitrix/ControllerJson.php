@@ -6,7 +6,7 @@ namespace Rebit\Share\Infrastructure\Bitrix;
 
 use Bitrix\Main\ArgumentTypeException;
 use Bitrix\Main\Engine\Response\Json;
-use Rebit\Share\Shared\Interface\ResultDtoInterface;
+use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
 
 /**

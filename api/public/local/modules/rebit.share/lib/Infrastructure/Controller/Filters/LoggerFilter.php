@@ -20,8 +20,10 @@ use Bitrix\Main\Engine\Response\Json;
  */
 final class LoggerFilter extends Base
 {
-    public function __construct(private readonly LogChannelEnum $channel = LogChannelEnum::default)
-    {
+    public function __construct(
+        private readonly LogChannelEnum $channel = LogChannelEnum::default,
+        private readonly array $extraData = [],
+    ) {
         parent::__construct();
     }
 
@@ -40,7 +42,7 @@ final class LoggerFilter extends Base
     public function onBeforeAction(Event $event): ?EventResult
     {
         $data = $this->extractRequestData($event->getParameter('controller'));
-        Log::channel($this->channel)->info('REQUEST', $data);
+        Log::channel($this->channel)->info('REQUEST', array_merge($data, $this->extraData));
 
         return null;
     }
@@ -74,7 +76,7 @@ final class LoggerFilter extends Base
             'response' => $responseData,
         ];
 
-        Log::channel($this->channel)->info('RESPONSE', $payload);
+        Log::channel($this->channel)->info('RESPONSE', array_merge($payload, $this->extraData));
 
         return null;
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Share\Infrastructure\Controller\Responses;
 
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
-use Rebit\Share\Shared\Interface\ResultDtoInterface;
+use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
 
 /**
@@ -25,8 +25,7 @@ final class JsonResponse extends AbstractResponse
         private readonly null|array|ResultDtoInterface $data = null,
         private readonly array $meta = [],
         private readonly int $options = 0,
-    ) {
-    }
+    ) {}
 
     protected function buildResponse(): ControllerJson
     {

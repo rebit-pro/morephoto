@@ -9,13 +9,13 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=traefik-public
-            - traefik.http.routers.frontend.rule=Host(`morephoto.loc`) || Host(`www.morephoto.loc`)
+            - traefik.http.routers.frontend.rule=Host(`rebit-p2p.loc`) || Host(`www.rebit-p2p.loc`)
             - traefik.http.routers.frontend.entryPoints=https
             - traefik.http.routers.frontend.tls=true
             - traefik.http.services.frontend.loadBalancer.server.port=80
             - traefik.http.middlewares.frontend-redirect.redirectRegex.permanent=true
-            - traefik.http.middlewares.frontend-redirect.redirectRegex.regex=^(https?://)www\.morephoto\.loc/(.*)$$
-            - traefik.http.middlewares.frontend-redirect.redirectRegex.replacement=$${1}morephoto.loc/$${2}
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.regex=^(https?://)www\.rebit-p2p\.loc/(.*)$$
+            - traefik.http.middlewares.frontend-redirect.redirectRegex.replacement=$${1}rebit-p2p.loc/$${2}
             - traefik.http.routers.frontend.middlewares=frontend-redirect
 
     frontend-node:
@@ -24,7 +24,7 @@ services:
             dockerfile: development/node/Dockerfile
         environment:
             NODE_ENV: development
-            VITE_APP_AUTH_URL: https://api.morephoto.loc
+            VITE_APP_AUTH_URL: https://api.rebit-p2p.loc
             HOST: 0.0.0.0 # Важно для Vite!
         command: sh -c "npm run dev" # Явное указание хоста
         volumes:
@@ -52,13 +52,13 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=traefik-public
-            - traefik.http.routers.morephoto.rule=Host(`api.morephoto.loc`) || Host(`www.api.morephoto.loc`)
+            - traefik.http.routers.morephoto.rule=Host(`api.rebit-p2p.loc`) || Host(`www.api.rebit-p2p.loc`)
             - traefik.http.routers.morephoto.entryPoints=https
             - traefik.http.routers.morephoto.tls=true
             - traefik.http.services.morephoto.loadBalancer.server.port=80
             - traefik.http.middlewares.morephoto-redirect.redirectRegex.permanent=true
             - traefik.http.middlewares.morephoto-redirect.redirectRegex.regex=^(https?://)www\.api.morephoto\.loc/(.*)$$
-            - traefik.http.middlewares.morephoto-redirect.redirectRegex.replacement=$${1}api.morephoto.loc/$${2}
+            - traefik.http.middlewares.morephoto-redirect.redirectRegex.replacement=$${1}api.rebit-p2p.loc/$${2}
             - traefik.http.routers.morephoto.middlewares=morephoto-redirect
 
     api-php-fpm:
@@ -110,7 +110,7 @@ services:
         restart: always
         command: memcached -m 64m -vv
         ports:
-            - "11211:11211"
+            - "11212:11211"
         networks:
             - default
 

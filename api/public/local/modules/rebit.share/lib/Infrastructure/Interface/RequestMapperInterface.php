@@ -16,7 +16,7 @@ interface RequestMapperInterface
      *
      * @param class-string<T> $className
      */
-    public function supports(string $className): bool;
+    public function support(string $className): bool;
 
     /**
      * Создает объект и заполняет его данными

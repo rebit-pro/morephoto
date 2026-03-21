@@ -20,4 +20,5 @@ if (file_exists(__DIR__ . '/include/dev.php')) {
 }
 Loader::includeModule('rebit.dev');
 Loader::includeModule('rebit.share');
+Loader::includeModule('rebit.auth');
 Loader::includeModule('rebit.photoorder');

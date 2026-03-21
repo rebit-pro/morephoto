@@ -10,7 +10,7 @@ use Bitrix\Main\HttpResponse;
 use Bitrix\Main\Response;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Share\Infrastructure\Controller\Responses\JsonExceptionResponse;
-use Rebit\Share\Shared\Interface\ResultDtoInterface;
+use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
 use Rebit\Share\Shared\Exception\HttpException;
 

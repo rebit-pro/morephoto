@@ -26,8 +26,7 @@ final class CommonLoggerProcessor
      */
     public function __construct(
         private array $record,
-    ) {
-    }
+    ) {}
 
     /**
      * ```
