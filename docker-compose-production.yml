@@ -68,8 +68,8 @@ services:
         image: ${REGISTRY}/rebit-p2p-api-php-fpm:${IMAGE_TAG}
         restart: always
         environment:
-          APP_DEBUG: 0
-          APP_ENV: "production"
+          APP_DEBUG: ${APP_DEBUG:-0}
+          APP_ENV: ${APP_ENV:-production}
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -96,10 +96,10 @@ services:
     api-mysql:
         image: percona:8.0
         environment:
-            MYSQL_DATABASE: app
-            MYSQL_USER: app
-            MYSQL_PASSWORD: secrets
-            MYSQL_ROOT_PASSWORD: rootpassword
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+            MYSQL_USER: ${MYSQL_USER:-app}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
         volumes:
             - api-mysql:/var/lib/mysql
         deploy:
