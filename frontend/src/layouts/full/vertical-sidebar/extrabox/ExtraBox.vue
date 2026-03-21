@@ -1,54 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-const value = ref(80);
-const bufferValue = ref(20);
+import { useIdentityStore } from '@/stores/identity';
+import { computed } from 'vue';
+
+const identity = useIdentityStore();
+
+const statusText = computed(() => (identity.isConnected ? 'Подключён' : 'Не подключён'));
+const statusColor = computed(() => (identity.isConnected ? 'success' : 'warning'));
 </script>
 
 <template>
-  <v-sheet rounded="md" color="lightprimary" class="pa-4 ExtraBox hide-menu">
+  <v-sheet rounded="md" :color="`light${statusColor}`" class="pa-4 ExtraBox hide-menu">
     <div class="d-flex align-center">
-      <v-btn variant="text" size="large" class="bg-surface" icon rounded="md" aria-label="table icon" color="primary">
-        <TableIcon />
-      </v-btn>
-      <div class="px-3">
-        <h5 class="text-h5 text-primary mb-0 line-height-none">Get Extra Space</h5>
-        <small class="text-disabled"> 28/23 GB</small>
+      <v-avatar :color="statusColor" variant="tonal" size="40" rounded="md" class="mr-3">
+        <v-icon size="20">{{ identity.isConnected ? 'mdi-link-variant' : 'mdi-link-variant-off' }}</v-icon>
+      </v-avatar>
+      <div>
+        <h5 class="text-subtitle-2 font-weight-bold mb-0">Bybit API</h5>
+        <small :class="`text-${statusColor}`">{{ statusText }}</small>
       </div>
     </div>
-    <div class="mt-5">
-      <div class="d-flex align-center justify-space-between">
-        <h5 class="text-h6 text-primary mb-0 line-height-none">Progress</h5>
-        <small>{{ value }}%</small>
-      </div>
-      <v-progress-linear
-        v-model="value"
-        :buffer-value="bufferValue"
-        aria-label="progress bar"
-        rounded="md"
-        color="primary"
-        height="10"
-        class="mt-2"
-      />
+    <v-btn
+      v-if="!identity.isConnected"
+      color="primary"
+      variant="tonal"
+      size="small"
+      block
+      class="mt-3"
+      to="/profile/api-connection"
+    >
+      Подключить
+    </v-btn>
+    <div v-else class="mt-3 text-caption text-lightText">
+      Режим: {{ identity.connectionStatus?.mode }}
     </div>
   </v-sheet>
 </template>
+
 <style lang="scss">
 .ExtraBox {
   position: relative;
   overflow: hidden;
-  &:after {
-    content: '';
-    position: absolute;
-    width: 157px;
-    height: 157px;
-    background: rgb(var(--v-theme-primary));
-    border-radius: 50%;
-    top: -105px;
-    right: -96px;
-    opacity: 0.4;
-  }
-}
-.line-height-none {
-  line-height: normal;
 }
 </style>

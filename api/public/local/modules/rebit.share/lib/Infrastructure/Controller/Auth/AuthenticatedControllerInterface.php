@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Controller\Auth;
 
+use Rebit\Share\Shared\Exception\HttpException;
+
 /**
  * Интерфейс для контроллеров, поддерживающих авторизацию по Bearer-токену.
  *
@@ -16,7 +18,7 @@ interface AuthenticatedControllerInterface
     /**
      * Возвращает userId авторизованного пользователя.
      *
-     * @throws \Rebit\Share\Shared\Exception\HttpException если пользователь не авторизован
+     * @throws HttpException если пользователь не авторизован
      */
     public function getAuthUserId(): int;
 

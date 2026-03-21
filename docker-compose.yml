@@ -52,14 +52,14 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=traefik-public
-            - traefik.http.routers.morephoto.rule=Host(`api.rebit-p2p.loc`) || Host(`www.api.rebit-p2p.loc`)
-            - traefik.http.routers.morephoto.entryPoints=https
-            - traefik.http.routers.morephoto.tls=true
-            - traefik.http.services.morephoto.loadBalancer.server.port=80
-            - traefik.http.middlewares.morephoto-redirect.redirectRegex.permanent=true
-            - traefik.http.middlewares.morephoto-redirect.redirectRegex.regex=^(https?://)www\.api.morephoto\.loc/(.*)$$
-            - traefik.http.middlewares.morephoto-redirect.redirectRegex.replacement=$${1}api.rebit-p2p.loc/$${2}
-            - traefik.http.routers.morephoto.middlewares=morephoto-redirect
+            - traefik.http.routers.api.rule=Host(`api.rebit-p2p.loc`) || Host(`www.api.rebit-p2p.loc`)
+            - traefik.http.routers.api.entryPoints=https
+            - traefik.http.routers.api.tls=true
+            - traefik.http.services.api.loadBalancer.server.port=80
+            - traefik.http.middlewares.api-redirect.redirectRegex.permanent=true
+            - traefik.http.middlewares.api-redirect.redirectRegex.regex=^(https?://)www\.api\.rebit-p2p\.loc/(.*)$$
+            - traefik.http.middlewares.api-redirect.redirectRegex.replacement=$${1}api.rebit-p2p.loc/$${2}
+            - traefik.http.routers.api.middlewares=api-redirect
 
     api-php-fpm:
         build:

@@ -2,15 +2,10 @@
 import { computed, ref } from 'vue';
 import { useCustomizerStore } from '@/stores/customizer';
 import { ThemeMode } from '@/types/themeTypes/ThemeMode';
-
-import { ChecksIcon, ColorSwatchIcon, TextSizeIcon, CpuIcon, MoonIcon, SunIcon } from 'vue-tabler-icons';
+import { ChecksIcon, ColorSwatchIcon, TextSizeIcon, MoonIcon, SunIcon, CpuIcon } from 'vue-tabler-icons';
 
 const customizer = useCustomizerStore();
 
-// RTL mode state
-const rtlmode = ref(true);
-
-// themes color options
 const themeColors = ref([
   { name: 'PurpleTheme', bg: 'themeBluePurple' },
   { name: 'GreenTheme', bg: 'themeGreenDark' },
@@ -21,36 +16,23 @@ const themeColors = ref([
   { name: 'SpeechBlueTheme', bg: 'themeSpeechBlue' }
 ]);
 
-// Show all colors but use base names
-const currentThemeColors = computed(() => {
-  return themeColors.value;
-});
+const currentThemeColors = computed(() => themeColors.value);
+const fontFamily = ref(['Roboto', 'Poppins', 'Inter']);
+const tab = ref(null);
 
-// Handle theme selection - pass base theme name
 function handleThemeSelect(themeName: string) {
   customizer.SET_THEME(themeName);
 }
 
-// themes font Family options
-const fontFamily = ref(['Roboto', 'Poppins', 'Inter']);
-// themes font Family options
-
-const tab = ref(null);
-
-function clearoptions() {
+function clearOptions() {
   customizer.SET_THEME('PurpleTheme');
   customizer.SET_THEME_MODE(ThemeMode.Light);
-  customizer.setHorizontalLayout = false;
   customizer.inputBg = false;
   customizer.boxed = false;
   customizer.fontTheme = 'Roboto';
-  customizer.isRtl = false;
 }
 </script>
 
-<!------------------------------------->
-<!-- Customizer -->
-<!------------------------------------->
 <template>
   <v-navigation-drawer v-model="customizer.Customizer_drawer" app temporary elevation="10" location="end" width="350">
     <PerfectScrollbar style="height: 100%" :options="{ suppressScrollX: true }">
@@ -58,15 +40,15 @@ function clearoptions() {
         <v-row class="ma-0">
           <v-col cols="12" class="pa-0">
             <div class="pa-5 d-flex justify-space-between align-center">
-              <div class="text-subtitle-1 font-weight-medium">Theme customizer</div>
+              <div class="text-subtitle-1 font-weight-medium">Настройки темы</div>
               <div>
-                <v-btn color="error" variant="outlined" size="small" class="me-2" @click="clearoptions"> Reset </v-btn>
+                <v-btn color="error" variant="outlined" size="small" class="me-2" @click="clearOptions">Сброс</v-btn>
                 <v-btn
                   variant="text"
                   icon="$close"
                   color="lightText"
                   density="compact"
-                  aria-label="customizer close icon"
+                  aria-label="закрыть"
                   @click.stop="customizer.SET_CUSTOMIZER_DRAWER(!customizer.Customizer_drawer)"
                 />
               </div>
@@ -75,43 +57,37 @@ function clearoptions() {
           </v-col>
           <v-col cols="12" class="pa-0">
             <v-tabs v-model="tab" color="primary" bg-color="lightprimary" grow height="55">
-              <v-tab value="one" max-height="55" aria-label="customization tab">
+              <v-tab value="one" max-height="55" aria-label="цвета">
                 <ColorSwatchIcon />
               </v-tab>
-              <v-tab value="two" max-height="55" aria-label="font family customization tab">
+              <v-tab value="two" max-height="55" aria-label="шрифты">
                 <TextSizeIcon />
               </v-tab>
             </v-tabs>
             <v-window v-model="tab">
               <v-window-item value="one">
                 <v-divider />
-                <!------------------------------------->
-                <!-- Theme mode -->
-                <!------------------------------------->
+                <!-- Режим темы -->
                 <div class="d-flex justify-space-between align-center pa-5">
-                  <div class="text-subtitle-1 font-weight-medium">Theme mode</div>
+                  <div class="text-subtitle-1 font-weight-medium">Режим</div>
                   <div>
                     <v-radio-group v-model="customizer.themeMode" class="custom-radio-icon custom-radio ma-n2" hide-details>
-                      <v-radio class="ma-2 text-center" color="primary" label="Light" :value="ThemeMode.Light">
+                      <v-radio class="ma-2 text-center" color="primary" label="Светлая" :value="ThemeMode.Light">
                         <SunIcon class="text-warning" size="20" />
                       </v-radio>
-                      <v-radio class="ma-2 text-center" color="primary" label="Dark" :value="ThemeMode.Dark">
+                      <v-radio class="ma-2 text-center" color="primary" label="Тёмная" :value="ThemeMode.Dark">
                         <MoonIcon class="text-dark" size="20" />
                       </v-radio>
-                      <v-radio class="ma-2 text-center" color="primary" label="System" :value="ThemeMode.System">
+                      <v-radio class="ma-2 text-center" color="primary" label="Система" :value="ThemeMode.System">
                         <CpuIcon class="text-dark" size="20" />
                       </v-radio>
                     </v-radio-group>
                   </div>
                 </div>
                 <v-divider />
-                <!------------------------------------->
-                <!-- Preset color -->
-                <!------------------------------------->
+                <!-- Цвета -->
                 <v-card-item class="py-5">
-                  <v-card-title class="text-subtitle-1 font-weight-medium mb-2">
-                    {{ customizer.isDarkMode ? 'Dark' : 'Light' }} Preset Colors
-                  </v-card-title>
+                  <v-card-title class="text-subtitle-1 font-weight-medium mb-2">Цветовая палитра</v-card-title>
                   <v-card-text class="pa-0">
                     <v-item-group v-model="customizer.actTheme" mandatory>
                       <div class="d-flex flex-wrap">
@@ -130,101 +106,29 @@ function clearoptions() {
                   </v-card-text>
                 </v-card-item>
                 <v-divider />
-                <!------------------------------------->
-                <!-- end Preset color -->
-                <!------------------------------------->
-                <!------------------------------------->
-                <!-- sidebar layout -->
-                <!------------------------------------->
+                <!-- Фон полей ввода -->
                 <div class="d-flex justify-space-between align-center pa-5">
-                  <div class="text-subtitle-1 font-weight-medium">Sidebar Layout</div>
-                  <div>
-                    <v-radio-group v-model="customizer.setHorizontalLayout" class="custom-radio ma-n2" hide-details>
-                      <v-radio :value="false" color="primary" aria-label="vertical layout" class="ma-2">
-                        <img src="@/assets/images/customizer/vertical.svg" alt="menu layout" />
-                      </v-radio>
-                      <v-radio :value="true" color="primary" aria-label="horizontal layout" class="ma-2">
-                        <img src="@/assets/images/customizer/horizontal.svg" alt="menu layout" />
-                      </v-radio>
-                    </v-radio-group>
-                  </div>
+                  <div class="text-subtitle-1 font-weight-medium">Фон полей ввода</div>
+                  <v-switch v-model="customizer.inputBg" color="primary" hide-details density="compact" />
                 </div>
                 <v-divider />
-                <!------------------------------------->
-                <!-- end sidebar layout -->
-                <!------------------------------------->
-                <!------------------------------------->
-                <!-- RTL layout -->
-                <!------------------------------------->
+                <!-- Ширина контента -->
                 <div class="d-flex justify-space-between align-center pa-5">
-                  <div class="text-subtitle-1 font-weight-medium">RTL</div>
-                  <div>
-                    <v-radio-group v-model="customizer.isRtl" class="custom-radio ma-n2" hide-details>
-                      <v-radio :value="false" color="primary" aria-label="ltr mode" class="ma-2">
-                        <img src="@/assets/images/customizer/vertical.svg" alt="ltr mode" />
-                      </v-radio>
-                      <v-radio :value="rtlmode" color="primary" aria-label="rtl mode" class="ma-2">
-                        <img src="@/assets/images/customizer/rtl.svg" alt="rtl mode" />
-                      </v-radio>
-                    </v-radio-group>
-                  </div>
+                  <div class="text-subtitle-1 font-weight-medium">Компактная ширина</div>
+                  <v-switch v-model="customizer.boxed" color="primary" hide-details density="compact" />
                 </div>
                 <v-divider />
-                <!------------------------------------->
-                <!-- end RTL layout -->
-                <!------------------------------------->
-                <!------------------------------------->
-                <!-- Input Outlined With Filled -->
-                <!------------------------------------->
-                <div class="d-flex justify-space-between align-center pa-5">
-                  <div class="text-subtitle-1 font-weight-medium">Input Background</div>
-                  <div>
-                    <v-radio-group v-model="customizer.inputBg" class="custom-radio input-radio ma-n2" hide-details>
-                      <v-radio :value="true" color="primary" aria-label="input background" class="ma-2 input-bg" />
-                      <v-radio :value="false" color="primary" aria-label="without background" class="ma-2" />
-                    </v-radio-group>
-                  </div>
-                </div>
-                <v-divider />
-                <!------------------------------------->
-                <!-- End Input Outlined With Filled -->
-                <!------------------------------------->
-                <!-- Boxed Container -->
-                <!------------------------------------->
-                <div class="d-flex justify-space-between align-center pa-5">
-                  <div class="text-subtitle-1 font-weight-medium">Theme width</div>
-                  <div>
-                    <v-radio-group v-model="customizer.boxed" class="custom-radio ma-n2" hide-details>
-                      <v-radio :value="false" color="primary" aria-label="container fluid" class="ma-2">
-                        <img src="@/assets/images/customizer/big.svg" height="28" width="28" alt="layout" />
-                      </v-radio>
-                      <v-radio :value="true" color="primary" aria-label="container width" class="ma-2">
-                        <img src="@/assets/images/customizer/small.svg" height="28" width="28" alt="layout" />
-                      </v-radio>
-                    </v-radio-group>
-                  </div>
-                </div>
-                <v-divider />
-                <!------------------------------------->
-                <!-- End Box Container -->
-                <!------------------------------------->
               </v-window-item>
               <v-window-item value="two">
-                <!------------------------------------->
-                <!-- Font Family -->
-                <!------------------------------------->
+                <!-- Шрифт -->
                 <v-card-item class="py-5">
-                  <v-card-title class="text-subtitle-1 font-weight-medium mb-4"> Font Style </v-card-title>
+                  <v-card-title class="text-subtitle-1 font-weight-medium mb-4">Шрифт</v-card-title>
                   <v-card-text class="pa-0">
                     <v-radio-group v-model="customizer.fontTheme" hide-details class="custom-font">
                       <v-radio v-for="font in fontFamily" :key="font" :label="font" :value="font" color="primary" class="mb-5" />
                     </v-radio-group>
                   </v-card-text>
                 </v-card-item>
-                <!------------------------------------->
-                <!-- end Font Family -->
-                <!------------------------------------->
-                <!------------------------------------->
               </v-window-item>
             </v-window>
           </v-col>
@@ -233,6 +137,7 @@ function clearoptions() {
     </PerfectScrollbar>
   </v-navigation-drawer>
 </template>
+
 <style lang="scss">
 .custom-radio {
   .v-selection-control-group {
@@ -267,13 +172,6 @@ function clearoptions() {
 }
 .input-bg {
   background-color: rgb(var(--v-theme-gray100)) !important;
-}
-.input-radio {
-  .v-selection-control-group {
-    .v-selection-control {
-      height: 30px;
-    }
-  }
 }
 .custom-font {
   .v-selection-control-group {

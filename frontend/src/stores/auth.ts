@@ -1,32 +1,61 @@
 import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
 import { router } from '@/router';
-import { fetchWrapper } from '@/utils/helpers/fetch-wrapper';
+import { authApi, type AuthUser } from '@/api/auth';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref<string | null>(localStorage.getItem('token'));
+  const user = ref<AuthUser | null>(JSON.parse(localStorage.getItem('user') ?? 'null'));
+  const returnUrl = ref<string | null>(null);
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    // initialize state from local storage to enable user to stay logged in
-    /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-    // @ts-ignore
-    user: JSON.parse(localStorage.getItem('user')),
-    returnUrl: null
-  }),
-  actions: {
-    async login(username: string, password: string) {
-      const user = await fetchWrapper.post(`${baseUrl}/authenticate`, { username, password });
+  const isAuthenticated = computed(() => null !== token.value && null !== user.value);
 
-      // update pinia state
-      this.user = user;
-      // store user details and jwt in local storage to keep user logged in between page refreshes
-      localStorage.setItem('user', JSON.stringify(user));
-      // redirect to previous url or default to home page
-      router.push(this.returnUrl || '/dashboard/default');
-    },
-    logout() {
-      this.user = null;
-      localStorage.removeItem('user');
-      router.push('/login');
-    }
+  function setSession(newToken: string, newUser: AuthUser): void {
+    token.value = newToken;
+    user.value = newUser;
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('user', JSON.stringify(newUser));
   }
+
+  function clearSession(): void {
+    token.value = null;
+    user.value = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+
+  async function login(email: string, password: string): Promise<void> {
+    const response = await authApi.login({ email, password });
+    setSession(response.token, response.user);
+    await router.push(returnUrl.value ?? '/dashboard');
+    returnUrl.value = null;
+  }
+
+  async function register(email: string, password: string): Promise<void> {
+    const response = await authApi.register({ email, password });
+    setSession(response.token, response.user);
+    await router.push('/dashboard');
+  }
+
+  async function logout(): Promise<void> {
+    try {
+      await authApi.logout();
+    } catch {
+      // Даже если запрос не прошёл — чистим сессию
+    }
+    clearSession();
+    await router.push('/login');
+  }
+
+  return {
+    token,
+    user,
+    returnUrl,
+    isAuthenticated,
+    setSession,
+    clearSession,
+    login,
+    register,
+    logout
+  };
 });
