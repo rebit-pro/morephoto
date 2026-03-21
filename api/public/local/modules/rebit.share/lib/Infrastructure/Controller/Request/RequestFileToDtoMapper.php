@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Rebit\Share\Infrastructure\Controller\Request;
 
 use Bitrix\Main\HttpRequest;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Rebit\Share\Domain\File\Exception\InvalidFileException;
 use Rebit\Share\Infrastructure\Exception\DtoInterfaceNotImplementException;
 use Rebit\Share\Infrastructure\Exception\RequestParameterException;
@@ -19,7 +18,7 @@ use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use Symfony\Component\Serializer\Exception\MissingConstructorArgumentsException;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
-use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -159,7 +158,7 @@ final readonly class RequestFileToDtoMapper implements RequestMapperInterface
             new BackedEnumNormalizer(),
             new ObjectNormalizer(
                 classMetadataFactory: new ClassMetadataFactory(
-                    new AnnotationLoader(new AnnotationReader()),
+                    new AttributeLoader(),
                 ),
                 propertyTypeExtractor: new PhpDocExtractor(),
             ),

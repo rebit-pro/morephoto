@@ -4,8 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci || npm i
 COPY . .
-ARG VITE_APP_AUTH_URL
-ENV VITE_APP_AUTH_URL=$VITE_APP_AUTH_URL
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM nginx:1.25-alpine

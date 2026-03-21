@@ -24,7 +24,7 @@ services:
             dockerfile: development/node/Dockerfile
         environment:
             NODE_ENV: development
-            VITE_APP_AUTH_URL: https://api.rebit-p2p.loc
+            VITE_API_URL: /api
             HOST: 0.0.0.0 # Важно для Vite!
         command: sh -c "npm run dev" # Явное указание хоста
         volumes:

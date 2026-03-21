@@ -189,8 +189,7 @@ final class ArrayToDtoMapper
     private static function getValidator(): ValidatorInterface
     {
         return self::$validator ??= Validation::createValidatorBuilder()
-            ->enableAnnotationMapping(true)
-            ->addDefaultDoctrineAnnotationReader()
+            ->enableAttributeMapping()
             ->getValidator()
         ;
     }

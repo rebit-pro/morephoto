@@ -2,7 +2,7 @@ services:
     frontend:
         image: ${REGISTRY}/rebit-p2p-frontend:${IMAGE_TAG}
         environment:
-            VITE_APP_AUTH_URL: https://api.rebit-pro.ru
+            VITE_API_URL: https://api.rebit-pro.ru
         networks:
             - traefik-public
             - default
