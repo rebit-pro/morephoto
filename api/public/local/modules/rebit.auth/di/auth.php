@@ -19,32 +19,32 @@ return [
         'className' => TokenGenerator::class,
     ],
     TokenResolverInterface::class => [
-        'constructor' => static function (): TokenResolverInterface {
+        'constructor' => static function(): TokenResolverInterface {
             return new TokenResolver(
                 ServiceLocator::getInstance()->get(UserRepository::class),
             );
         },
     ],
     LoginUseCase::class => [
-        'constructor' => static function (): LoginUseCase {
+        'constructor' => static function(): LoginUseCase {
             $sl = ServiceLocator::getInstance();
 
             return new LoginUseCase(
                 $sl->get(UserRepository::class),
                 $sl->get(TokenGenerator::class),
-                (int) (getenv('REBIT_TOKEN_TTL_HOURS') ?: 24),
+                (int)(getenv('REBIT_TOKEN_TTL_HOURS') ?: 24),
             );
         },
     ],
     LogoutUseCase::class => [
-        'constructor' => static function (): LogoutUseCase {
+        'constructor' => static function(): LogoutUseCase {
             return new LogoutUseCase(
                 ServiceLocator::getInstance()->get(UserRepository::class),
             );
         },
     ],
     AuthController::class => [
-        'constructor' => static function (): AuthController {
+        'constructor' => static function(): AuthController {
             $sl = ServiceLocator::getInstance();
 
             return new AuthController(

@@ -52,7 +52,7 @@ final readonly class BybitApiClient implements BybitClientInterface
     /**
      * @param array<string, mixed> $body
      *
-     * @throws BybitApiException|ArgumentException
+     * @throws ArgumentException|BybitApiException
      */
     public function post(
         string $endpoint,
@@ -78,7 +78,7 @@ final readonly class BybitApiClient implements BybitClientInterface
         string $recvWindow,
         string $payload,
     ): array {
-        $timestamp = (string) $this->currentTimestampMs();
+        $timestamp = (string)$this->currentTimestampMs();
 
         $signature = $this->signatureGenerator->generate(
             apiSecret: $credentials->apiSecret,
@@ -98,7 +98,7 @@ final readonly class BybitApiClient implements BybitClientInterface
 
     /**
      * @param array<string, string> $headers
-     * @param array<string, mixed> $body
+     * @param array<string, mixed>  $body
      *
      * @throws BybitApiException
      */
@@ -126,11 +126,11 @@ final readonly class BybitApiClient implements BybitClientInterface
         }
 
         $response = new BybitResponseDto(
-            retCode: (int) ($rawResponse['retCode'] ?? -1),
-            retMsg: (string) ($rawResponse['retMsg'] ?? ''),
-            result: (array) ($rawResponse['result'] ?? []),
-            retExtInfo: (array) ($rawResponse['retExtInfo'] ?? []),
-            time: (int) ($rawResponse['time'] ?? 0),
+            retCode: (int)($rawResponse['retCode'] ?? -1),
+            retMsg: (string)($rawResponse['retMsg'] ?? ''),
+            result: (array)($rawResponse['result'] ?? []),
+            retExtInfo: (array)($rawResponse['retExtInfo'] ?? []),
+            time: (int)($rawResponse['time'] ?? 0),
         );
 
         if (0 !== $response->retCode) {
@@ -164,6 +164,6 @@ final readonly class BybitApiClient implements BybitClientInterface
 
     private function currentTimestampMs(): int
     {
-        return (int) round(microtime(true) * 1000);
+        return (int)round(microtime(true) * 1000);
     }
 }

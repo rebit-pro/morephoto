@@ -31,7 +31,7 @@ final readonly class LoginUseCase
             throw new HttpException('Invalid credentials', 401);
         }
 
-        if (!password_verify($dto->password, $user['PASSWORD'])) {
+        if (!password_verify($dto->password, $user->passwordHash)) {
             throw new HttpException('Invalid credentials', 401);
         }
 
@@ -40,11 +40,10 @@ final readonly class LoginUseCase
             time() + ($this->tokenTtlHours * 3600),
         );
 
-        $this->userRepository->updateToken((int) $user['ID'], $token, $expiresAt);
+        $this->userRepository->updateToken($user->id, $token, $expiresAt);
 
         return new LoginResultDto(
             token: $token,
-            expiresAt: $expiresAt->format('c'),
-        );
+            expiresAt: $expiresAt->format('c'),);
     }
 }

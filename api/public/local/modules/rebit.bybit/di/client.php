@@ -9,7 +9,7 @@ use Rebit\Share\Shared\Facade\Log;
 
 return [
     BybitClientInterface::class => [
-        'constructor' => static function (): BybitClientInterface {
+        'constructor' => static function(): BybitClientInterface {
             return BybitApiClientFactory::create(
                 Log::channel(LogChannelEnum::bybit),
             );

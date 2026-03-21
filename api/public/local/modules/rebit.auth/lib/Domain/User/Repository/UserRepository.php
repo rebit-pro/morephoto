@@ -4,51 +4,67 @@ declare(strict_types=1);
 
 namespace Rebit\Auth\Domain\User\Repository;
 
+use Bitrix\Main\ArgumentException;
+use Bitrix\Main\ObjectPropertyException;
+use Bitrix\Main\SystemException;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\UserTable;
+use Rebit\Auth\Domain\User\Entity\UserCredentials;
+use Rebit\Auth\Domain\User\Entity\UserToken;
 
 final readonly class UserRepository
 {
     /**
-     * @return array{
-     *     ID: int,
-     *     UF_TOKEN_EXPIRES_AT: mixed,
-     * }|null
+     * @throws ObjectPropertyException
+     * @throws SystemException
+     * @throws ArgumentException
      */
-    public function findByToken(string $token): ?array
+    public function findByToken(string $token): ?UserToken
     {
-        $row = UserTable::getList([
-            'filter' => ['=UF_TOKEN' => $token],
-            'select' => ['ID', 'UF_TOKEN_EXPIRES_AT'],
-            'limit' => 1,
-        ])->fetch();
+        $row = UserTable::query()
+            ->setSelect(['ID', 'UF_TOKEN_EXPIRES_AT'])
+            ->where('UF_TOKEN', $token)
+            ->setLimit(1)
+            ->exec()
+            ->fetch()
+        ;
 
         if (false === $row) {
             return null;
         }
 
-        return $row;
+        return new UserToken(
+            userId: (int)$row['ID'],
+            expiresAt: $row['UF_TOKEN_EXPIRES_AT'] instanceof DateTime
+                ? $row['UF_TOKEN_EXPIRES_AT']
+                : null,
+        );
     }
 
     /**
-     * @return array{
-     *     ID: int,
-     *     PASSWORD: string,
-     * }|null
+     * @throws ObjectPropertyException
+     * @throws SystemException
+     * @throws ArgumentException
      */
-    public function findActiveByEmail(string $email): ?array
+    public function findActiveByEmail(string $email): ?UserCredentials
     {
-        $row = UserTable::getList([
-            'filter' => ['=EMAIL' => $email, '=ACTIVE' => 'Y'],
-            'select' => ['ID', 'PASSWORD'],
-            'limit' => 1,
-        ])->fetch();
+        $row = UserTable::query()
+            ->setSelect(['ID', 'PASSWORD'])
+            ->where('EMAIL', $email)
+            ->where('ACTIVE', 'Y')
+            ->setLimit(1)
+            ->exec()
+            ->fetch()
+        ;
 
         if (false === $row) {
             return null;
         }
 
-        return $row;
+        return new UserCredentials(
+            id: (int)$row['ID'],
+            passwordHash: (string)$row['PASSWORD'],
+        );
     }
 
     public function updateToken(int $userId, string $token, DateTime $expiresAt): void
