@@ -30,6 +30,13 @@ const txColors: Record<string, string> = {
   fee: 'error'
 };
 
+const statusLabels: Record<string, string> = {
+  active: 'Активен',
+  invalid: 'Недействителен',
+  revoked: 'Отозван',
+  pending_verification: 'Ожидает проверки'
+};
+
 function txLabel(type: string): string {
   return txLabels[type] ?? type;
 }
@@ -38,8 +45,21 @@ function txColor(type: string): string {
   return txColors[type] ?? 'default';
 }
 
+function statusLabel(status: string | null | undefined): string {
+  if (!status) return '—';
+  return statusLabels[status] ?? status;
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('ru-RU');
+}
+
+async function refreshBalances(): Promise<void> {
+  await wallet.fetchBalances();
+}
+
+async function refreshTransactions(): Promise<void> {
+  await wallet.fetchTransactions();
 }
 
 onMounted(async () => {
@@ -61,12 +81,35 @@ onMounted(async () => {
     <v-tabs-window v-model="activeTab">
       <!-- Балансы -->
       <v-tabs-window-item value="balances">
+        <div class="d-flex align-center justify-space-between mb-4">
+          <span class="text-body-1 text-lightText">Ваши балансы на Bybit</span>
+          <v-btn
+            variant="text"
+            color="primary"
+            size="small"
+            :loading="wallet.loading"
+            prepend-icon="mdi-refresh"
+            @click="refreshBalances"
+          >
+            Обновить
+          </v-btn>
+        </div>
+
+        <v-alert v-if="wallet.error" type="error" variant="tonal" class="mb-4">{{ wallet.error }}</v-alert>
+
         <v-row>
           <v-col v-for="balance in wallet.balances" :key="balance.currency" cols="12" sm="6" md="4">
             <v-card rounded="md">
               <v-card-text>
-                <p class="text-caption text-lightText mb-1">{{ balance.currency }}</p>
+                <div class="d-flex align-center mb-3">
+                  <v-avatar size="40" color="primary" variant="tonal" class="mr-3">
+                    <span class="text-body-1 font-weight-bold">{{ balance.currency }}</span>
+                  </v-avatar>
+                  <h3 class="text-h6">{{ balance.currency }}</h3>
+                </div>
+                <p class="text-caption text-lightText">Доступно</p>
                 <p class="text-h5 font-weight-bold mb-2">{{ balance.available }}</p>
+                <v-divider class="my-2" />
                 <div class="d-flex justify-space-between text-caption text-lightText">
                   <span>Заблокировано: {{ balance.locked }}</span>
                   <span>Всего: {{ balance.total }}</span>
@@ -74,14 +117,40 @@ onMounted(async () => {
               </v-card-text>
             </v-card>
           </v-col>
+
           <v-col v-if="0 === wallet.balances.length && !wallet.loading" cols="12">
-            <v-alert type="info" variant="tonal">Балансы пока пусты</v-alert>
+            <v-card rounded="md">
+              <v-card-text class="text-center pa-8 text-lightText">
+                <v-icon size="48" class="mb-3">mdi-wallet-outline</v-icon>
+                <p class="text-h6 mb-1">Балансы пока пусты</p>
+                <p v-if="!identity.isConnected" class="text-body-2">
+                  <router-link to="/profile/api-connection" class="text-primary">Подключите Bybit API</router-link>
+                  для отображения балансов
+                </p>
+              </v-card-text>
+            </v-card>
           </v-col>
         </v-row>
       </v-tabs-window-item>
 
       <!-- Транзакции -->
       <v-tabs-window-item value="transactions">
+        <div class="d-flex align-center justify-space-between mb-4">
+          <span class="text-body-1 text-lightText">История операций</span>
+          <v-btn
+            variant="text"
+            color="primary"
+            size="small"
+            :loading="wallet.loading"
+            prepend-icon="mdi-refresh"
+            @click="refreshTransactions"
+          >
+            Обновить
+          </v-btn>
+        </div>
+
+        <v-alert v-if="wallet.error" type="error" variant="tonal" class="mb-4">{{ wallet.error }}</v-alert>
+
         <v-card rounded="md">
           <v-table density="comfortable" hover>
             <thead>
@@ -93,7 +162,7 @@ onMounted(async () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-if="0 === wallet.transactions.length">
+              <tr v-if="0 === wallet.transactions.length && !wallet.loading">
                 <td colspan="4" class="text-center text-lightText pa-6">Нет транзакций</td>
               </tr>
               <tr v-for="tx in wallet.transactions" :key="tx.id">
@@ -111,24 +180,62 @@ onMounted(async () => {
 
       <!-- Bybit API -->
       <v-tabs-window-item value="api">
+        <v-alert v-if="identity.error" type="error" variant="tonal" class="mb-4">{{ identity.error }}</v-alert>
+
         <v-card rounded="md">
           <v-card-text>
+            <!-- Подключён -->
             <div v-if="identity.isConnected" class="text-center pa-6">
               <v-icon size="48" color="success" class="mb-3">mdi-check-circle</v-icon>
-              <h3 class="text-h5 mb-2">API подключён</h3>
-              <p class="text-lightText mb-1">
-                Режим: <strong>{{ identity.connectionStatus?.mode }}</strong>
-              </p>
-              <p class="text-lightText mb-4">
-                Статус: <strong>{{ identity.connectionStatus?.status }}</strong>
-              </p>
-              <v-btn color="error" variant="outlined" @click="identity.disconnect()">Отключить</v-btn>
+              <h3 class="text-h5 mb-4">API подключён</h3>
+
+              <v-row justify="center" class="mb-4">
+                <v-col cols="auto">
+                  <v-chip color="info" variant="tonal" size="default">
+                    Режим: {{ identity.connectionStatus?.mode }}
+                  </v-chip>
+                </v-col>
+                <v-col cols="auto">
+                  <v-chip
+                    :color="'active' === identity.connectionStatus?.status ? 'success' : 'warning'"
+                    variant="tonal"
+                    size="default"
+                  >
+                    {{ statusLabel(identity.connectionStatus?.status) }}
+                  </v-chip>
+                </v-col>
+              </v-row>
+
+              <div class="d-flex justify-center ga-3">
+                <v-btn
+                  color="info"
+                  variant="outlined"
+                  prepend-icon="mdi-shield-check"
+                  :loading="identity.loading"
+                  @click="identity.verify()"
+                >
+                  Проверить
+                </v-btn>
+                <v-btn
+                  color="error"
+                  variant="outlined"
+                  prepend-icon="mdi-link-variant-off"
+                  :loading="identity.loading"
+                  @click="identity.disconnect()"
+                >
+                  Отключить
+                </v-btn>
+              </div>
             </div>
+
+            <!-- Не подключён -->
             <div v-else class="text-center pa-6">
               <v-icon size="48" color="warning" class="mb-3">mdi-link-variant-off</v-icon>
               <h3 class="text-h5 mb-2">API не подключён</h3>
-              <p class="text-lightText mb-4">Подключите Bybit API для торговли</p>
-              <v-btn color="primary" to="/profile/api-connection">Подключить</v-btn>
+              <p class="text-lightText mb-4">Подключите Bybit API для начала торговли</p>
+              <v-btn color="primary" prepend-icon="mdi-link-variant-plus" to="/profile/api-connection">
+                Подключить
+              </v-btn>
             </div>
           </v-card-text>
         </v-card>

@@ -4,53 +4,17 @@
   <v-row no-gutters class="h-screen">
     <v-col class="d-flex align-center justify-center">
       <div class="text-center">
-        <div class="CardMediaWrapper">
-          <img src="@/assets/images/maintenance/img-error-bg.svg" alt="grid" class="w-100 grid-bg" />
-          <img src="@/assets/images/maintenance/img-error-blue.svg" alt="grid" class="CardMediaParts" />
-          <img src="@/assets/images/maintenance/img-error-text.svg" alt="build" class="CardMediaBuild" />
-          <img src="@/assets/images/maintenance/img-error-purple.svg" alt="build" class="CardMediaBuild" />
-        </div>
-        <h1 class="text-h1">Something is wrong</h1>
-        <p>
-          <small>The page you are looking was moved, removed, <br />renamed, or might never exist! </small>
+        <v-icon size="120" color="primary" class="mb-6">mdi-alert-circle-outline</v-icon>
+        <h1 class="text-h1 text-primary mb-4">404</h1>
+        <h2 class="text-h4 mb-2">Страница не найдена</h2>
+        <p class="text-lightText mb-6">
+          Запрашиваемая страница была перемещена, удалена<br />
+          или никогда не существовала.
         </p>
-        <v-btn variant="flat" color="primary" class="mt-4" to="/" prepend-icon="$home"> Home </v-btn>
+        <v-btn variant="flat" color="primary" size="large" to="/" prepend-icon="$home">
+          На главную
+        </v-btn>
       </div>
     </v-col>
   </v-row>
 </template>
-<style lang="scss">
-.CardMediaWrapper {
-  max-width: 720px;
-  margin: 0 auto;
-  position: relative;
-}
-.DarkPurpleTheme,
-.DarkGreenTheme,
-.DarkPinkTheme,
-.DarkYellowTheme,
-.DarkSeaGreenTheme,
-.DarkOliveGreenTheme,
-.DarkSpeechBlueTheme,
-.v-theme--DarkPurpleTheme {
-  .CardMediaWrapper {
-    .grid-bg {
-      filter: brightness(0.5) invert(1);
-    }
-  }
-}
-.CardMediaBuild {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  animation: 5s bounce ease-in-out infinite;
-}
-.CardMediaParts {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  animation: 10s blink ease-in-out infinite;
-}
-</style>

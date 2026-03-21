@@ -1,28 +1,14 @@
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import LogoLight from './LogoLight.vue';
 import LogoDark from './LogoDark.vue';
 import { useCustomizerStore } from '@/stores/customizer';
 
 const customizer = useCustomizerStore();
-
-const dark = computed(() => {
-  if (
-    customizer.actTheme === 'DarkPurpleTheme' ||
-    customizer.actTheme === 'DarkGreenTheme' ||
-    customizer.actTheme === 'DarkSpeechBlueTheme' ||
-    customizer.actTheme === 'DarkOliveGreenTheme' ||
-    customizer.actTheme === 'DarkPinkTheme' ||
-    customizer.actTheme === 'DarkYellowTheme' ||
-    customizer.actTheme === 'DarkSeaGreenTheme'
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-});
+const isDark = computed(() => customizer.isDarkMode);
 </script>
+
 <template>
-  <LogoLight v-if="dark" />
+  <LogoLight v-if="isDark" />
   <LogoDark v-else />
 </template>

@@ -1,10 +1,31 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import type { OrderBookEntry } from '@/api/exchange';
 
-defineProps<{
+const props = defineProps<{
   orders: OrderBookEntry[];
   side: 'buy' | 'sell';
+  filterMethods?: string[];
 }>();
+
+const emit = defineEmits<{
+  (e: 'select', order: OrderBookEntry): void;
+}>();
+
+const auth = useAuthStore();
+
+const filteredOrders = computed(() => {
+  if (!props.filterMethods || 0 === props.filterMethods.length) {
+    return props.orders;
+  }
+  return props.orders.filter((order) =>
+    props.filterMethods!.some((m) => order.paymentMethods.includes(m))
+  );
+});
+
+const actionLabel = computed(() => ('buy' === props.side ? 'Купить' : 'Продать'));
+const actionColor = computed(() => ('buy' === props.side ? 'success' : 'error'));
 </script>
 
 <template>
@@ -16,13 +37,16 @@ defineProps<{
         <th class="text-right">Доступно</th>
         <th class="text-right">Лимиты</th>
         <th>Оплата</th>
+        <th v-if="auth.isAuthenticated" class="text-center">Действие</th>
       </tr>
     </thead>
     <tbody>
-      <tr v-if="0 === orders.length">
-        <td colspan="5" class="text-center text-lightText pa-6">Нет предложений</td>
+      <tr v-if="0 === filteredOrders.length">
+        <td :colspan="auth.isAuthenticated ? 6 : 5" class="text-center text-lightText pa-6">
+          Нет предложений
+        </td>
       </tr>
-      <tr v-for="order in orders" :key="order.id">
+      <tr v-for="order in filteredOrders" :key="order.id">
         <td>
           <div class="d-flex align-center">
             <v-avatar size="28" color="lightsecondary" class="mr-2">
@@ -54,6 +78,17 @@ defineProps<{
           >
             {{ method }}
           </v-chip>
+        </td>
+        <td v-if="auth.isAuthenticated" class="text-center">
+          <v-btn
+            :color="actionColor"
+            variant="tonal"
+            size="small"
+            density="comfortable"
+            @click="emit('select', order)"
+          >
+            {{ actionLabel }}
+          </v-btn>
         </td>
       </tr>
     </tbody>
