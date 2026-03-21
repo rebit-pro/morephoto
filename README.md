@@ -1,4 +1,4 @@
-# MorePhoto - Выбор фото и отправка заявки
+# Rebit P2P
 
 Веб-приложение для выбора фотографий и отправки заявок с современным интерфейсом на Vue 3 и надежным бэкендом на Bitrix CMS.
 
@@ -25,7 +25,7 @@
 
 ## 📁 Структура проекта
 ```
-morephoto/
+rebit-p2p/
 ├── frontend/ # Vue 3 приложение
 ├── api/
 │ ├── public/
@@ -45,8 +45,8 @@ morephoto/
 
 1. **Клонирование репозитория**
    ```bash
-   git clone https://github.com/rebit-pro/morephoto.git
-   cd morephoto
+   git clone https://github.com/rebit-pro/rebit-p2p.git
+   cd rebit-p2p
 
 2. **Инициализация проекта**
 
@@ -59,9 +59,9 @@ morephoto/
    docker compose up -d
    Доступ к приложению
    ```
-Frontend: [http://localhost:3000](https://api.morephoto.loc)
+Frontend: [https://rebit-p2p.loc](https://rebit-p2p.loc)
 
-Backend API: [http://localhost:80](https://morephoto.loc)
+Backend API: [https://api.rebit-p2p.loc](https://api.rebit-p2p.loc)
 
 База данных: localhost:3306
 
@@ -99,7 +99,7 @@ PHPStan (уровень 6) - статический анализ
 
 PHPUnit - модульное тестирование
 
-PHP_CodeSniffer - проверка стиля кода
+PHP-CS-Fixer - проверка и исправление стиля кода
 
 PHPLint - проверка синтаксиса
 
@@ -125,4 +125,4 @@ make deploy
 📞 Контакты
 GitHub: <a href="https://github.com/rebit-pro" target="_blank" rel="noreferrer"><span>rebit-pro</span></a>
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/rebit-pro/morephoto)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/rebit-pro/rebit-p2p)
