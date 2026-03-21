@@ -9,9 +9,9 @@ up: docker-up
 down: docker-down
 restart: down up
 lint: api-lint
-fix: api-lint-fix
+fix: api-cs-fix
 analyze: api-analyze
-check: lint
+check: api-cs-check lint analyze
 test: api-test
 test-unit: api-test-unit
 test-unit-coverage: api-test-unit--coverage
@@ -53,11 +53,14 @@ api-composer-install:
 api-lint:
 	docker compose run --rm api-php-cli composer lint
 
-api-lint-fix:
+api-cs-check:
+	docker compose run --rm api-php-cli composer cs-check
+
+api-cs-fix:
 	docker compose run --rm api-php-cli composer cs-fix
 
 api-analyze:
-	docker compose run --rm api-php-cli composer psalm --show-info=true
+	docker compose run --rm api-php-cli composer phpstan
 
 api-test:
 	docker compose run --rm api-php-cli composer test
@@ -104,12 +107,12 @@ build-frontend:
 	docker --log-level=debug build --pull \
 		--build-arg VITE_APP_AUTH_URL=https://api.rebit-pro.ru \
 		--file=frontend/docker/production/nginx/Dockerfile \
-		--tag=$(REGISTRY)/morephoto-frontend:$(IMAGE_TAG) frontend
+		--tag=$(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) frontend
 
 build-api:
-	docker --log-level=debug build --pull --file=api/docker/production/nginx/Dockerfile --tag=$(REGISTRY)/morephoto-api:$(IMAGE_TAG) api
-	docker --log-level=debug build --pull --file=api/docker/production/php-fpm/Dockerfile --tag=$(REGISTRY)/morephoto-api-php-fpm:$(IMAGE_TAG) api
-	docker --log-level=debug build --pull --file=api/docker/production/php-cli/Dockerfile --tag=$(REGISTRY)/morephoto-api-php-cli:$(IMAGE_TAG) api
+	docker --log-level=debug build --pull --file=api/docker/production/nginx/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api:$(IMAGE_TAG) api
+	docker --log-level=debug build --pull --file=api/docker/production/php-fpm/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api-php-fpm:$(IMAGE_TAG) api
+	docker --log-level=debug build --pull --file=api/docker/production/php-cli/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG) api
 
 try-build:
 	REGISTRY=localhost IMAGE_TAG=0 make build
@@ -118,12 +121,12 @@ try-build:
 push: push-frontend push-api
 
 push-frontend:
-	docker push $(REGISTRY)/morephoto-frontend:$(IMAGE_TAG)
+	docker push $(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG)
 
 push-api:
-	docker push $(REGISTRY)/morephoto-api:$(IMAGE_TAG)
-	docker push $(REGISTRY)/morephoto-api-php-fpm:$(IMAGE_TAG)
-	docker push $(REGISTRY)/morephoto-api-php-cli:$(IMAGE_TAG)
+	docker push $(REGISTRY)/rebit-p2p-api:$(IMAGE_TAG)
+	docker push $(REGISTRY)/rebit-p2p-api-php-fpm:$(IMAGE_TAG)
+	docker push $(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG)
 
 # Swarm deploy
 # Makefile

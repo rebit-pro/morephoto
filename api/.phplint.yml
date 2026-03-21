@@ -1,10 +1,8 @@
-path: ./public/local
+path: ./public/local/modules
 jobs: 10
 cache: var/phplint.json
 extensions:
   - php
 exclude:
-  - vendor
-  - public/bitrix
   - public/local/modules/rebit.photoorder/orm_annotations.php
   - public/local/modules/rebit.photoorder/install/index.php

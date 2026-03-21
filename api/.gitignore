@@ -1,5 +1,8 @@
 /var/*
+!/var/.gitkeep
 /vendor
 /tcp
 public/upload
 public/bitrix
+public/local/vendor
+public/local/composer.lock

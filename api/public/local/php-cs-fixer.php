@@ -8,6 +8,7 @@ use Rebit\Dev\PhpCsFixer\Rules\CustomVisibilityRequiredFixer;
 use Rebit\Dev\PhpCsFixer\Rules\DebugStatementRemoverFixer;
 
 return (new Config())
+    ->setCacheFile(__DIR__ . '/../../var/.php-cs-fixer.cache')
     ->setRiskyAllowed(true)
     ->registerCustomFixers([
         new CustomVisibilityRequiredFixer(),

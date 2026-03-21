@@ -38,9 +38,15 @@ RUN apt-get update && apt-get install -y \
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
 COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
+
 WORKDIR /app
 
 COPY ./ ./
+
+RUN composer install --no-dev --optimize-autoloader
 
 RUN mkdir -p /app \
     && chown -R www-data:www-data /app \
