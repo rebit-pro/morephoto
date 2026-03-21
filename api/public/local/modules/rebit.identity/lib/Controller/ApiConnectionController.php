@@ -4,31 +4,22 @@ declare(strict_types=1);
 
 namespace Rebit\Identity\Controller;
 
-use Bitrix\Main\Engine\ActionFilter\Base;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\VerifyApiUseCase;
 use Rebit\Identity\Domain\ApiConnection\Dto\Request\ConnectApiRequestDto;
-use Rebit\Share\Application\Contract\Auth\TokenResolverInterface;
+use Rebit\Identity\Infrastructure\Controller\BaseIdentityController;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
-use Rebit\Share\Infrastructure\Controller\Auth\AuthenticatedControllerInterface;
-use Rebit\Share\Infrastructure\Controller\Auth\AuthenticatedControllerTrait;
-use Rebit\Share\Infrastructure\Controller\BaseJsonController;
-use Rebit\Share\Infrastructure\Controller\Filters\BearerTokenFilter;
-use Rebit\Share\Infrastructure\Controller\Filters\LoggerFilter;
 use Rebit\Share\Shared\Exception\HttpException;
 
-final class ApiConnectionController extends BaseJsonController implements AuthenticatedControllerInterface
+final class ApiConnectionController extends BaseIdentityController
 {
-    use AuthenticatedControllerTrait;
-
     public function __construct(
         private readonly ConnectApiUseCase $connectUseCase,
         private readonly DisconnectApiUseCase $disconnectUseCase,
         private readonly VerifyApiUseCase $verifyUseCase,
         private readonly GetConnectionStatusUseCase $getStatusUseCase,
-        private readonly TokenResolverInterface $tokenResolver,
     ) {
         parent::__construct();
     }
@@ -82,16 +73,5 @@ final class ApiConnectionController extends BaseJsonController implements Authen
         return $this->json(
             $this->getStatusUseCase->execute($this->getAuthUserId()),
         );
-    }
-
-    /**
-     * @return Base[]
-     */
-    protected function getDefaultPreFilters(): array
-    {
-        return [
-            new BearerTokenFilter($this->tokenResolver),
-            new LoggerFilter(),
-        ];
     }
 }

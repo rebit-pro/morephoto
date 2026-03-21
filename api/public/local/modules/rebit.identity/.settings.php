@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Share\Application\Contract\Auth\TokenResolverInterface;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
@@ -84,7 +83,6 @@ return [
                         $sl->get(DisconnectApiUseCase::class),
                         $sl->get(VerifyApiUseCase::class),
                         $sl->get(GetConnectionStatusUseCase::class),
-                        $sl->get(TokenResolverInterface::class),
                     ];
                 },
             ],

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/LogoMain.vue';
-import AuthLogin from './authForms/AuthLogin.vue';
+import AuthRegister from './authForms/AuthRegister.vue';
 </script>
 
 <template>
@@ -14,10 +14,10 @@ import AuthLogin from './authForms/AuthLogin.vue';
                 <v-card-text class="pa-9">
                   <div class="text-center mb-6">
                     <Logo />
-                    <h2 class="text-h4 text-secondary mt-4">Вход в Rebit P2P</h2>
-                    <p class="text-lightText mt-2">Введите email и пароль</p>
+                    <h2 class="text-h4 text-secondary mt-4">Регистрация в Rebit P2P</h2>
+                    <p class="text-lightText mt-2">Создайте аккаунт для торговли</p>
                   </div>
-                  <AuthLogin />
+                  <AuthRegister />
                 </v-card-text>
               </v-card>
             </v-card>
