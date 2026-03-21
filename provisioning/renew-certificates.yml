@@ -1,7 +1,0 @@
----
-  - name: Перевыпуск сертификатов
-    hosts: site
-    remote_user: root
-    tasks:
-      - name: Перевыпуск сертификатов
-      - shell: "cerbot renew"

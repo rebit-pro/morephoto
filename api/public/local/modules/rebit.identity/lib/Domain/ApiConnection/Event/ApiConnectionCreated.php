@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Rebit\Identity\Domain\ApiConnection\Event;
+
+final readonly class ApiConnectionCreated
+{
+    public function __construct(
+        public int $userId,
+        public int $connectionId,
+    ) {}
+}
