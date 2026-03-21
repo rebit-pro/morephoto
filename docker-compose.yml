@@ -77,6 +77,8 @@ services:
             APP_ENV: ${APP_ENV:-local}
             REDIS_HOST: ${REDIS_HOST:-redis}
             REDIS_PORT: ${REDIS_PORT:-6379}
+            BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
+            BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
             PHP_IDE_CONFIG: "serverName=API"
 
     api-php-cli:

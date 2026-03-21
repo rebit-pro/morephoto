@@ -70,6 +70,8 @@ services:
         environment:
           APP_DEBUG: ${APP_DEBUG:-0}
           APP_ENV: ${APP_ENV:-production}
+          BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
+          BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
