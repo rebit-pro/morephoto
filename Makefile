@@ -168,7 +168,7 @@ deploy:
 	ssh $(REMOTE) -p $(PORT) 'rm -rf $(RELEASE_DIR) && mkdir $(RELEASE_DIR)'
 	scp -P $(PORT) $(COMPOSE_SRC) $(REMOTE):$(RELEASE_DIR)/$(COMPOSE_DST)
 	ssh $(REMOTE) -p $(PORT) 'mkdir -p $(BITRIX_HOST_DIR)'
-	scp -P $(PORT) api/public/bitrix/.settings_extra.php $(REMOTE):$(BITRIX_HOST_DIR)/.settings_extra.php
+	scp -P $(PORT) api/deploy/bitrix-settings-extra.php $(REMOTE):$(BITRIX_HOST_DIR)/.settings_extra.php
 	ssh $(REMOTE) -p $(PORT) 'cd $(RELEASE_DIR) && printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\n" "$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" > .env'
 	@if [ -n "$(REGISTRY_HOST)" ] && [ -n "$(REGISTRY_USER)" ] && [ -n "$(TOKEN_GIT_HUB)" ]; then \
 		ssh $(REMOTE) -p $(PORT) 'echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin'; \
