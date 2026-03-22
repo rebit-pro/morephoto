@@ -1,71 +1,57 @@
-name: 🛠️ Build, Test & 🚀 Deploy to Swarm
-
+name: "🛠️ Build, Test & 🚀 Deploy to Swarm"
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
-  # ── API checks: lint, cs-check, phpstan, tests ──
   api-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: 🐘 Setup PHP
+      - uses: actions/checkout@v5
+      - name: "🐘 Setup PHP"
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: intl, mbstring, curl, json, openssl, simplexml
           tools: composer:v2
-
-      - name: 📦 Install dependencies
+      - name: "📦 Install dependencies"
         working-directory: api
         run: composer install --prefer-dist --no-progress --no-interaction
-
-      - name: 🔍 Lint (phplint)
+      - name: "🔍 Lint (phplint)"
         working-directory: api
         run: composer lint
-
-      - name: 🎨 CS Check (php-cs-fixer)
+      - name: "🎨 CS Check (php-cs-fixer)"
         working-directory: api
         run: composer cs-check
-
-      - name: 🔬 Static analysis (phpstan)
+      - name: "🔬 Static analysis (phpstan)"
         working-directory: api
         run: composer phpstan
-
-      - name: 🧪 Tests (phpunit)
+      - name: "🧪 Tests (phpunit)"
         working-directory: api
         run: composer test
-
-  # ── Frontend checks: временная заглушка ──
   frontend-checks:
     runs-on: ubuntu-latest
     steps:
-      - name: ⏭️ Skip (no frontend checks yet)
+      - name: "⏭️ Skip (no frontend checks yet)"
         run: echo "Frontend checks are disabled"
-
-  # ── Build & push Docker images ──
   build-and-push:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [ api-checks, frontend-checks ]
     steps:
-      - uses: actions/checkout@v4
-
-      - name: 🔧 Set up Docker Buildx
+      - uses: actions/checkout@v5
+      - name: "🔧 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
-
-      - name: 🔑 Log in to Docker registry
+      - name: "🔑 Log in to Docker registry"
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.REGISTRY_HOST }}
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.TOKEN_GIT_HUB }}
-
-      - name: 🏗️ Build images
+      - name: "🏗️ Build images"
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
           IMAGE_TAG: ${{ github.sha }}
@@ -74,8 +60,7 @@ jobs:
           IMAGE_TAG="${IMAGE_TAG::8}"
           export IMAGE_TAG
           make build
-
-      - name: 📤 Push images
+      - name: "📤 Push images"
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
           IMAGE_TAG: ${{ github.sha }}
@@ -84,18 +69,14 @@ jobs:
           IMAGE_TAG="${IMAGE_TAG::8}"
           export IMAGE_TAG
           make push
-
-  # ── Deploy to Swarm ──
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: build-and-push
     environment: production
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: 🔑 Setup SSH key
+      - uses: actions/checkout@v5
+      - name: "🔑 Setup SSH key"
         env:
           SSH_PORT: ${{ secrets.PORT || '22' }}
           SSH_HOST: ${{ secrets.HOST }}
@@ -104,8 +85,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
-
-      - name: 🚀 Deploy via make
+      - name: "🚀 Deploy via make"
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
           IMAGE_TAG: ${{ github.sha }}
