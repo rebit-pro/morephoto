@@ -50,6 +50,7 @@ final readonly class UserRepository
     {
         $row = UserTable::query()
             ->setSelect(['ID', 'PASSWORD'])
+            ->enablePrivateFields()
             ->where('EMAIL', $email)
             ->where('ACTIVE', 'Y')
             ->setLimit(1)
