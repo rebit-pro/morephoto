@@ -116,15 +116,15 @@ BITRIX_HOST_DIR ?= /srv/rebit-p2p/bitrix
 build: build-frontend build-api
 
 build-frontend:
-	docker --log-level=debug build --pull \
+	docker --log-level=debug build --pull --load \
 		--build-arg VITE_API_URL=$(VITE_API_URL) \
 		--file=frontend/docker/production/nginx/Dockerfile \
 		--tag=$(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) frontend
 
 build-api:
-	docker --log-level=debug build --pull --file=api/docker/production/nginx/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api:$(IMAGE_TAG) api
-	docker --log-level=debug build --pull --file=api/docker/production/php-fpm/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api-php-fpm:$(IMAGE_TAG) api
-	docker --log-level=debug build --pull --file=api/docker/production/php-cli/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG) api
+	docker --log-level=debug build --pull --load --file=api/docker/production/nginx/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api:$(IMAGE_TAG) api
+	docker --log-level=debug build --pull --load --file=api/docker/production/php-fpm/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api-php-fpm:$(IMAGE_TAG) api
+	docker --log-level=debug build --pull --load --file=api/docker/production/php-cli/Dockerfile --tag=$(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG) api
 
 try-build:
 	REGISTRY=localhost IMAGE_TAG=0 make build
