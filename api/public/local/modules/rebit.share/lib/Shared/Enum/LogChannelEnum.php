@@ -29,7 +29,7 @@ enum LogChannelEnum: string
      */
     public static function resolveFromClassName(string $className): self
     {
-        if (1 === preg_match('/^Rebit\\\\(\w+)\\\\/', $className, $matches)) {
+        if (1 === preg_match('/^Rebit\\\(\w+)\\\/', $className, $matches)) {
             $resolved = self::tryFrom(strtolower($matches[1]));
 
             if (null !== $resolved) {
