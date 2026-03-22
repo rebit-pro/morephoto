@@ -21,6 +21,11 @@ services:
             update_config:
                 parallelism: 1
                 delay: 10s
+                order: start-first
+                failure_action: rollback
+            rollback_config:
+                parallelism: 1
+                order: stop-first
     api:
         image: ${REGISTRY}/rebit-p2p-api:${IMAGE_TAG}
         networks:
@@ -48,7 +53,11 @@ services:
           update_config:
             parallelism: 1
             delay: 5s
-            order: start-first  # Сначала запустить новый, затем остановить старый
+            order: start-first
+            failure_action: rollback
+          rollback_config:
+            parallelism: 1
+            order: stop-first
         healthcheck:
           test: [ "CMD", "curl", "-f", "http://localhost/health" ]
           interval: 10s
@@ -58,7 +67,6 @@ services:
           start_interval: 5s
     api-php-fpm:
         image: ${REGISTRY}/rebit-p2p-api-php-fpm:${IMAGE_TAG}
-        restart: always
         environment:
           APP_DEBUG: ${APP_DEBUG:-0}
           APP_ENV: ${APP_ENV:-production}
@@ -71,6 +79,9 @@ services:
           - type: bind
             source: /srv/rebit-p2p/upload
             target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
         deploy:
           mode: replicated
           replicas: 2
@@ -78,11 +89,16 @@ services:
             parallelism: 1
             delay: 5s
             order: start-first
+            failure_action: rollback
+          rollback_config:
+            parallelism: 1
+            order: stop-first
         healthcheck:
-          test: [ "CMD-SHELL", "php -v >/dev/null 2>&1" ] # Или свой скрипт
+          test: [ "CMD-SHELL", "cgi-fcgi -bind -connect 127.0.0.1:9000 /ping || kill -0 1" ]
           interval: 10s
           timeout: 5s
           retries: 3
+          start_period: 15s
     api-memcached:
         image: memcached:1.6-alpine
         command: memcached -m 64

@@ -6,11 +6,11 @@ namespace Rebit\Auth\Application\Auth\Dto\Result;
 
 use Rebit\Share\Application\Interface\ResultDtoInterface;
 
-final readonly class LoginResultDto implements ResultDtoInterface
+final readonly class UserDto implements ResultDtoInterface
 {
     public function __construct(
-        public string $token,
-        public string $expiresAt,
-        public UserDto $user,
+        public int $id,
+        public string $email,
+        public string $name,
     ) {}
 }

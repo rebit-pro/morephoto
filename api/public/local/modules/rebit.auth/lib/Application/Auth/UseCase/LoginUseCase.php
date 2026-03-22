@@ -7,6 +7,7 @@ namespace Rebit\Auth\Application\Auth\UseCase;
 use Bitrix\Main\Type\DateTime;
 use Rebit\Auth\Application\Auth\Dto\Request\LoginRequestDto;
 use Rebit\Auth\Application\Auth\Dto\Result\LoginResultDto;
+use Rebit\Auth\Application\Auth\Dto\Result\UserDto;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
 use Rebit\Auth\Domain\User\Service\TokenGenerator;
 use Rebit\Share\Shared\Exception\HttpException;
@@ -46,6 +47,11 @@ final readonly class LoginUseCase
         return new LoginResultDto(
             token: $token,
             expiresAt: $expiresAt->format('c'),
+            user: new UserDto(
+                id: $user->id,
+                email: $user->email,
+                name: $user->name,
+            ),
         );
     }
 }

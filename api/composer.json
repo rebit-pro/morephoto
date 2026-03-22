@@ -70,7 +70,6 @@
             "Rebit\\Auth\\": "public/local/modules/rebit.auth/lib/",
             "Rebit\\Bybit\\": "public/local/modules/rebit.bybit/lib/",
             "Rebit\\Identity\\": "public/local/modules/rebit.identity/lib/",
-            "Rebit\\PhotoOrder\\": "public/local/modules/rebit.photoorder/lib/",
             "Rebit\\Share\\": "public/local/modules/rebit.share/lib/"
         }
     },

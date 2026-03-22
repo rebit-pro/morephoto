@@ -6,6 +6,7 @@ namespace Rebit\Share\Infrastructure\Controller\Filters;
 
 use Bitrix\Main\Engine\Action;
 use Bitrix\Main\Engine\ActionFilter\Base;
+use Bitrix\Main\Engine\Controller;
 use Bitrix\Main\Event;
 use Bitrix\Main\EventResult;
 use Bitrix\Main\HttpResponse;
@@ -17,11 +18,14 @@ use Bitrix\Main\Engine\Response\Json;
 
 /**
  * Логирует входящий запрос и его результаты.
+ *
+ * Канал логирования определяется автоматически по namespace контроллера,
+ * если не передан явно. Например: Rebit\Auth\... → LogChannelEnum::auth
  */
 final class LoggerFilter extends Base
 {
     public function __construct(
-        private readonly LogChannelEnum $channel = LogChannelEnum::default,
+        private readonly ?LogChannelEnum $channel = null,
         private readonly array $extraData = [],
     ) {
         parent::__construct();
@@ -41,8 +45,12 @@ final class LoggerFilter extends Base
      */
     public function onBeforeAction(Event $event): ?EventResult
     {
-        $data = $this->extractRequestData($event->getParameter('controller'));
-        Log::channel($this->channel)->info('REQUEST', array_merge($data, $this->extraData));
+        /** @var Controller $controller */
+        $controller = $event->getParameter('controller');
+        $channel = $this->resolveChannel($controller);
+
+        $data = $this->extractRequestData($controller);
+        Log::channel($channel)->info('REQUEST', array_merge($data, $this->extraData));
 
         return null;
     }
@@ -64,32 +72,38 @@ final class LoggerFilter extends Base
      */
     public function onAfterAction(Event $event): ?EventResult
     {
-        /** @var AbstractController $controller */
+        /** @var Controller $controller */
         $controller = $event->getParameter('controller');
         /** @var HttpResponse $response */
         $response = $event->getParameter('result');
+        $channel = $this->resolveChannel($controller);
+
         $requestData = $this->extractRequestData($controller);
         $responseData = $this->extractResponseData($response);
-
         $payload = [
             'request' => $requestData,
             'response' => $responseData,
         ];
 
-        Log::channel($this->channel)->info('RESPONSE', array_merge($payload, $this->extraData));
+        Log::channel($channel)->info('RESPONSE', array_merge($payload, $this->extraData));
 
         return null;
     }
 
     /**
+     * Определяет канал: явно переданный или автоматически по namespace контроллера.
+     */
+    private function resolveChannel(Controller $controller): LogChannelEnum
+    {
+        return $this->channel ?? LogChannelEnum::resolveFromClassName($controller::class);
+    }
+
+    /**
      * @return array{
-     *     method: string,
-     *     uri: string,
-     *     payload: array<string, mixed>,
-     *     requestId: string,
+     *     request: array<string, mixed>,
      * }
      */
-    private function extractRequestData(AbstractController $controller): array
+    private function extractRequestData(Controller $controller): array
     {
         $request = $controller->getRequest();
 
