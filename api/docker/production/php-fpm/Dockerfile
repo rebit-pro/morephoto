@@ -1,7 +1,5 @@
 FROM php:8.4-fpm
-
 RUN mv $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
-
 # Устанавливаем системные зависимости
 RUN apt-get update && apt-get install -y \
     libpng-dev \
@@ -33,28 +31,20 @@ RUN apt-get update && apt-get install -y \
     && pecl install memcache \
     && docker-php-ext-enable memcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
+# Сменить UID/GID www-data на хостовый (1000) — чтобы FPM воркеры
+# могли писать в bind-mounted volume (симлинки модулей, кеш и т.д.)
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 # Копируем конфигурации PHP
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
 COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
-
 # 2. Установка Composer (v2)
 ENV COMPOSER_ALLOW_SUPERUSER=1
-
-RUN curl -sS https://getcomposer.org/installer | php -- \
-    --install-dir=/usr/local/bin \
-    --filename=composer \
-    --version=2.8.8
-
+COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 WORKDIR /app
-
 COPY ./ ./
-
 RUN composer install --no-dev --optimize-autoloader
-
 RUN mkdir -p /app \
     && chown -R www-data:www-data /app \
     && mkdir -p /var/lib/php/sessions \
     && chown -R www-data:www-data /var/lib/php/sessions
-
 CMD ["php-fpm"]

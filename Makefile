@@ -103,6 +103,7 @@ LINK_DIR ?= site
 COMPOSE_SRC ?= docker-compose-production.yml
 COMPOSE_DST ?= docker-compose.yml
 VITE_API_URL ?= https://api.rebit-pro.ru
+KEEP_RELEASES ?= 2
 
 # --- Build ---
 # Собирает Docker-образы для production
@@ -145,7 +146,8 @@ push-api:
 	docker push $(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG)
 
 # --- Deploy ---
-# Деплоит приложение в Docker Swarm на удалённый сервер
+# Деплоит приложение в Docker Swarm на удалённый сервер.
+# После деплоя удаляет старые релизы (оставляет KEEP_RELEASES=2) и неиспользуемые Docker-образы.
 #
 # Требуемые переменные:
 #   HOST, PORT, DEPLOY_USER, BUILD_NUMBER, REGISTRY, IMAGE_TAG,
@@ -169,10 +171,12 @@ deploy:
 		ssh $(REMOTE) -p $(PORT) 'echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin'; \
 	fi
 	ssh $(REMOTE) -p $(PORT) 'ln -sfn $(RELEASE_DIR) $(LINK_DIR)'
-	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
-	@echo "Waiting for services to start..."
-	sleep 15
-	$(MAKE) api-migrate-deploy
+	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && set -a && . ./.env && set +a && docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
+	ssh $(REMOTE) -p $(PORT) 'cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf'
+	ssh $(REMOTE) -p $(PORT) 'docker image prune --all --force'
+#	@echo "Waiting for services to start..."
+#	sleep 15
+#	$(MAKE) api-migrate-deploy
 
 # --- Migrate (production) ---
 api-migrate-deploy:
@@ -195,7 +199,7 @@ rollback:
 	@if [ -z "$(ROLLBACK_BUILD_NUMBER)" ]; then echo "Set ROLLBACK_BUILD_NUMBER"; exit 1; fi
 	ssh $(REMOTE) -p $(PORT) 'test -d site_$(ROLLBACK_BUILD_NUMBER)'
 	ssh $(REMOTE) -p $(PORT) 'ln -sfn site_$(ROLLBACK_BUILD_NUMBER) $(LINK_DIR)'
-	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
+	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && set -a && . ./.env && set +a && docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
 
 php-cli:
 	docker compose run --rm api-php-cli bash
