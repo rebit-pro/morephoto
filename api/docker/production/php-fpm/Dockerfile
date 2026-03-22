@@ -34,8 +34,9 @@ RUN apt-get update && apt-get install -y \
 # Сменить UID/GID www-data на хостовый (1000) — чтобы FPM воркеры
 # могли писать в bind-mounted volume (симлинки модулей, кеш и т.д.)
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
-# Копируем конфигурации PHP
+# Копируем конфигурации PHP (common, затем production-override поверх)
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
+COPY docker/production/php/conf.d /usr/local/etc/php/conf.d
 COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 # 2. Установка Composer (v2)
 ENV COMPOSER_ALLOW_SUPERUSER=1

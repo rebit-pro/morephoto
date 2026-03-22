@@ -21,7 +21,6 @@ services:
             update_config:
                 parallelism: 1
                 delay: 10s
-
     api:
         image: ${REGISTRY}/rebit-p2p-api:${IMAGE_TAG}
         networks:
@@ -34,9 +33,6 @@ services:
           - type: bind
             source: /srv/rebit-p2p/upload
             target: /app/public/upload
-          - type: bind
-            source: /srv/rebit-p2p/sessions
-            target: /var/lib/php/sessions
         deploy:
           labels:
             - traefik.enable=true
@@ -60,7 +56,6 @@ services:
           retries: 3
           start_period: 30s
           start_interval: 5s
-
     api-php-fpm:
         image: ${REGISTRY}/rebit-p2p-api-php-fpm:${IMAGE_TAG}
         restart: always
@@ -76,9 +71,6 @@ services:
           - type: bind
             source: /srv/rebit-p2p/upload
             target: /app/public/upload
-          - type: bind
-            source: /srv/rebit-p2p/sessions
-            target: /var/lib/php/sessions
         deploy:
           mode: replicated
           replicas: 2
@@ -91,7 +83,12 @@ services:
           interval: 10s
           timeout: 5s
           retries: 3
-
+    api-memcached:
+        image: memcached:1.6-alpine
+        command: memcached -m 64
+        deploy:
+            mode: replicated
+            replicas: 1
     api-mysql:
         image: percona:8.0
         environment:
@@ -105,10 +102,8 @@ services:
             placement:
                 constraints: [ node.labels.db == db ]
             endpoint_mode: dnsrr
-
 volumes:
     api-mysql:
-
 networks:
     traefik-public:
         external: true
