@@ -47,11 +47,16 @@ COPY ./common/php/conf.d /usr/local/etc/php/conf.d
 COPY ./development/php/conf.d /usr/local/etc/php/conf.d
 COPY ./common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
+# Сменить UID/GID www-data на хостовый (1000) — чтобы FPM воркеры
+# могли писать в bind-mounted volume (симлинки модулей, кеш и т.д.)
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
+
 WORKDIR /app
 
-# Установить владельца для /app
-RUN chown -R www-data:www-data /app
+COPY ./development/php-fpm/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir -p /var/lib/php/sessions && chown -R www-data:www-data /var/lib/php/sessions
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]

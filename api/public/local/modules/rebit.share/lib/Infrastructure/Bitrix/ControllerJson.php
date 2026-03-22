@@ -19,7 +19,7 @@ final class ControllerJson extends Json
      */
     public function __construct(
         private readonly SerializerInterface $serializer,
-        null|array|ResultDtoInterface $data = null,
+        array|ResultDtoInterface|null $data = null,
         int $options = 0,
     ) {
         parent::__construct($data, $options);

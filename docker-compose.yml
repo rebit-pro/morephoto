@@ -24,7 +24,7 @@ services:
             dockerfile: development/node/Dockerfile
         environment:
             NODE_ENV: development
-            VITE_APP_AUTH_URL: https://api.rebit-p2p.loc
+            VITE_API_URL: /api
             HOST: 0.0.0.0 # Важно для Vite!
         command: sh -c "npm run dev" # Явное указание хоста
         volumes:
@@ -73,10 +73,12 @@ services:
         volumes:
             - ./api:/app
         environment:
-            APP_DEBUG: 1
-            APP_ENV: "local"
-            REDIS_HOST: redis
-            REDIS_PORT: 6379
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REDIS_HOST: ${REDIS_HOST:-redis}
+            REDIS_PORT: ${REDIS_PORT:-6379}
+            BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
+            BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
             PHP_IDE_CONFIG: "serverName=API"
 
     api-php-cli:
@@ -89,6 +91,7 @@ services:
             - ./api:/app
         environment:
             APP_DEBUG: 1
+            XDEBUG_MODE: off
 
     api-mysql:
         build:
@@ -96,10 +99,10 @@ services:
             dockerfile: development/mysql/Dockerfile
         restart: always
         environment:
-            MYSQL_DATABASE: app
-            MYSQL_USER: app
-            MYSQL_PASSWORD: secrets
-            MYSQL_ROOT_PASSWORD: rootpassword
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+            MYSQL_USER: ${MYSQL_USER:-app}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
         volumes:
             - api-mysql:/var/lib/mysql
         ports:

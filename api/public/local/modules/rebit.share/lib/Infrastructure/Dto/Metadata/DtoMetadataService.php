@@ -47,10 +47,11 @@ final class DtoMetadataService
 
     /**
      * Отработка аттрибута Symfony для подмены названий полей при сериализации.
+     *
      * @see SerializedName
      *
      * @param array<string, mixed> $data
-     * @param class-string $className
+     * @param class-string         $className
      *
      * @return array<string, mixed>
      *
@@ -102,7 +103,7 @@ final class DtoMetadataService
      * Гидрация одного DTO.
      *
      * @param array<string, mixed> $data
-     * @param class-string<T> $className
+     * @param class-string<T>      $className
      *
      * @return T
      *
@@ -117,7 +118,7 @@ final class DtoMetadataService
      * Гидрация списка DTO. Метаданные извлекаются один раз на весь список.
      *
      * @param array<int, array<string, mixed>> $data
-     * @param class-string<T> $className
+     * @param class-string<T>                  $className
      *
      * @return T[]
      *
@@ -142,8 +143,8 @@ final class DtoMetadataService
     /**
      * Выполняет гидрацию по готовым метаданным: приведение типов, enum, вложенные объекты, nullable, defaults.
      *
-     * @param array<string, mixed> $data
-     * @param class-string<T> $className
+     * @param array<string, mixed>                $data
+     * @param class-string<T>                     $className
      * @param array<string, DtoParameterMetadata> $parameters
      *
      * @return T

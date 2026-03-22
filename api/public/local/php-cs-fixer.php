@@ -43,6 +43,11 @@ return (new Config())
     ->setFinder(
         Finder::create()
             ->in(__DIR__)
-            ->exclude(['vendor']),
+            ->exclude([
+                'vendor',
+                'modules/sprint.migration',
+                'modules/rebit.photoorder',
+                'php_interface/migrations',
+            ]),
     )
 ;

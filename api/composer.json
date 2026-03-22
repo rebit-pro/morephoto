@@ -37,21 +37,19 @@
         "setasign/fpdi": "^2.3",
         "slim/psr7": "^1.6",
         "slim/slim": "^4.0",
-        "symfony/cache": "~5.4.11",
-        "symfony/console": "^7.1",
+        "symfony/cache": "^6.4 || ^7.0",
+        "symfony/console": "^6.3 || ^7.1",
         "symfony/dotenv": "^7.2",
         "symfony/property-access": "^7.1",
-        "symfony/serializer": "^5.4.45",
-        "symfony/validator": "5.4.45",
+        "symfony/serializer": "^6.4 || ^7.0",
+        "symfony/validator": "^6.4 || ^7.0",
         "symfony/yaml": "^7.2",
-        "tightenco/collect": "5.4.33",
-        "uru/bitrix-mvc": "^1.0",
-        "uru/digital-river-models": "^1.0",
         "webmozart/assert": "^1.11",
         "yandex/geo": "^1.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
+        "dg/bypass-finals": "^1.6",
         "friendsofphp/php-cs-fixer": "^3.88.2",
         "overtrue/phplint": "^9.5",
         "phpstan/phpstan": "^2.1",
@@ -78,6 +76,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Rebit\\Auth\\Tests\\": "public/local/modules/rebit.auth/tests/",
             "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
         }
     },

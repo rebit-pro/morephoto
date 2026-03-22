@@ -19,6 +19,7 @@ test-functional: api-test-functional
 test-functional-coverage: api-test-functional-coverage
 
 update-deps: api-composer-update frontend-yarn-upgrade cucumber-yarn-upgrade restart
+migrate: api-migrate
 
 docker-up:
 	docker compose up -d
@@ -33,12 +34,12 @@ docker-pull:
 	docker compose pull
 
 docker-build:
-	DOCKER_BUILDKIT=1 BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose build --pull
+	docker compose build --pull
 
 # frontend
-frontend-init: frontend-yarn-install
+frontend-init: frontend-npm-install
 
-frontend-yarn-install:
+frontend-npm-install:
 	docker compose run --rm frontend-node-cli npm install
 
 # api
@@ -62,6 +63,9 @@ api-cs-fix:
 api-analyze:
 	docker compose run --rm api-php-cli composer phpstan
 
+api-analyze-baseline:
+	docker compose run --rm api-php-cli php vendor/bin/phpstan analyse --configuration=phpstan.neon --generate-baseline=phpstan-baseline.neon
+
 api-test:
 	docker compose run --rm api-php-cli composer test
 
@@ -80,32 +84,38 @@ api-test-functional-coverage:
 api-cli:
 	docker compose run --rm api-php-cli composer app
 
-# PRODUCTION build
+api-migrate:
+	docker compose run --rm api-php-cli php /app/public/local/modules/sprint.migration/tools/migrate.php up
 
+api-migrate-status:
+	docker compose run --rm api-php-cli php /app/public/local/modules/sprint.migration/tools/migrate.php ls
 
-# Makefile (Swarm deploy для приложения)
-# Требуются переменные в .env: HOST, PORT, BUILD_NUMBER, REGISTRY, IMAGE_TAG
-# Опционально для логина на сервере: REGISTRY_HOST, REGISTRY_USER, TOKEN
-ifneq (,$(wildcard .env))
- include .env
- export $(shell sed 's/=.*//' .env)
-endif
+# ==============================================================================
+# PRODUCTION
+# ==============================================================================
 
 PORT ?= 22
+DEPLOY_USER ?= deploy
 STACK_NAME ?= site
-REMOTE ?= deploy@$(HOST)
+REMOTE ?= $(DEPLOY_USER)@$(HOST)
 RELEASE_DIR ?= site_$(BUILD_NUMBER)
 LINK_DIR ?= site
 COMPOSE_SRC ?= docker-compose-production.yml
 COMPOSE_DST ?= docker-compose.yml
+VITE_API_URL ?= https://api.rebit-pro.ru
 
-# PRODUCTION build
+# --- Build ---
+# Собирает Docker-образы для production
+#
+# Требуемые переменные: REGISTRY, IMAGE_TAG, VITE_API_URL
+#
+# Пример:
+#   REGISTRY=ghcr.io/rebit-pro IMAGE_TAG=abc12345 make build
 build: build-frontend build-api
 
-# makefile
 build-frontend:
 	docker --log-level=debug build --pull \
-		--build-arg VITE_APP_AUTH_URL=https://api.rebit-pro.ru \
+		--build-arg VITE_API_URL=$(VITE_API_URL) \
 		--file=frontend/docker/production/nginx/Dockerfile \
 		--tag=$(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) frontend
 
@@ -117,7 +127,13 @@ build-api:
 try-build:
 	REGISTRY=localhost IMAGE_TAG=0 make build
 
-# PRODUCTION push
+# --- Push ---
+# Пушит собранные образы в Docker-реестр
+#
+# Требуемые переменные: REGISTRY, IMAGE_TAG
+#
+# Пример:
+#   REGISTRY=ghcr.io/rebit-pro IMAGE_TAG=abc12345 make push
 push: push-frontend push-api
 
 push-frontend:
@@ -128,23 +144,53 @@ push-api:
 	docker push $(REGISTRY)/rebit-p2p-api-php-fpm:$(IMAGE_TAG)
 	docker push $(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG)
 
-# Swarm deploy
-# Makefile
+# --- Deploy ---
+# Деплоит приложение в Docker Swarm на удалённый сервер
+#
+# Требуемые переменные:
+#   HOST, PORT, DEPLOY_USER, BUILD_NUMBER, REGISTRY, IMAGE_TAG,
+#   MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, APP_DEBUG, APP_ENV
+# Опционально (для docker login на сервере):
+#   REGISTRY_HOST, REGISTRY_USER, TOKEN_GIT_HUB
+#
+# Пример:
+#   HOST=1.2.3.4 PORT=22 DEPLOY_USER=deploy BUILD_NUMBER=42 \
+#   REGISTRY=ghcr.io/rebit-pro IMAGE_TAG=abc12345 \
+#   MYSQL_PASSWORD=secret MYSQL_ROOT_PASSWORD=rootsecret \
+#   APP_DEBUG=0 APP_ENV=production \
+#   REGISTRY_HOST=ghcr.io REGISTRY_USER=user TOKEN_GIT_HUB=ghp_xxx \
+#   make deploy
 deploy:
-	ssh $(REMOTE) -p $(PORT)  'docker network create --driver=overlay traefik-public || true'
-	ssh $(REMOTE) -p $(PORT)  'rm -rf site_${BUILD_NUMBER} && mkdir site_${BUILD_NUMBER}'
-
-	ssh $(REMOTE) -p $(PORT) 'mkdir -p $(RELEASE_DIR)'
+	ssh $(REMOTE) -p $(PORT) 'docker network create --driver=overlay traefik-public || true'
+	ssh $(REMOTE) -p $(PORT) 'rm -rf $(RELEASE_DIR) && mkdir $(RELEASE_DIR)'
 	scp -P $(PORT) $(COMPOSE_SRC) $(REMOTE):$(RELEASE_DIR)/$(COMPOSE_DST)
-	ssh $(REMOTE) -p $(PORT) 'cd $(RELEASE_DIR) && printf "REGISTRY=%s\nIMAGE_TAG=%s\n" "$(REGISTRY)" "$(IMAGE_TAG)" > .env'
+	ssh $(REMOTE) -p $(PORT) 'cd $(RELEASE_DIR) && printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\n" "$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" > .env'
 	@if [ -n "$(REGISTRY_HOST)" ] && [ -n "$(REGISTRY_USER)" ] && [ -n "$(TOKEN_GIT_HUB)" ]; then \
 		ssh $(REMOTE) -p $(PORT) 'echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin'; \
 	fi
 	ssh $(REMOTE) -p $(PORT) 'ln -sfn $(RELEASE_DIR) $(LINK_DIR)'
-	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && REGISTRY="$(REGISTRY)" IMAGE_TAG="$(IMAGE_TAG)" docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
-	#ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && REGISTRY="$(REGISTRY)" IMAGE_TAG="$(IMAGE_TAG)"  docker stack deploy --compose-file docker-compose.yml $(STACK_NAME) --with-registry-auth --prune'
+	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && docker stack deploy --with-registry-auth --prune --resolve-image=always -c $(COMPOSE_DST) $(STACK_NAME)'
+	@echo "Waiting for services to start..."
+	sleep 15
+	$(MAKE) api-migrate-deploy
 
-# Rollback на указанный билд: make rollback ROLLBACK_BUILD_NUMBER=123
+# --- Migrate (production) ---
+api-migrate-deploy:
+	ssh $(REMOTE) -p $(PORT) 'docker run --rm \
+		-v /srv/rebit-p2p/bitrix:/app/public/bitrix \
+		-v /srv/rebit-p2p/upload:/app/public/upload \
+		-v /srv/rebit-p2p/sessions:/var/lib/php/sessions \
+		--network $(STACK_NAME)_default \
+		$(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG) \
+		php /app/public/local/modules/sprint.migration/tools/migrate.php up'
+
+# --- Rollback ---
+# Откатывает на указанный билд
+#
+# Требуемые переменные: HOST, PORT, ROLLBACK_BUILD_NUMBER
+#
+# Пример:
+#   HOST=1.2.3.4 ROLLBACK_BUILD_NUMBER=41 make rollback
 rollback:
 	@if [ -z "$(ROLLBACK_BUILD_NUMBER)" ]; then echo "Set ROLLBACK_BUILD_NUMBER"; exit 1; fi
 	ssh $(REMOTE) -p $(PORT) 'test -d site_$(ROLLBACK_BUILD_NUMBER)'

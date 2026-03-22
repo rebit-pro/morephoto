@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Application\Collection;
 
-use IteratorAggregate;
 use Rebit\Share\Application\Interface\RequestDtoInterface;
 
 /**
@@ -13,7 +12,7 @@ use Rebit\Share\Application\Interface\RequestDtoInterface;
  *
  * @template T of RequestDtoInterface
  *
- * @implements IteratorAggregate<int, T>
+ * @implements \IteratorAggregate<int, T>
  */
 abstract readonly class AbstractRequestCollection implements \IteratorAggregate, \Countable
 {

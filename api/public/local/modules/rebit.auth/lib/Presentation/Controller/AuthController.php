@@ -15,6 +15,7 @@ use Rebit\Share\Infrastructure\Controller\BaseJsonController;
 use Rebit\Share\Infrastructure\Controller\Filters\BearerTokenFilter;
 use Rebit\Share\Infrastructure\Controller\Filters\LoggerFilter;
 use Rebit\Share\Shared\Exception\HttpException;
+use Random\RandomException;
 
 final class AuthController extends BaseJsonController implements AuthenticatedControllerInterface
 {
@@ -24,8 +25,7 @@ final class AuthController extends BaseJsonController implements AuthenticatedCo
         private readonly LoginUseCase $loginUseCase,
         private readonly LogoutUseCase $logoutUseCase,
         private readonly TokenResolverInterface $tokenResolver,
-    )
-    {
+    ) {
         parent::__construct();
     }
 
@@ -33,7 +33,7 @@ final class AuthController extends BaseJsonController implements AuthenticatedCo
      * POST /api/v1/auth/login
      *
      * @throws HttpException
-     * @throws \Random\RandomException
+     * @throws RandomException
      */
     public function loginAction(LoginRequestDto $dto): ControllerJson
     {

@@ -7,9 +7,51 @@ on:
     branches: [ "main" ]
 
 jobs:
+  # ── API checks: lint, cs-check, phpstan, tests ──
+  api-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, mbstring, curl, json, openssl, simplexml
+          tools: composer:v2
+
+      - name: 📦 Install dependencies
+        working-directory: api
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: 🔍 Lint (phplint)
+        working-directory: api
+        run: composer lint
+
+      - name: 🎨 CS Check (php-cs-fixer)
+        working-directory: api
+        run: composer cs-check
+
+      - name: 🔬 Static analysis (phpstan)
+        working-directory: api
+        run: composer phpstan
+
+      - name: 🧪 Tests (phpunit)
+        working-directory: api
+        run: composer test
+
+  # ── Frontend checks: временная заглушка ──
+  frontend-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⏭️ Skip (no frontend checks yet)
+        run: echo "Frontend checks are disabled"
+
+  # ── Build & push Docker images ──
   build-and-push:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ api-checks, frontend-checks ]
     steps:
       - uses: actions/checkout@v4
 
@@ -26,21 +68,24 @@ jobs:
       - name: 🏗️ Build images
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
+          IMAGE_TAG: ${{ github.sha }}
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          IMAGE_TAG="${GITHUB_SHA::8}"
-          BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
-          export REGISTRY IMAGE_TAG BUILD_NUMBER
+          IMAGE_TAG="${IMAGE_TAG::8}"
+          export IMAGE_TAG
           make build
 
       - name: 📤 Push images
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
+          IMAGE_TAG: ${{ github.sha }}
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
-          IMAGE_TAG="${GITHUB_SHA::8}"
-          BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
-          export REGISTRY IMAGE_TAG BUILD_NUMBER
+          IMAGE_TAG="${IMAGE_TAG::8}"
+          export IMAGE_TAG
           make push
 
+  # ── Deploy to Swarm ──
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -50,28 +95,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🔢 Get short SHA
-        id: vars
-        run: echo "short_sha=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
-
       - name: 🔑 Setup SSH key
+        env:
+          SSH_PORT: ${{ secrets.PORT || '22' }}
+          SSH_HOST: ${{ secrets.HOST }}
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -p "${{ secrets.PORT }}" "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
 
       - name: 🚀 Deploy via make
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
-          IMAGE_TAG: ${{ steps.vars.outputs.short_sha }}
+          IMAGE_TAG: ${{ github.sha }}
           BUILD_NUMBER: ${{ github.run_number }}
           HOST: ${{ secrets.HOST }}
-          PORT: ${{ secrets.PORT }}
+          PORT: ${{ secrets.PORT || '22' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'deploy' }}
           REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           TOKEN_GIT_HUB: ${{ secrets.TOKEN_GIT_HUB }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          APP_DEBUG: ${{ secrets.APP_DEBUG }}
+          APP_ENV: ${{ secrets.APP_ENV }}
         run: |
+          IMAGE_TAG="${IMAGE_TAG::8}"
+          export IMAGE_TAG
           make deploy

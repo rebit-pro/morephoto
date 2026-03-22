@@ -40,7 +40,7 @@ final class RebitHttpClient
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>  $data
      * @param array<string, string> $headers
      *
      * @return array<string, mixed>
@@ -54,7 +54,7 @@ final class RebitHttpClient
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>  $data
      * @param array<string, string> $headers
      *
      * @return array<string, mixed>
@@ -98,7 +98,7 @@ final class RebitHttpClient
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>  $data
      * @param array<string, string> $headers
      *
      * @return array<string, mixed>|string

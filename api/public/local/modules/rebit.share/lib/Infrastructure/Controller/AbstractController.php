@@ -134,7 +134,7 @@ abstract class AbstractController extends Controller
      *
      * @throws SystemException
      */
-    protected function create($actionName): null|Action|FallbackAction|InlineAction
+    protected function create($actionName): Action|FallbackAction|InlineAction|null
     {
         $this->actionMethodName = $this->generateActionMethodName($actionName);
 

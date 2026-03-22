@@ -8,11 +8,11 @@ declare(strict_types=1);
  */
 class Rebit_Dev extends CModule
 {
-    var $MODULE_ID = 'rebit.dev';
-    var $MODULE_VERSION;
-    var $MODULE_VERSION_DATE;
-    var $MODULE_NAME;
-    var $MODULE_DESCRIPTION;
+    public $MODULE_ID = 'rebit.dev';
+    public $MODULE_VERSION;
+    public $MODULE_VERSION_DATE;
+    public $MODULE_NAME;
+    public $MODULE_DESCRIPTION;
 
     public function __construct()
     {

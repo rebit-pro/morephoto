@@ -64,7 +64,7 @@ final class ArrayToDtoMapper
 
     /**
      * @param array<string, mixed> $data
-     * @param class-string<T> $className
+     * @param class-string<T>      $className
      *
      * @return T
      *
@@ -83,7 +83,7 @@ final class ArrayToDtoMapper
 
     /**
      * @param array<int, array<string, mixed>> $data
-     * @param class-string<T> $className
+     * @param class-string<T>                  $className
      *
      * @return T[]
      *
@@ -115,7 +115,7 @@ final class ArrayToDtoMapper
 
     /**
      * @param array<string, mixed> $data
-     * @param class-string $className
+     * @param class-string         $className
      *
      * @return array<string, mixed>
      *
@@ -133,7 +133,7 @@ final class ArrayToDtoMapper
 
     /**
      * @param array<int, array<string, mixed>> $data
-     * @param class-string $className
+     * @param class-string                     $className
      *
      * @return array<int, array<string, mixed>>
      *
@@ -158,8 +158,8 @@ final class ArrayToDtoMapper
      * Формат array<string, true> для $allowedKeys — для O(1) поиска через array_diff_key/array_intersect_key.
      *
      * @param array<string, mixed> $data
-     * @param class-string $className
-     * @param array<string, true> $allowedKeys
+     * @param class-string         $className
+     * @param array<string, true>  $allowedKeys
      *
      * @return array<string, mixed>
      */
@@ -189,8 +189,7 @@ final class ArrayToDtoMapper
     private static function getValidator(): ValidatorInterface
     {
         return self::$validator ??= Validation::createValidatorBuilder()
-            ->enableAnnotationMapping(true)
-            ->addDefaultDoctrineAnnotationReader()
+            ->enableAttributeMapping()
             ->getValidator()
         ;
     }

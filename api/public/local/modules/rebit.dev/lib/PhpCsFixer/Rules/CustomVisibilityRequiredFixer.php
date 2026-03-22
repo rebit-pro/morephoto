@@ -21,8 +21,7 @@ final readonly class CustomVisibilityRequiredFixer implements FixerInterface, Co
 {
     public function __construct(
         private VisibilityRequiredFixer $original = new VisibilityRequiredFixer(),
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {

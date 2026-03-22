@@ -56,7 +56,7 @@ final readonly class VerifyApiUseCase
             $newStatus = ConnectionStatusEnum::Invalid;
         }
 
-        $connectionId = (int) $connection['ID'];
+        $connectionId = (int)$connection['ID'];
 
         $this->repository->update($connectionId, [
             'UF_STATUS' => $newStatus->value,
@@ -73,7 +73,7 @@ final readonly class VerifyApiUseCase
             ),
             createdAt: $connection['UF_CREATED_AT'] instanceof DateTime
                 ? $connection['UF_CREATED_AT']->format('c')
-                : (string) $connection['UF_CREATED_AT'],
+                : (string)$connection['UF_CREATED_AT'],
             verifiedAt: (new DateTime())->format('c'),
         );
     }

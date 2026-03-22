@@ -22,7 +22,7 @@ final class JsonResponse extends AbstractResponse
      */
     public function __construct(
         private readonly SerializerInterface $serializer,
-        private readonly null|array|ResultDtoInterface $data = null,
+        private readonly array|ResultDtoInterface|null $data = null,
         private readonly array $meta = [],
         private readonly int $options = 0,
     ) {}

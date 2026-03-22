@@ -41,7 +41,8 @@ final class ApiConnectionRepository extends AbstractHLBlockRepository
             ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
             ->setCacheTtl(self::TTL)
             ->exec()
-            ->fetch();
+            ->fetch()
+        ;
     }
 
     /**
@@ -58,7 +59,8 @@ final class ApiConnectionRepository extends AbstractHLBlockRepository
             ->where('ID', $id)
             ->setCacheTtl(self::TTL)
             ->exec()
-            ->fetch();
+            ->fetch()
+        ;
     }
 
     /**
@@ -77,7 +79,8 @@ final class ApiConnectionRepository extends AbstractHLBlockRepository
             ->setLimit(1)
             ->setCacheTtl(self::TTL)
             ->exec()
-            ->fetch();
+            ->fetch()
+        ;
     }
 
     /**
@@ -125,7 +128,7 @@ final class ApiConnectionRepository extends AbstractHLBlockRepository
             return;
         }
 
-        $this->update((int) $connection['ID'], [
+        $this->update((int)$connection['ID'], [
             'UF_STATUS' => ConnectionStatusEnum::Revoked->value,
             'UF_REVOKED_AT' => new DateTime(),
         ]);
