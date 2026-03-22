@@ -8,11 +8,10 @@
 /api/public/bitrix/
 /api/public/upload/
 /api/public/include/
+/api/public/local/routes/*
+!/api/public/local/routes/.gitkeep
 /api/log/
-/api/tcp:/
-/api/.phplint.cache/
-/api/.phpunit.result.cache/
-/api/.phpunit.result.cache
+/api/tcp:
 /dump.sql.7z
 /dump.sql.7z:Zone.Identifier
 **.php-cs-fixer.cache
