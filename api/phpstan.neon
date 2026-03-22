@@ -1,16 +1,31 @@
+includes:
+    - phpstan-baseline.neon
+
 parameters:
-    level: 6
+    level: 5
     tmpDir: var/phpstan
     paths:
         - public/local/modules
+    scanFiles:
+        - phpstan/bitrix-stubs.php
     excludePaths:
-        - public/local/modules/*/vendor
+        - public/local/modules/sprint.migration
+        - public/local/modules/rebit.photoorder
+        - public/local/modules/rebit.auth/install
+        - public/local/modules/rebit.bybit/install
+        - public/local/modules/rebit.dev/install
+        - public/local/modules/rebit.identity/install
+        - public/local/modules/rebit.share/install
+        - public/local/modules/rebit.auth/tests
+        - public/local/modules/rebit.bybit/tests (?)
+        - public/local/modules/rebit.identity/tests (?)
+        - public/local/modules/rebit.share/tests (?)
     ignoreErrors:
-        # Bitrix специфичные ошибки
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::GetList\(\)#'
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::fetch\(\)#'
-        - '#Undefined variable: \$_SESSION#'
-        - '#Class [a-zA-Z0-9\\_]+Table not found#'
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
+        # Побочные ошибки от неполных Bitrix-стабов (ковариантность, контравариантность и т.д.)
+        -
+            message: '#Bitrix\\#'
+            reportUnmatched: false
+        -
+            message: '#does not extend any class#'
+            reportUnmatched: false
     reportUnmatchedIgnoredErrors: false

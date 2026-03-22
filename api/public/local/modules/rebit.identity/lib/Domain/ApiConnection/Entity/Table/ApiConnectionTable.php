@@ -16,7 +16,7 @@ use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnectionCollection;
  *
  * @todo Наследовать от скомпилированного DataManager после создания HL-блока.
  */
-final class ApiConnectionTable /* extends compiled HL DataManager */
+final class ApiConnectionTable // extends compiled HL DataManager
 {
     public static function getObjectClass(): string
     {

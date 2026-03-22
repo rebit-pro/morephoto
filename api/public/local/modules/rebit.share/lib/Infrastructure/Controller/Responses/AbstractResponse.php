@@ -15,9 +15,6 @@ use Bitrix\Main\HttpResponse;
  */
 abstract class AbstractResponse
 {
-    /**
-     * @var HttpResponse
-     */
     protected HttpResponse $response;
 
     abstract protected function buildResponse(): HttpResponse;

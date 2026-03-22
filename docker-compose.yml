@@ -91,6 +91,7 @@ services:
             - ./api:/app
         environment:
             APP_DEBUG: 1
+            XDEBUG_MODE: off
 
     api-mysql:
         build:

@@ -12,9 +12,9 @@ final class CacheKey
     private array $cacheTags;
 
     /**
-     * @param string $prefix Префикс для идентификации модуля/сущности
+     * @param string               $prefix Префикс для идентификации модуля/сущности
      * @param array<string, mixed> $params Параметры для формирования уникального ключа
-     * @param string[] $tags Теги для инвалидации кэша
+     * @param string[]             $tags   Теги для инвалидации кэша
      *
      * @throws \JsonException
      */
@@ -122,12 +122,11 @@ final class CacheKey
         return $value;
     }
 
-
     /**
      * Фабричный метод для создания ключа с USER_ID
      *
      * @param array<string, mixed> $params
-     * @param string[] $tags
+     * @param string[]             $tags
      *
      * @throws \JsonException
      */

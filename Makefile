@@ -34,12 +34,12 @@ docker-pull:
 	docker compose pull
 
 docker-build:
-	DOCKER_BUILDKIT=1 BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose build --pull
+	docker compose build --pull
 
 # frontend
-frontend-init: frontend-yarn-install
+frontend-init: frontend-npm-install
 
-frontend-yarn-install:
+frontend-npm-install:
 	docker compose run --rm frontend-node-cli npm install
 
 # api
@@ -62,6 +62,9 @@ api-cs-fix:
 
 api-analyze:
 	docker compose run --rm api-php-cli composer phpstan
+
+api-analyze-baseline:
+	docker compose run --rm api-php-cli php vendor/bin/phpstan analyse --configuration=phpstan.neon --generate-baseline=phpstan-baseline.neon
 
 api-test:
 	docker compose run --rm api-php-cli composer test

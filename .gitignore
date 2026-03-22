@@ -3,7 +3,6 @@
 /.idea
 .env
 
-**/tests/
 **/vendor/
 **/logs/
 /api/public/bitrix/

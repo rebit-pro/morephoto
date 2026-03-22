@@ -12,8 +12,8 @@ enum BybitEnvironmentEnum: string
     public function baseUrl(): string
     {
         return match ($this) {
-            self::Testnet => (string) getenv('BYBIT_TESTNET_BASE_URL'),
-            self::Mainnet => (string) getenv('BYBIT_MAINNET_BASE_URL'),
+            self::Testnet => (string)getenv('BYBIT_TESTNET_BASE_URL'),
+            self::Mainnet => (string)getenv('BYBIT_MAINNET_BASE_URL'),
         };
     }
 }

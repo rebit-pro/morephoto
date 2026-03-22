@@ -49,6 +49,7 @@
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
+        "dg/bypass-finals": "^1.6",
         "friendsofphp/php-cs-fixer": "^3.88.2",
         "overtrue/phplint": "^9.5",
         "phpstan/phpstan": "^2.1",
@@ -75,6 +76,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Rebit\\Auth\\Tests\\": "public/local/modules/rebit.auth/tests/",
             "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
         }
     },

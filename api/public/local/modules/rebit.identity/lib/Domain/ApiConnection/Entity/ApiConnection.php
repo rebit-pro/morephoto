@@ -10,4 +10,5 @@ namespace Rebit\Identity\Domain\ApiConnection\Entity;
  *
  * @todo Наследовать от EO_RebitApiConnection после создания HL-блока.
  */
-final class ApiConnection /* extends EO_RebitApiConnection */ {}
+final class ApiConnection // extends EO_RebitApiConnection
+{}

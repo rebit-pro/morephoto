@@ -23,7 +23,7 @@ return [
                     useLocking: true,
                 ),
                 'formatter' => static fn(LogChannelEnum $channel) => new LogstashFormatter($channel->value),
-                'processor' => static function (LogChannelEnum $channel, array $record): array {
+                'processor' => static function(LogChannelEnum $channel, array $record): array {
                     return (new CommonLoggerProcessor($record))();
                 },
             ],
@@ -33,15 +33,15 @@ return [
                     allowInlineLineBreaks: true,
                     ignoreEmptyContextAndExtra: true,
                 ),
-                'processor' => static function (LogChannelEnum $channel, array $record): array {
+                'processor' => static function(LogChannelEnum $channel, array $record): array {
                     return (new CommonLoggerProcessor($record))();
                 },
             ],
             'file' => [
-                'handler' => static function () {
+                'handler' => static function() {
                     return new StreamHandler(dirname($_SERVER['DOCUMENT_ROOT'], 2) . '/logs/debug.html', Logger::DEBUG);
                 },
-                'formatter' => static function () {
+                'formatter' => static function() {
                     return new HtmlFormatter();
                 },
             ],

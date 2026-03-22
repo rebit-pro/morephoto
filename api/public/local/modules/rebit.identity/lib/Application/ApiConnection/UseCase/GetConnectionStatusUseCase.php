@@ -40,7 +40,7 @@ final readonly class GetConnectionStatusUseCase
                 . mb_substr($apiKey, -$visibleChars);
 
         return new ApiConnectionResultDto(
-            id: (int) $connection['ID'],
+            id: (int)$connection['ID'],
             userId: $userId,
             status: ConnectionStatusEnum::from($connection['UF_STATUS']),
             mode: ConnectionModeEnum::from($connection['UF_MODE']),
@@ -56,6 +56,6 @@ final readonly class GetConnectionStatusUseCase
     {
         return $value instanceof DateTime
             ? $value->format('c')
-            : (string) $value;
+            : (string)$value;
     }
 }

@@ -10,6 +10,7 @@ use Rebit\Auth\Application\Auth\Dto\Result\LoginResultDto;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
 use Rebit\Auth\Domain\User\Service\TokenGenerator;
 use Rebit\Share\Shared\Exception\HttpException;
+use Random\RandomException;
 
 final readonly class LoginUseCase
 {
@@ -21,7 +22,7 @@ final readonly class LoginUseCase
 
     /**
      * @throws HttpException
-     * @throws \Random\RandomException
+     * @throws RandomException
      */
     public function execute(LoginRequestDto $dto): LoginResultDto
     {
@@ -44,6 +45,7 @@ final readonly class LoginUseCase
 
         return new LoginResultDto(
             token: $token,
-            expiresAt: $expiresAt->format('c'),);
+            expiresAt: $expiresAt->format('c'),
+        );
     }
 }
