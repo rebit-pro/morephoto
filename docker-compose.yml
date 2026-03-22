@@ -67,11 +67,15 @@ services:
             dockerfile: development/php-fpm/Dockerfile
         extra_hosts:
             - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
         ports:  # Добавьте это!
             - "3307:3307"
             #- "9003:9003"  # Добавьте эту строку
         volumes:
             - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+            - ./api/docker/development/php-fpm/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
         environment:
             APP_DEBUG: ${APP_DEBUG:-1}
             APP_ENV: ${APP_ENV:-local}
@@ -87,8 +91,12 @@ services:
             dockerfile: development/php-cli/Dockerfile
         extra_hosts:
             - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
         volumes:
             - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+            - ./api/docker/development/php-fpm/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
         environment:
             APP_DEBUG: 1
             XDEBUG_MODE: off

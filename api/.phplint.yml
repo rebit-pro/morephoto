@@ -1,10 +1,9 @@
 path: ./public/local/modules
 jobs: 10
-cache: var/phplint.json
+cache-dir: var/phplint
 extensions:
   - php
 exclude:
   - sprint.migration
-  - rebit.photoorder
   - vendor
   - install
