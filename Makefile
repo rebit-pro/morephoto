@@ -183,7 +183,6 @@ api-migrate-deploy:
 	ssh $(REMOTE) -p $(PORT) 'docker run --rm \
 		-v /srv/rebit-p2p/bitrix:/app/public/bitrix \
 		-v /srv/rebit-p2p/upload:/app/public/upload \
-		-v /srv/rebit-p2p/sessions:/var/lib/php/sessions \
 		--network $(STACK_NAME)_default \
 		$(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG) \
 		php /app/public/local/modules/sprint.migration/tools/migrate.php up'
