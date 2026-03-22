@@ -16,7 +16,7 @@ return [
         'value' => [
             'logstash' => [
                 'handler' => static fn(LogChannelEnum $channel) => new RotatingFileHandler(
-                    dirname($_SERVER['DOCUMENT_ROOT'], 2) . '/logs/logstash/' . $channel->value . '.log',
+                    dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/logstash/' . $channel->value . '.log',
                     maxFiles: 30,
                     level: Logger::INFO,
                     filePermission: 0644,
@@ -39,7 +39,7 @@ return [
             ],
             'file' => [
                 'handler' => static function() {
-                    return new StreamHandler(dirname($_SERVER['DOCUMENT_ROOT'], 2) . '/logs/debug.html', Logger::DEBUG);
+                    return new StreamHandler(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/debug.html', Logger::DEBUG);
                 },
                 'formatter' => static function() {
                     return new HtmlFormatter();

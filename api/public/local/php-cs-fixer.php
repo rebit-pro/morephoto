@@ -46,7 +46,6 @@ return (new Config())
             ->exclude([
                 'vendor',
                 'modules/sprint.migration',
-                'modules/rebit.photoorder',
                 'php_interface/migrations',
             ]),
     )

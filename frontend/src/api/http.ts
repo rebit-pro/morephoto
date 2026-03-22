@@ -22,7 +22,13 @@ api.interceptors.request.use((config) => {
 
 // Response: обработка 401
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Разворачиваем обёртку API: { data: { ... } } → { ... }
+    if (response.data?.data !== undefined) {
+      response.data = response.data.data;
+    }
+    return response;
+  },
   async (error) => {
     if (error.response?.status === 401) {
       const auth = useAuthStore();

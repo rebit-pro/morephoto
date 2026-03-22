@@ -49,7 +49,7 @@ final readonly class UserRepository
     public function findActiveByEmail(string $email): ?UserCredentials
     {
         $row = UserTable::query()
-            ->setSelect(['ID', 'PASSWORD'])
+            ->setSelect(['ID', 'PASSWORD', 'EMAIL', 'NAME'])
             ->enablePrivateFields()
             ->where('EMAIL', $email)
             ->where('ACTIVE', 'Y')
@@ -65,6 +65,8 @@ final readonly class UserRepository
         return new UserCredentials(
             id: (int)$row['ID'],
             passwordHash: (string)$row['PASSWORD'],
+            email: (string)$row['EMAIL'],
+            name: (string)$row['NAME'],
         );
     }
 

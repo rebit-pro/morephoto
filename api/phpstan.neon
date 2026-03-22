@@ -10,7 +10,6 @@ parameters:
         - phpstan/bitrix-stubs.php
     excludePaths:
         - public/local/modules/sprint.migration
-        - public/local/modules/rebit.photoorder
         - public/local/modules/rebit.auth/install
         - public/local/modules/rebit.bybit/install
         - public/local/modules/rebit.dev/install

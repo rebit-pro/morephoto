@@ -39,7 +39,7 @@ final class LoginUseCaseTest extends TestCase
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         $generatedToken = bin2hex(random_bytes(16));
 
-        $credentials = new UserCredentials(id: 1, passwordHash: $passwordHash);
+        $credentials = new UserCredentials(id: 1, passwordHash: $passwordHash, email: $email, name: 'Test User');
 
         $userRepository = $this->createMock(UserRepository::class);
         $tokenGenerator = $this->createMock(TokenGenerator::class);
@@ -74,6 +74,9 @@ final class LoginUseCaseTest extends TestCase
         self::assertInstanceOf(LoginResultDto::class, $result);
         self::assertSame($generatedToken, $result->token);
         self::assertNotEmpty($result->expiresAt);
+        self::assertSame(1, $result->user->id);
+        self::assertSame($email, $result->user->email);
+        self::assertSame('Test User', $result->user->name);
     }
 
     public function testLoginWithNonExistentEmailThrows401(): void
@@ -102,6 +105,8 @@ final class LoginUseCaseTest extends TestCase
         $credentials = new UserCredentials(
             id: 1,
             passwordHash: password_hash('correct_password', PASSWORD_DEFAULT),
+            email: 'user@example.com',
+            name: 'Test User',
         );
 
         $userRepository = $this->createMock(UserRepository::class);
@@ -153,6 +158,8 @@ final class LoginUseCaseTest extends TestCase
         $credentials = new UserCredentials(
             id: 5,
             passwordHash: password_hash($password, PASSWORD_DEFAULT),
+            email: 'a@b.com',
+            name: 'Test User',
         );
 
         $userRepository = $this->createMock(UserRepository::class);
