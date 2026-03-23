@@ -77,6 +77,8 @@
     "autoload-dev": {
         "psr-4": {
             "Rebit\\Auth\\Tests\\": "public/local/modules/rebit.auth/tests/",
+            "Rebit\\Bybit\\Tests\\": "public/local/modules/rebit.bybit/tests/",
+            "Rebit\\Identity\\Tests\\": "public/local/modules/rebit.identity/tests/",
             "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
         }
     },

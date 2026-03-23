@@ -20,12 +20,13 @@ final class ApiConnectionRepository
      */
     public function findActiveByUserId(int $userId): ?ApiConnection
     {
-        return $this->query(fn(): ?ApiConnection => ApiConnectionTable::query()
-            ->setSelect(['*'])
-            ->where('UF_USER_ID', $userId)
-            ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
-            ->exec()
-            ->fetchObject()
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
+                ->exec()
+                ->fetchObject(),
         );
     }
 
@@ -34,11 +35,12 @@ final class ApiConnectionRepository
      */
     public function findById(int $id): ?ApiConnection
     {
-        return $this->query(fn(): ?ApiConnection => ApiConnectionTable::query()
-            ->setSelect(['*'])
-            ->where('ID', $id)
-            ->exec()
-            ->fetchObject()
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('ID', $id)
+                ->exec()
+                ->fetchObject(),
         );
     }
 
@@ -47,13 +49,14 @@ final class ApiConnectionRepository
      */
     public function findByUserId(int $userId): ?ApiConnection
     {
-        return $this->query(fn(): ?ApiConnection => ApiConnectionTable::query()
-            ->setSelect(['*'])
-            ->where('UF_USER_ID', $userId)
-            ->setOrder(['ID' => 'DESC'])
-            ->setLimit(1)
-            ->exec()
-            ->fetchObject()
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->setOrder(['ID' => 'DESC'])
+                ->setLimit(1)
+                ->exec()
+                ->fetchObject(),
         );
     }
 

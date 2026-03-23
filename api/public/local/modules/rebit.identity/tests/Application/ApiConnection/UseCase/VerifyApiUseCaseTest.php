@@ -6,9 +6,6 @@ namespace Rebit\Identity\Tests\Application\ApiConnection\UseCase;
 
 use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\TestCase;
-use Rebit\Bybit\Application\Shared\Dto\BybitResponseDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Application\ApiConnection\UseCase\VerifyApiUseCase;
 use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
@@ -16,6 +13,9 @@ use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**

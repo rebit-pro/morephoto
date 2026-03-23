@@ -200,6 +200,8 @@ namespace Bitrix\Main\ORM\Query {
     {
         /** @return array<string, mixed>|false */
         public function fetch(): array|false {}
+        /** @return array<int, array<string, mixed>> */
+        public function fetchAll(): array {}
         public function fetchObject(): ?\Bitrix\Main\ORM\Objectify\EntityObject {}
         public function fetchCollection(): \Bitrix\Main\ORM\Objectify\Collection {}
     }
@@ -334,31 +336,26 @@ namespace {
     class RebitTransactionTable extends \Bitrix\Main\ORM\Data\DataManager {}
 }
 
-/**
- * Стабы для EO_* классов, автогенерируемых Bitrix ORM в рантайме.
- * Нужны для корректного вывода типов в IDE и phpstan.
- */
-namespace Rebit\Identity\Domain\ApiConnection\Entity\Table {
-    class EO_ApiConnection extends \Bitrix\Main\ORM\Objectify\EntityObject {}
-    class EO_ApiConnection_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
-}
-
-namespace Rebit\Wallet\Domain\Balance\Entity\Table {
-    class EO_Balance extends \Bitrix\Main\ORM\Objectify\EntityObject {}
-    class EO_Balance_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
-}
-
-namespace Rebit\Wallet\Domain\Transaction\Entity\Table {
-    class EO_Transaction extends \Bitrix\Main\ORM\Objectify\EntityObject {}
-    class EO_Transaction_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
-}
 
 namespace Bitrix\Main\ORM\Objectify {
-    class Collection implements \Countable, \IteratorAggregate
+    /**
+     * @implements \ArrayAccess<int, EntityObject>
+     * @implements \Iterator<int, EntityObject>
+     */
+    class Collection implements \Countable, \IteratorAggregate, \ArrayAccess, \Iterator
     {
         /** @return array<EntityObject> */
         public function getAll(): array {}
         public function count(): int {}
         public function getIterator(): \ArrayIterator {}
+        public function current(): EntityObject {}
+        public function next(): void {}
+        public function key(): int {}
+        public function valid(): bool {}
+        public function rewind(): void {}
+        public function offsetExists(mixed $offset): bool {}
+        public function offsetGet(mixed $offset): ?EntityObject {}
+        public function offsetSet(mixed $offset, mixed $value): void {}
+        public function offsetUnset(mixed $offset): void {}
     }
 }

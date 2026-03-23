@@ -5,11 +5,6 @@ declare(strict_types=1);
 namespace Rebit\Identity\Tests\Application\ApiConnection\UseCase;
 
 use PHPUnit\Framework\TestCase;
-use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
-use Rebit\Bybit\Application\Shared\Dto\BybitResponseDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
-use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
 use Rebit\Identity\Application\ApiConnection\Dto\Request\ConnectApiRequestDto;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
@@ -19,6 +14,11 @@ use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
+use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
 use Bitrix\Main\Type\DateTime;
 
 /**
@@ -70,7 +70,7 @@ final class ConnectApiUseCaseTest extends TestCase
             ->method('get')
             ->with(
                 '/v5/user/query-api',
-                $this->isInstanceOf(BybitCredentialsDto::class),
+                $this->isInstanceOf(BybitCredentials::class),
                 BybitEnvironmentEnum::Testnet,
             )
             ->willReturn(new BybitResponseDto(0, 'OK', [], [], 0))

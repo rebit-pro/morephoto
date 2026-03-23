@@ -28,7 +28,7 @@ final class TransactionRepository
      */
     public function findByFilter(int $userId, TransactionFilterDto $filter): TransactionCollection
     {
-        return $this->query(function () use ($userId, $filter): TransactionCollection {
+        return $this->query(function() use ($userId, $filter): TransactionCollection {
             $query = TransactionTable::query()
                 ->setSelect(['*'])
                 ->where('UF_USER_ID', $userId)
@@ -64,7 +64,7 @@ final class TransactionRepository
      */
     public function countByFilter(int $userId, TransactionFilterDto $filter): int
     {
-        return $this->query(function () use ($userId, $filter): int {
+        return $this->query(function() use ($userId, $filter): int {
             $query = TransactionTable::query()
                 ->addSelect('ID')
                 ->where('UF_USER_ID', $userId)

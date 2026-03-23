@@ -9,14 +9,12 @@ namespace Rebit\Share\Application\Contract\Bybit;
  */
 final readonly class BybitResponseDto
 {
-    /**
-     * @param array<string, mixed> $result
-     * @param array<string, mixed> $retExtInfo
-     */
     public function __construct(
         public int $retCode,
         public string $retMsg,
+        /** @var array[] */
         public array $result,
+        /** @var array[] */
         public array $retExtInfo,
         public int $time,
     ) {}

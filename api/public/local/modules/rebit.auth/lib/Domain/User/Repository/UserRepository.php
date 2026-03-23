@@ -20,7 +20,7 @@ final readonly class UserRepository
      */
     public function findByToken(string $token): ?UserToken
     {
-        return $this->query(function () use ($token): ?UserToken {
+        return $this->query(function() use ($token): ?UserToken {
             $row = UserTable::query()
                 ->setSelect(['ID', 'UF_TOKEN_EXPIRES_AT'])
                 ->where('UF_TOKEN', $token)
@@ -47,7 +47,7 @@ final readonly class UserRepository
      */
     public function findActiveByEmail(string $email): ?UserCredentials
     {
-        return $this->query(function () use ($email): ?UserCredentials {
+        return $this->query(function() use ($email): ?UserCredentials {
             $row = UserTable::query()
                 ->setSelect(['ID', 'PASSWORD', 'EMAIL', 'NAME'])
                 ->enablePrivateFields()

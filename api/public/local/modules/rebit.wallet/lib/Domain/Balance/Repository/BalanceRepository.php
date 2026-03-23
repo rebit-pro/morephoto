@@ -20,11 +20,12 @@ final class BalanceRepository
      */
     public function findByUserId(int $userId): BalanceCollection
     {
-        return $this->query(fn(): BalanceCollection => BalanceTable::query()
-            ->setSelect(['*'])
-            ->where('UF_USER_ID', $userId)
-            ->exec()
-            ->fetchCollection()
+        return $this->query(
+            fn(): BalanceCollection => BalanceTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->exec()
+                ->fetchCollection(),
         );
     }
 
@@ -33,12 +34,13 @@ final class BalanceRepository
      */
     public function findByUserIdAndCurrencyId(int $userId, int $currencyId): ?Balance
     {
-        return $this->query(fn(): ?Balance => BalanceTable::query()
-            ->setSelect(['*'])
-            ->where('UF_USER_ID', $userId)
-            ->where('UF_CURRENCY_ID', $currencyId)
-            ->exec()
-            ->fetchObject()
+        return $this->query(
+            fn(): ?Balance => BalanceTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->where('UF_CURRENCY_ID', $currencyId)
+                ->exec()
+                ->fetchObject(),
         );
     }
 
