@@ -131,6 +131,7 @@ final class ApiConnectionRepository extends AbstractHLBlockRepository
         $this->update((int)$connection['ID'], [
             'UF_STATUS' => ConnectionStatusEnum::Revoked->value,
             'UF_REVOKED_AT' => new DateTime(),
+            'UF_UPDATED_AT' => new DateTime(),
         ]);
     }
 }

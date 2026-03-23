@@ -10,7 +10,7 @@ parameters:
 			message: '#^Call to an undefined static method Rebit\\Identity\\Infrastructure\\Controller\\BaseIdentityController\:\:__construct\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
-			path: public/local/modules/rebit.identity/lib/Controller/ApiConnectionController.php
+			path: public/local/modules/rebit.identity/lib/Presentation/Controller/ApiConnectionController.php
 
 		-
 			message: '#^Strict comparison using \=\=\= between false and int will always evaluate to false\.$#'

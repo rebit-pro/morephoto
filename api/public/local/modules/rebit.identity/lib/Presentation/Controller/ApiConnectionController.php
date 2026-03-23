@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Identity\Controller;
+namespace Rebit\Identity\Presentation\Controller;
 
+use Rebit\Identity\Application\ApiConnection\Dto\Request\ConnectApiRequestDto;
+use Rebit\Identity\Infrastructure\Controller\BaseIdentityController;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\VerifyApiUseCase;
-use Rebit\Identity\Domain\ApiConnection\Dto\Request\ConnectApiRequestDto;
-use Rebit\Identity\Infrastructure\Controller\BaseIdentityController;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Share\Shared\Exception\HttpException;
 
@@ -65,8 +65,6 @@ final class ApiConnectionController extends BaseIdentityController
 
     /**
      * GET /api/v1/identity/connection/status
-     *
-     * @throws HttpException
      */
     public function statusAction(): ControllerJson
     {

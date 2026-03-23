@@ -16,7 +16,7 @@ use Rebit\Share\Infrastructure\Controller\Filters\LoggerFilter;
 /**
  * Базовый контроллер для модуля Identity.
  *
- * Включает авторизацию по Bearer-токену и логирование.
+ * Включает авторизацию по Bearer-токену и логирование для всех экшенов.
  */
 class BaseIdentityController extends BaseJsonController implements AuthenticatedControllerInterface
 {
