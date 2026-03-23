@@ -4,134 +4,116 @@ declare(strict_types=1);
 
 namespace Rebit\Identity\Domain\ApiConnection\Repository;
 
-use Bitrix\Main\ArgumentException;
-use Bitrix\Main\ObjectPropertyException;
-use Bitrix\Main\SystemException;
 use Bitrix\Main\Type\DateTime;
+use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
+use Rebit\Identity\Domain\ApiConnection\Entity\Table\ApiConnectionTable;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
-use Rebit\Share\Infrastructure\Repository\AbstractHLBlockRepository;
+use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
-final class ApiConnectionRepository extends AbstractHLBlockRepository
+final class ApiConnectionRepository
 {
-    private const string HL_BLOCK_NAME = 'RebitApiConnection';
-    private const int TTL = 60;
+    use RepositoryExceptionTrait;
 
     /**
-     * @throws ArgumentException
-     * @throws ObjectPropertyException
-     * @throws SystemException
+     * @throws RepositoryException
      */
-    public function __construct()
+    public function findActiveByUserId(int $userId): ?ApiConnection
     {
-        parent::__construct(self::HL_BLOCK_NAME);
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
+                ->exec()
+                ->fetchObject(),
+        );
     }
 
     /**
-     * @return array<string, mixed>|false
-     *
-     * @throws ArgumentException
-     * @throws ObjectPropertyException
-     * @throws SystemException
+     * @throws RepositoryException
      */
-    public function findActiveByUserId(int $userId): array|false
+    public function findById(int $id): ?ApiConnection
     {
-        return $this->getQuery()
-            ->setSelect(['*'])
-            ->where('UF_USER_ID', $userId)
-            ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
-            ->setCacheTtl(self::TTL)
-            ->exec()
-            ->fetch()
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('ID', $id)
+                ->exec()
+                ->fetchObject(),
+        );
+    }
+
+    /**
+     * @throws RepositoryException
+     */
+    public function findByUserId(int $userId): ?ApiConnection
+    {
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->setOrder(['ID' => 'DESC'])
+                ->setLimit(1)
+                ->exec()
+                ->fetchObject(),
+        );
+    }
+
+    /**
+     * @throws RepositoryException
+     */
+    public function save(ApiConnection $connection): void
+    {
+        $this->persist($connection);
+    }
+
+    /**
+     * @throws RepositoryException
+     */
+    public function create(
+        int $userId,
+        string $apiKeyEncrypted,
+        string $secretKeyEncrypted,
+        string $mode,
+        ConnectionStatusEnum $status,
+        ?DateTime $lastVerifiedAt = null,
+    ): ApiConnection {
+        $now = new DateTime();
+
+        /** @var ApiConnection $connection */
+        $connection = ApiConnectionTable::createObject()
+            ->setUfUserId($userId)
+            ->setUfApiKeyEncrypted($apiKeyEncrypted)
+            ->setUfSecretKeyEncrypted($secretKeyEncrypted)
+            ->setUfMode($mode)
+            ->setUfStatus($status->value)
+            ->setUfLastVerifiedAt($lastVerifiedAt)
+            ->setUfCreatedAt($now)
+            ->setUfUpdatedAt($now)
         ;
+
+        $this->persist($connection);
+
+        return $connection;
     }
 
     /**
-     * @return array<string, mixed>|false
-     *
-     * @throws ArgumentException
-     * @throws ObjectPropertyException
-     * @throws SystemException
-     */
-    public function findById(int $id): array|false
-    {
-        return $this->getQuery()
-            ->setSelect(['*'])
-            ->where('ID', $id)
-            ->setCacheTtl(self::TTL)
-            ->exec()
-            ->fetch()
-        ;
-    }
-
-    /**
-     * @return array<string, mixed>|false
-     *
-     * @throws ArgumentException
-     * @throws ObjectPropertyException
-     * @throws SystemException
-     */
-    public function findByUserId(int $userId): array|false
-    {
-        return $this->getQuery()
-            ->setSelect(['*'])
-            ->where('UF_USER_ID', $userId)
-            ->setOrder(['ID' => 'DESC'])
-            ->setLimit(1)
-            ->setCacheTtl(self::TTL)
-            ->exec()
-            ->fetch()
-        ;
-    }
-
-    /**
-     * @param array<string, mixed> $fields
-     *
-     * @throws \Exception
-     */
-    public function create(array $fields): int
-    {
-        $result = $this->getDataManager()::add($fields);
-
-        if (!$result->isSuccess()) {
-            throw new \RuntimeException(
-                implode('; ', $result->getErrorMessages()),
-            );
-        }
-
-        return $result->getId();
-    }
-
-    /**
-     * @param array<string, mixed> $fields
-     *
-     * @throws \Exception
-     */
-    public function update(int $id, array $fields): void
-    {
-        $result = $this->getDataManager()::update($id, $fields);
-
-        if (!$result->isSuccess()) {
-            throw new \RuntimeException(
-                implode('; ', $result->getErrorMessages()),
-            );
-        }
-    }
-
-    /**
-     * @throws \Exception
+     * @throws RepositoryException
      */
     public function revokeByUserId(int $userId): void
     {
         $connection = $this->findActiveByUserId($userId);
 
-        if (false === $connection) {
+        if (null === $connection) {
             return;
         }
 
-        $this->update((int)$connection['ID'], [
-            'UF_STATUS' => ConnectionStatusEnum::Revoked->value,
-            'UF_REVOKED_AT' => new DateTime(),
-            'UF_UPDATED_AT' => new DateTime(),
-        ]);
+        $connection
+            ->setUfStatus(ConnectionStatusEnum::Revoked->value)
+            ->setUfUpdatedAt(new DateTime())
+        ;
+
+        $this->persist($connection);
     }
 }

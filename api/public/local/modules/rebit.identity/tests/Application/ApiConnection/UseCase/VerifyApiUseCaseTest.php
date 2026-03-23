@@ -6,15 +6,16 @@ namespace Rebit\Identity\Tests\Application\ApiConnection\UseCase;
 
 use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\TestCase;
-use Rebit\Bybit\Application\Shared\Dto\BybitResponseDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Application\ApiConnection\UseCase\VerifyApiUseCase;
+use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -65,11 +66,8 @@ final class VerifyApiUseCaseTest extends TestCase
 
         $repository
             ->expects($this->once())
-            ->method('update')
-            ->with(10, $this->callback(function(array $fields): bool {
-                return ConnectionStatusEnum::Active->value === $fields['UF_STATUS']
-                    && $fields['UF_VERIFIED_AT'] instanceof DateTime;
-            }))
+            ->method('save')
+            ->with($connection)
         ;
 
         $result = $this->createUseCase($repository, $encryptor, $bybitClient)
@@ -105,10 +103,8 @@ final class VerifyApiUseCaseTest extends TestCase
 
         $repository
             ->expects($this->once())
-            ->method('update')
-            ->with(20, $this->callback(function(array $fields): bool {
-                return ConnectionStatusEnum::Invalid->value === $fields['UF_STATUS'];
-            }))
+            ->method('save')
+            ->with($connection)
         ;
 
         $result = $this->createUseCase($repository, $encryptor, $bybitClient)
@@ -124,7 +120,7 @@ final class VerifyApiUseCaseTest extends TestCase
         $encryptor = $this->createStub(ApiKeyEncryptor::class);
         $bybitClient = $this->createStub(BybitClientInterface::class);
 
-        $repository->method('findActiveByUserId')->willReturn(false);
+        $repository->method('findActiveByUserId')->willReturn(null);
 
         $this->expectException(HttpException::class);
         $this->expectExceptionCode(404);
@@ -134,20 +130,18 @@ final class VerifyApiUseCaseTest extends TestCase
         ;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function buildConnection(int $id, int $userId, string $mode): array
+    private function buildConnection(int $id, int $userId, string $mode): ApiConnection
     {
-        return [
-            'ID' => (string)$id,
-            'UF_USER_ID' => $userId,
-            'UF_API_KEY_ENCRYPTED' => 'encrypted_key',
-            'UF_SECRET_KEY_ENCRYPTED' => 'encrypted_secret',
-            'UF_MODE' => $mode,
-            'UF_STATUS' => ConnectionStatusEnum::Active->value,
-            'UF_CREATED_AT' => new DateTime(),
-            'UF_VERIFIED_AT' => null,
-        ];
+        $connection = $this->createStub(ApiConnection::class);
+        $connection->method('getId')->willReturn($id);
+        $connection->method('getUfUserId')->willReturn($userId);
+        $connection->method('getUfApiKeyEncrypted')->willReturn('encrypted_key');
+        $connection->method('getUfSecretKeyEncrypted')->willReturn('encrypted_secret');
+        $connection->method('getUfMode')->willReturn($mode);
+        $connection->method('getUfStatus')->willReturn(ConnectionStatusEnum::Active->value);
+        $connection->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connection->method('getUfLastVerifiedAt')->willReturn(null);
+
+        return $connection;
     }
 }

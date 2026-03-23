@@ -7,16 +7,100 @@ parameters:
 			path: public/local/modules/rebit.auth/lib/Presentation/Controller/AuthController.php
 
 		-
-			message: '#^Call to an undefined static method Rebit\\Identity\\Infrastructure\\Controller\\BaseIdentityController\:\:__construct\(\)\.$#'
-			identifier: staticMethod.notFound
+			message: '#^Parameter \#1 \$encoded of method Rebit\\Identity\\Domain\\ApiConnection\\Service\\ApiKeyEncryptor\:\:decrypt\(\) expects string, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/Service/BybitConnectionResolver.php
+
+		-
+			message: '#^Parameter \#1 \$value of static method Rebit\\Identity\\Domain\\ApiConnection\\Enum\\ConnectionModeEnum\:\:from\(\) expects int\|string, string given\.$#'
+			identifier: argument.type
 			count: 1
-			path: public/local/modules/rebit.identity/lib/Presentation/Controller/ApiConnectionController.php
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/Service/BybitConnectionResolver.php
+
+		-
+			message: '#^Parameter \$id of class Rebit\\Identity\\Application\\ApiConnection\\Dto\\Result\\ApiConnectionResultDto constructor expects int\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/ConnectApiUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$encoded of method Rebit\\Identity\\Domain\\ApiConnection\\Service\\ApiKeyEncryptor\:\:decrypt\(\) expects string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/GetConnectionStatusUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$value of static method Rebit\\Identity\\Domain\\ApiConnection\\Enum\\ConnectionModeEnum\:\:from\(\) expects int\|string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/GetConnectionStatusUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$value of static method Rebit\\Identity\\Domain\\ApiConnection\\Enum\\ConnectionStatusEnum\:\:from\(\) expects int\|string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/GetConnectionStatusUseCase.php
+
+		-
+			message: '#^Parameter \$id of class Rebit\\Identity\\Application\\ApiConnection\\Dto\\Result\\ApiConnectionResultDto constructor expects int\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/GetConnectionStatusUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$encoded of method Rebit\\Identity\\Domain\\ApiConnection\\Service\\ApiKeyEncryptor\:\:decrypt\(\) expects string, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/VerifyApiUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$value of static method Rebit\\Identity\\Domain\\ApiConnection\\Enum\\ConnectionModeEnum\:\:from\(\) expects int\|string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/VerifyApiUseCase.php
+
+		-
+			message: '#^Parameter \$id of class Rebit\\Identity\\Application\\ApiConnection\\Dto\\Result\\ApiConnectionResultDto constructor expects int\|null, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/UseCase/VerifyApiUseCase.php
+
+		-
+			message: '#^Anonymous function never returns Rebit\\Identity\\Domain\\ApiConnection\\Entity\\ApiConnection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 3
+			path: public/local/modules/rebit.identity/lib/Domain/ApiConnection/Repository/ApiConnectionRepository.php
+
+		-
+			message: '#^Method Rebit\\Identity\\Domain\\ApiConnection\\Repository\\ApiConnectionRepository\:\:findActiveByUserId\(\) never returns Rebit\\Identity\\Domain\\ApiConnection\\Entity\\ApiConnection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Domain/ApiConnection/Repository/ApiConnectionRepository.php
+
+		-
+			message: '#^Method Rebit\\Identity\\Domain\\ApiConnection\\Repository\\ApiConnectionRepository\:\:findById\(\) never returns Rebit\\Identity\\Domain\\ApiConnection\\Entity\\ApiConnection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Domain/ApiConnection/Repository/ApiConnectionRepository.php
+
+		-
+			message: '#^Method Rebit\\Identity\\Domain\\ApiConnection\\Repository\\ApiConnectionRepository\:\:findByUserId\(\) never returns Rebit\\Identity\\Domain\\ApiConnection\\Entity\\ApiConnection so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Domain/ApiConnection/Repository/ApiConnectionRepository.php
 
 		-
 			message: '#^Strict comparison using \=\=\= between false and int will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 2
 			path: public/local/modules/rebit.identity/lib/Domain/ApiConnection/Service/ApiKeyEncryptor.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Identity\\Infrastructure\\Controller\\BaseIdentityController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Presentation/Controller/ApiConnectionController.php
 
 		-
 			message: '#^Call to an undefined static method Rebit\\Share\\Infrastructure\\Controller\\BaseJsonController\:\:__construct\(\)\.$#'
@@ -35,12 +119,6 @@ parameters:
 			identifier: arguments.count
 			count: 1
 			path: public/local/modules/rebit.share/lib/Infrastructure/Bitrix/ControllerJson.php
-
-		-
-			message: '#^Method Rebit\\Share\\Infrastructure\\Controller\\Filters\\LoggerFilter\:\:extractRequestData\(\) should return array\{method\: string, uri\: string, payload\: array\<string, mixed\>, requestId\: string\} but returns array\{request\: array\<string, mixed\>\}\.$#'
-			identifier: return.type
-			count: 1
-			path: public/local/modules/rebit.share/lib/Infrastructure/Controller/Filters/LoggerFilter.php
 
 		-
 			message: '''
@@ -156,3 +234,99 @@ parameters:
 			identifier: method.notFound
 			count: 2
 			path: public/local/modules/rebit.share/lib/Shared/ValueObject/DateRange.php
+
+		-
+			message: '#^Parameter \$available of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
+
+		-
+			message: '#^Parameter \$currencyId of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
+
+		-
+			message: '#^Parameter \$id of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
+
+		-
+			message: '#^Parameter \$locked of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
+
+		-
+			message: '#^Parameter \$total of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
+
+		-
+			message: '#^Parameter \$userId of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$available of method Rebit\\Wallet\\Domain\\Balance\\Service\\BalanceCalculator\:\:assertCanLock\(\) expects float, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/LockFundsUseCase.php
+
+		-
+			message: '#^Method Rebit\\Wallet\\Application\\Balance\\UseCase\\SyncBalancesUseCase\:\:resolveCurrencyId\(\) never returns int so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/SyncBalancesUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$localTotal of method Rebit\\Wallet\\Domain\\Balance\\Service\\BalanceCalculator\:\:detectDiscrepancy\(\) expects float, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/SyncBalancesUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$locked of method Rebit\\Wallet\\Domain\\Balance\\Service\\BalanceCalculator\:\:assertCanUnlock\(\) expects float, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/UnlockFundsUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(Rebit\\Wallet\\Domain\\Transaction\\Entity\\Transaction\)\: mixed\)\|null, Closure\(array\)\: Rebit\\Wallet\\Domain\\Transaction\\Dto\\Result\\TransactionResultDto given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, Rebit\\Wallet\\Domain\\Transaction\\Entity\\TransactionCollection given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php
+
+		-
+			message: '#^Anonymous function never returns Rebit\\Wallet\\Domain\\Balance\\Entity\\Balance so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Domain/Balance/Repository/BalanceRepository.php
+
+		-
+			message: '#^Method Rebit\\Wallet\\Domain\\Balance\\Repository\\BalanceRepository\:\:findByUserIdAndCurrencyId\(\) never returns Rebit\\Wallet\\Domain\\Balance\\Entity\\Balance so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Domain/Balance/Repository/BalanceRepository.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Wallet\\Infrastructure\\Controller\\BaseWalletController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Presentation/Controller/BalanceController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Wallet\\Infrastructure\\Controller\\BaseWalletController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Presentation/Controller/TransactionController.php

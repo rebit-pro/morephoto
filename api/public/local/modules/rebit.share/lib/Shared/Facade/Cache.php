@@ -345,6 +345,10 @@ final class Cache
     private static function deepClone(mixed $data): mixed
     {
         if (is_object($data)) {
+            if ($data instanceof \UnitEnum) {
+                return $data;
+            }
+
             $reflection = new \ReflectionClass($data);
 
             // Для readonly классов не нужен clone

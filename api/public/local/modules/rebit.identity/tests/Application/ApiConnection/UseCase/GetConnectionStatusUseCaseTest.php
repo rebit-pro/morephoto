@@ -8,6 +8,7 @@ use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\TestCase;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
+use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
@@ -35,6 +36,14 @@ final class GetConnectionStatusUseCaseTest extends TestCase
         $userId = 1;
         $createdAt = new DateTime();
 
+        $connection = $this->createStub(ApiConnection::class);
+        $connection->method('getId')->willReturn(5);
+        $connection->method('getUfApiKeyEncrypted')->willReturn('enc_key');
+        $connection->method('getUfStatus')->willReturn('active');
+        $connection->method('getUfMode')->willReturn('testnet');
+        $connection->method('getUfCreatedAt')->willReturn($createdAt);
+        $connection->method('getUfLastVerifiedAt')->willReturn($createdAt);
+
         $repository = $this->createMock(ApiConnectionRepository::class);
         $encryptor = $this->createMock(ApiKeyEncryptor::class);
 
@@ -42,15 +51,7 @@ final class GetConnectionStatusUseCaseTest extends TestCase
             ->expects($this->once())
             ->method('findByUserId')
             ->with($userId)
-            ->willReturn([
-                'ID' => '5',
-                'UF_USER_ID' => $userId,
-                'UF_API_KEY_ENCRYPTED' => 'enc_key',
-                'UF_STATUS' => 'active',
-                'UF_MODE' => 'testnet',
-                'UF_CREATED_AT' => $createdAt,
-                'UF_VERIFIED_AT' => $createdAt,
-            ])
+            ->willReturn($connection)
         ;
 
         $encryptor
@@ -78,7 +79,7 @@ final class GetConnectionStatusUseCaseTest extends TestCase
         $repository = $this->createStub(ApiConnectionRepository::class);
         $encryptor = $this->createStub(ApiKeyEncryptor::class);
 
-        $repository->method('findByUserId')->willReturn(false);
+        $repository->method('findByUserId')->willReturn(null);
 
         $result = $this->createUseCase($repository, $encryptor)->execute(999);
 
@@ -92,22 +93,18 @@ final class GetConnectionStatusUseCaseTest extends TestCase
 
     public function testNullVerifiedAtReturnsNullInResult(): void
     {
+        $connection = $this->createStub(ApiConnection::class);
+        $connection->method('getId')->willReturn(1);
+        $connection->method('getUfApiKeyEncrypted')->willReturn('enc');
+        $connection->method('getUfStatus')->willReturn('invalid');
+        $connection->method('getUfMode')->willReturn('mainnet');
+        $connection->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connection->method('getUfLastVerifiedAt')->willReturn(null);
+
         $repository = $this->createStub(ApiConnectionRepository::class);
         $encryptor = $this->createStub(ApiKeyEncryptor::class);
 
-        $repository
-            ->method('findByUserId')
-            ->willReturn([
-                'ID' => '1',
-                'UF_USER_ID' => 1,
-                'UF_API_KEY_ENCRYPTED' => 'enc',
-                'UF_STATUS' => 'invalid',
-                'UF_MODE' => 'mainnet',
-                'UF_CREATED_AT' => new DateTime(),
-                'UF_VERIFIED_AT' => null,
-            ])
-        ;
-
+        $repository->method('findByUserId')->willReturn($connection);
         $encryptor->method('decrypt')->willReturn('1234567890123456');
 
         $result = $this->createUseCase($repository, $encryptor)->execute(1);

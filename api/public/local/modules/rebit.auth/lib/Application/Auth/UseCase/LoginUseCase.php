@@ -11,6 +11,7 @@ use Rebit\Auth\Application\Auth\Dto\Result\UserDto;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
 use Rebit\Auth\Domain\User\Service\TokenGenerator;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 use Random\RandomException;
 
 final readonly class LoginUseCase
@@ -23,6 +24,7 @@ final readonly class LoginUseCase
 
     /**
      * @throws HttpException
+     * @throws RepositoryException
      * @throws RandomException
      */
     public function execute(LoginRequestDto $dto): LoginResultDto

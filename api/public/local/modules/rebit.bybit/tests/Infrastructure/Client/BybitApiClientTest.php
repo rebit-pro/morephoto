@@ -6,12 +6,12 @@ namespace Rebit\Bybit\Tests\Infrastructure\Client;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
-use Rebit\Bybit\Application\Shared\Dto\BybitResponseDto;
 use Rebit\Bybit\Infrastructure\Auth\HmacSignatureGenerator;
 use Rebit\Bybit\Infrastructure\Client\BybitApiClient;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
-use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
+use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
 use Rebit\Share\Infrastructure\HttpClient\RebitHttpClient;
 
 /**
@@ -44,7 +44,7 @@ final class BybitApiClientTest extends TestCase
             ])
         ;
 
-        $credentials = new BybitCredentialsDto('api-key', 'api-secret');
+        $credentials = new BybitCredentials('api-key', 'api-secret');
         $result = $this->createClient($httpClient)
             ->get('/v5/user/query-api', $credentials, BybitEnvironmentEnum::Testnet)
         ;
@@ -69,7 +69,7 @@ final class BybitApiClientTest extends TestCase
             ])
         ;
 
-        $credentials = new BybitCredentialsDto('bad-key', 'bad-secret');
+        $credentials = new BybitCredentials('bad-key', 'bad-secret');
 
         $this->expectException(BybitApiException::class);
         $this->expectExceptionMessage('Bybit API error [10003]: Invalid API key');
@@ -88,7 +88,7 @@ final class BybitApiClientTest extends TestCase
             ->willThrowException(new \Exception('Connection refused'))
         ;
 
-        $credentials = new BybitCredentialsDto('key', 'secret');
+        $credentials = new BybitCredentials('key', 'secret');
 
         $this->expectException(BybitApiException::class);
         $this->expectExceptionMessage('Bybit API request failed: Connection refused');
@@ -114,7 +114,7 @@ final class BybitApiClientTest extends TestCase
             ])
         ;
 
-        $credentials = new BybitCredentialsDto('api-key', 'api-secret');
+        $credentials = new BybitCredentials('api-key', 'api-secret');
         $result = $this->createClient($httpClient)->post(
             '/v5/order/create',
             $credentials,
@@ -141,7 +141,7 @@ final class BybitApiClientTest extends TestCase
             ])
         ;
 
-        $credentials = new BybitCredentialsDto('key', 'secret');
+        $credentials = new BybitCredentials('key', 'secret');
 
         $this->expectException(BybitApiException::class);
 
@@ -172,7 +172,7 @@ final class BybitApiClientTest extends TestCase
             })
         ;
 
-        $credentials = new BybitCredentialsDto('key', 'secret');
+        $credentials = new BybitCredentials('key', 'secret');
         $this->createClient($httpClient)->get(
             '/v5/position/list',
             $credentials,
@@ -199,7 +199,7 @@ final class BybitApiClientTest extends TestCase
             ])
         ;
 
-        $credentials = new BybitCredentialsDto('key', 'secret');
+        $credentials = new BybitCredentials('key', 'secret');
 
         try {
             $this->createClient($httpClient)

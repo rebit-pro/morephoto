@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Identity\Domain\ApiConnection\Entity;
 
+use Rebit\Identity\Domain\ApiConnection\Entity\Table\EO_ApiConnection_Collection;
+
 /**
  * Коллекция подключений API Bybit.
- * Наследует скомпилированный EO_*_Collection класс HL-блока.
- *
- * @todo Наследовать от EO_RebitApiConnection_Collection после создания HL-блока.
  */
-final class ApiConnectionCollection // extends EO_RebitApiConnection_Collection
-{}
+final class ApiConnectionCollection extends EO_ApiConnection_Collection {}

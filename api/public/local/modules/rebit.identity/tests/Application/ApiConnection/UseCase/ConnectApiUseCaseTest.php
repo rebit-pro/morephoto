@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace Rebit\Identity\Tests\Application\ApiConnection\UseCase;
 
 use PHPUnit\Framework\TestCase;
-use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
-use Rebit\Bybit\Application\Shared\Dto\BybitResponseDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
-use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
 use Rebit\Identity\Application\ApiConnection\Dto\Request\ConnectApiRequestDto;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
+use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
+use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
+use Bitrix\Main\Type\DateTime;
 
 /**
  * @internal
@@ -68,7 +70,7 @@ final class ConnectApiUseCaseTest extends TestCase
             ->method('get')
             ->with(
                 '/v5/user/query-api',
-                $this->isInstanceOf(BybitCredentialsDto::class),
+                $this->isInstanceOf(BybitCredentials::class),
                 BybitEnvironmentEnum::Testnet,
             )
             ->willReturn(new BybitResponseDto(0, 'OK', [], [], 0))
@@ -76,10 +78,15 @@ final class ConnectApiUseCaseTest extends TestCase
 
         $encryptor->method('encrypt')->willReturn('encrypted-value');
 
+        $connectionStub = $this->createStub(ApiConnection::class);
+        $connectionStub->method('getId')->willReturn(42);
+        $connectionStub->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connectionStub->method('getUfLastVerifiedAt')->willReturn(new DateTime());
+
         $repository
             ->expects($this->once())
             ->method('create')
-            ->willReturn(42)
+            ->willReturn($connectionStub)
         ;
 
         $result = $this->createUseCase($repository, $encryptor, $bybitClient)
@@ -115,7 +122,13 @@ final class ConnectApiUseCaseTest extends TestCase
         ;
 
         $encryptor->method('encrypt')->willReturn('enc');
-        $repository->method('create')->willReturn(10);
+
+        $connectionStub = $this->createStub(ApiConnection::class);
+        $connectionStub->method('getId')->willReturn(10);
+        $connectionStub->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connectionStub->method('getUfLastVerifiedAt')->willReturn(null);
+
+        $repository->method('create')->willReturn($connectionStub);
 
         $result = $this->createUseCase($repository, $encryptor, $bybitClient)
             ->execute($dto, 2)
@@ -150,13 +163,18 @@ final class ConnectApiUseCaseTest extends TestCase
             })
         ;
 
+        $connectionStub = $this->createStub(ApiConnection::class);
+        $connectionStub->method('getId')->willReturn(1);
+        $connectionStub->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connectionStub->method('getUfLastVerifiedAt')->willReturn(new DateTime());
+
         $repository
             ->expects($this->once())
             ->method('create')
-            ->willReturnCallback(function() use (&$callOrder): int {
+            ->willReturnCallback(function() use (&$callOrder, $connectionStub): ApiConnection {
                 $callOrder[] = 'create';
 
-                return 1;
+                return $connectionStub;
             })
         ;
 
@@ -196,7 +214,13 @@ final class ConnectApiUseCaseTest extends TestCase
         ;
 
         $encryptor->method('encrypt')->willReturn('enc');
-        $repository->method('create')->willReturn(1);
+
+        $connectionStub = $this->createStub(ApiConnection::class);
+        $connectionStub->method('getId')->willReturn(1);
+        $connectionStub->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connectionStub->method('getUfLastVerifiedAt')->willReturn(new DateTime());
+
+        $repository->method('create')->willReturn($connectionStub);
 
         $this->createUseCase($repository, $encryptor, $bybitClient)
             ->execute($dto, 1)
@@ -227,14 +251,23 @@ final class ConnectApiUseCaseTest extends TestCase
             })
         ;
 
+        $connectionStub = $this->createStub(ApiConnection::class);
+        $connectionStub->method('getId')->willReturn(1);
+        $connectionStub->method('getUfCreatedAt')->willReturn(new DateTime());
+        $connectionStub->method('getUfLastVerifiedAt')->willReturn(new DateTime());
+
         $repository
             ->expects($this->once())
             ->method('create')
-            ->with($this->callback(function(array $fields): bool {
-                return 'encrypted_my-api-key-12345' === $fields['UF_API_KEY_ENCRYPTED']
-                    && 'encrypted_my-api-secret-12' === $fields['UF_SECRET_KEY_ENCRYPTED'];
-            }))
-            ->willReturn(1)
+            ->with(
+                $this->anything(),
+                'encrypted_my-api-key-12345',
+                'encrypted_my-api-secret-12',
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+            )
+            ->willReturn($connectionStub)
         ;
 
         $bybitClient->method('get')->willReturn(

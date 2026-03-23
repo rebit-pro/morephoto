@@ -7,6 +7,7 @@ namespace Rebit\Auth\Application\Auth\Service;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
 use Rebit\Share\Application\Contract\Auth\TokenResolverInterface;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class TokenResolver implements TokenResolverInterface
 {
@@ -16,6 +17,7 @@ final readonly class TokenResolver implements TokenResolverInterface
 
     /**
      * @throws HttpException
+     * @throws RepositoryException
      */
     public function resolveUserId(string $token): int
     {

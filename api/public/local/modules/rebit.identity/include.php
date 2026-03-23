@@ -10,3 +10,5 @@ Loader::includeModule('highloadblock');
 ModuleHelper::validateModuleInstalled('rebit.share');
 ModuleHelper::validateModuleInstalled('rebit.auth');
 ModuleHelper::validateModuleInstalled('rebit.bybit');
+
+ModuleHelper::compileHLEntities(['RebitApiConnection']);

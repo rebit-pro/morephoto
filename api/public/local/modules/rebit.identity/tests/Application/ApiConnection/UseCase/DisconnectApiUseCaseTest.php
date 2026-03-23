@@ -6,6 +6,7 @@ namespace Rebit\Identity\Tests\Application\ApiConnection\UseCase;
 
 use PHPUnit\Framework\TestCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
+use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Share\Shared\Exception\HttpException;
 
@@ -18,13 +19,15 @@ final class DisconnectApiUseCaseTest extends TestCase
     {
         $userId = 42;
 
+        $connection = $this->createStub(ApiConnection::class);
+
         $repository = $this->createMock(ApiConnectionRepository::class);
 
         $repository
             ->expects($this->once())
             ->method('findActiveByUserId')
             ->with($userId)
-            ->willReturn(['ID' => '10', 'UF_USER_ID' => $userId])
+            ->willReturn($connection)
         ;
 
         $repository
@@ -42,7 +45,7 @@ final class DisconnectApiUseCaseTest extends TestCase
 
         $repository
             ->method('findActiveByUserId')
-            ->willReturn(false)
+            ->willReturn(null)
         ;
 
         $this->expectException(HttpException::class);
@@ -58,7 +61,7 @@ final class DisconnectApiUseCaseTest extends TestCase
 
         $repository
             ->method('findActiveByUserId')
-            ->willReturn(false)
+            ->willReturn(null)
         ;
 
         $repository

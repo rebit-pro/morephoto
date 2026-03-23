@@ -9,16 +9,25 @@ parameters:
     scanFiles:
         - phpstan/bitrix-stubs.php
     excludePaths:
-        - public/local/modules/sprint.migration
-        - public/local/modules/rebit.auth/install
-        - public/local/modules/rebit.bybit/install
-        - public/local/modules/rebit.dev/install
-        - public/local/modules/rebit.identity/install
-        - public/local/modules/rebit.share/install
-        - public/local/modules/rebit.auth/tests
-        - public/local/modules/rebit.bybit/tests (?)
-        - public/local/modules/rebit.identity/tests (?)
-        - public/local/modules/rebit.share/tests (?)
+        analyseAndScan:
+            - public/local/modules/sprint.migration
+            - public/local/modules/rebit.auth/install
+            - public/local/modules/rebit.bybit/install
+            - public/local/modules/rebit.dev/install
+            - public/local/modules/rebit.identity/install
+            - public/local/modules/rebit.share/install
+            - public/local/modules/rebit.wallet/install
+            - public/local/modules/rebit.auth/tests
+            - public/local/modules/rebit.bybit/tests
+            - public/local/modules/rebit.identity/tests
+            - public/local/modules/rebit.share/tests (?)
+            - public/local/modules/rebit.wallet/tests (?)
+        analyse:
+            - public/local/modules/rebit.identity/orm_annotation.php
+            - public/local/modules/rebit.wallet/orm_annotation.php
+            - public/local/modules/rebit.identity/lib/Domain/ApiConnection/Entity/ApiConnectionCollection.php
+            - public/local/modules/rebit.wallet/lib/Domain/Balance/Entity/BalanceCollection.php
+            - public/local/modules/rebit.wallet/lib/Domain/Transaction/Entity/TransactionCollection.php
     ignoreErrors:
         # Побочные ошибки от неполных Bitrix-стабов (ковариантность, контравариантность и т.д.)
         -

@@ -6,6 +6,7 @@ namespace Rebit\Identity\Application\ApiConnection\UseCase;
 
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class DisconnectApiUseCase
 {
@@ -15,13 +16,13 @@ final readonly class DisconnectApiUseCase
 
     /**
      * @throws HttpException
-     * @throws \Exception
+     * @throws RepositoryException
      */
     public function execute(int $userId): void
     {
         $connection = $this->repository->findActiveByUserId($userId);
 
-        if (false === $connection) {
+        if (null === $connection) {
             throw new HttpException('Active API connection not found', 404);
         }
 

@@ -70,12 +70,15 @@
             "Rebit\\Auth\\": "public/local/modules/rebit.auth/lib/",
             "Rebit\\Bybit\\": "public/local/modules/rebit.bybit/lib/",
             "Rebit\\Identity\\": "public/local/modules/rebit.identity/lib/",
-            "Rebit\\Share\\": "public/local/modules/rebit.share/lib/"
+            "Rebit\\Share\\": "public/local/modules/rebit.share/lib/",
+            "Rebit\\Wallet\\": "public/local/modules/rebit.wallet/lib/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "Rebit\\Auth\\Tests\\": "public/local/modules/rebit.auth/tests/",
+            "Rebit\\Bybit\\Tests\\": "public/local/modules/rebit.bybit/tests/",
+            "Rebit\\Identity\\Tests\\": "public/local/modules/rebit.identity/tests/",
             "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
         }
     },
