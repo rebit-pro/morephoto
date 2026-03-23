@@ -178,6 +178,10 @@ deploy:
 			"$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" > .env \
 		&& cd ~ && ln -sfn $(RELEASE_DIR) $(LINK_DIR) \
 		&& if [ -n "$(TOKEN_GIT_HUB)" ]; then echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin; fi \
+		&& docker pull $(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) \
+		&& docker pull $(REGISTRY)/rebit-p2p-api:$(IMAGE_TAG) \
+		&& docker pull $(REGISTRY)/rebit-p2p-api-php-fpm:$(IMAGE_TAG) \
+		&& docker pull $(REGISTRY)/rebit-p2p-api-php-cli:$(IMAGE_TAG) \
 		&& cd $(LINK_DIR) && set -a && . ./.env && set +a \
 		&& docker stack deploy --with-registry-auth --prune --resolve-image=never -c $(COMPOSE_DST) $(STACK_NAME)'
 	ssh $(REMOTE) -p $(PORT) ' \
