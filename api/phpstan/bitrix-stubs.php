@@ -56,6 +56,13 @@ namespace Bitrix\Main {
     class ArgumentTypeException extends ArgumentException {}
     class InvalidOperationException extends SystemException {}
     class ObjectPropertyException extends SystemException {}
+
+    class Result
+    {
+        public function isSuccess(): bool {}
+        /** @return array<string> */
+        public function getErrorMessages(): array {}
+    }
 }
 
 namespace Bitrix\Main\Engine {
@@ -158,6 +165,7 @@ namespace Bitrix\Main\ORM\Data {
     {
         public static function query(): \Bitrix\Main\ORM\Query\Query {}
         public static function getEntity(): \Bitrix\Main\ORM\Entity {}
+        public static function createObject(): \Bitrix\Main\ORM\Objectify\EntityObject {}
         /** @param array<string, mixed> $data */
         public static function add(array $data): AddResult {}
         /** @param array<string, mixed> $data */
@@ -175,19 +183,38 @@ namespace Bitrix\Main\ORM\Query {
     {
         /** @param array<string> $columns */
         public function setSelect(array $columns): self {}
+        public function addSelect(string $field, ?string $alias = null): self {}
         /** @param array<string, mixed> $filter */
         public function setFilter(array $filter): self {}
+        public function where(string $field, mixed ...$args): self {}
+        /** @param array<string, string> $order */
+        public function setOrder(array $order): self {}
+        public function setLimit(int $limit): self {}
+        public function setOffset(int $offset): self {}
+        public function setCountTotal(bool $flag): self {}
+        public function getCount(): int {}
+        public function enablePrivateFields(): self {}
         public function exec(): Result {}
     }
     class Result
     {
         /** @return array<string, mixed>|false */
         public function fetch(): array|false {}
+        public function fetchObject(): ?\Bitrix\Main\ORM\Objectify\EntityObject {}
+        public function fetchCollection(): \Bitrix\Main\ORM\Objectify\Collection {}
     }
 }
 
 namespace Bitrix\Main\ORM\Objectify {
-    class EntityObject {}
+    class EntityObject
+    {
+        public function getId(): int {}
+        public function save(): \Bitrix\Main\ORM\Data\Result {}
+    }
+}
+
+namespace Bitrix\Main\ORM\Data {
+    class Result extends \Bitrix\Main\Result {}
 }
 
 namespace Bitrix\Main\DB {
@@ -297,4 +324,41 @@ namespace {
     function RegisterModule(string $moduleId): void {}
     function UnRegisterModule(string $moduleId): void {}
     function getLocalPath(string $path): string|false {}
+
+    /**
+     * Стабы скомпилированных HL-блоков.
+     * Классы генерируются в рантайме через HighloadBlockTable::compileEntity().
+     */
+    class RebitApiConnectionTable extends \Bitrix\Main\ORM\Data\DataManager {}
+    class RebitBalanceTable extends \Bitrix\Main\ORM\Data\DataManager {}
+    class RebitTransactionTable extends \Bitrix\Main\ORM\Data\DataManager {}
+}
+
+/**
+ * Стабы для EO_* классов, автогенерируемых Bitrix ORM в рантайме.
+ * Нужны для корректного вывода типов в IDE и phpstan.
+ */
+namespace Rebit\Identity\Domain\ApiConnection\Entity\Table {
+    class EO_ApiConnection extends \Bitrix\Main\ORM\Objectify\EntityObject {}
+    class EO_ApiConnection_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Wallet\Domain\Balance\Entity\Table {
+    class EO_Balance extends \Bitrix\Main\ORM\Objectify\EntityObject {}
+    class EO_Balance_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Wallet\Domain\Transaction\Entity\Table {
+    class EO_Transaction extends \Bitrix\Main\ORM\Objectify\EntityObject {}
+    class EO_Transaction_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Bitrix\Main\ORM\Objectify {
+    class Collection implements \Countable, \IteratorAggregate
+    {
+        /** @return array<EntityObject> */
+        public function getAll(): array {}
+        public function count(): int {}
+        public function getIterator(): \ArrayIterator {}
+    }
 }

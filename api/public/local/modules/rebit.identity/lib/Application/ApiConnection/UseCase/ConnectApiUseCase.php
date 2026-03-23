@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace Rebit\Identity\Application\ApiConnection\UseCase;
 
 use Bitrix\Main\Type\DateTime;
-use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
-use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
 use Rebit\Identity\Application\ApiConnection\Dto\Request\ConnectApiRequestDto;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
@@ -16,7 +12,12 @@ use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class ConnectApiUseCase
 {
@@ -31,13 +32,13 @@ final readonly class ConnectApiUseCase
 
     /**
      * @throws HttpException
-     * @throws \Exception
+     * @throws RepositoryException
      */
     public function execute(ConnectApiRequestDto $dto, int $userId): ApiConnectionResultDto
     {
         $mode = ConnectionModeEnum::from($dto->mode);
         $environment = $this->resolveEnvironment($mode);
-        $credentials = new BybitCredentialsDto($dto->apiKey, $dto->secretKey);
+        $credentials = new BybitCredentials($dto->apiKey, $dto->secretKey);
 
         // Отзываем предыдущее активное подключение (инвариант: только одно активное)
         $this->repository->revokeByUserId($userId);
@@ -45,33 +46,29 @@ final readonly class ConnectApiUseCase
         // Верификация ключей через тестовый запрос к Bybit
         $status = $this->verifyCredentials($credentials, $environment);
 
-        $now = new DateTime();
-
-        $connectionId = $this->repository->create([
-            'UF_USER_ID' => $userId,
-            'UF_API_KEY_ENCRYPTED' => $this->encryptor->encrypt($dto->apiKey),
-            'UF_SECRET_KEY_ENCRYPTED' => $this->encryptor->encrypt($dto->secretKey),
-            'UF_MODE' => $mode->value,
-            'UF_STATUS' => $status->value,
-            'UF_CREATED_AT' => $now,
-            'UF_UPDATED_AT' => $now,
-            'UF_VERIFIED_AT' => ConnectionStatusEnum::Active === $status ? $now : null,
-        ]);
+        $connection = $this->repository->create(
+            userId: $userId,
+            apiKeyEncrypted: $this->encryptor->encrypt($dto->apiKey),
+            secretKeyEncrypted: $this->encryptor->encrypt($dto->secretKey),
+            mode: $mode->value,
+            status: $status,
+            lastVerifiedAt: ConnectionStatusEnum::Active === $status ? new DateTime() : null,
+        );
 
         return new ApiConnectionResultDto(
             connected: true,
-            id: $connectionId,
-            userId: $userId,
             status: $status,
             mode: $mode,
+            id: $connection->getId(),
+            userId: $userId,
             maskedApiKey: $this->masker->mask($dto->apiKey),
-            createdAt: $now->format('c'),
-            verifiedAt: ConnectionStatusEnum::Active === $status ? $now->format('c') : null,
+            createdAt: $connection->getUfCreatedAt()?->format('c'),
+            verifiedAt: $connection->getUfLastVerifiedAt()?->format('c'),
         );
     }
 
     private function verifyCredentials(
-        BybitCredentialsDto $credentials,
+        BybitCredentials $credentials,
         BybitEnvironmentEnum $environment,
     ): ConnectionStatusEnum {
         try {

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Rebit\Identity\Application\ApiConnection\UseCase;
 
-use Bitrix\Main\Type\DateTime;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class GetConnectionStatusUseCase
 {
@@ -20,34 +20,28 @@ final readonly class GetConnectionStatusUseCase
         private ApiKeyMasker $masker,
     ) {}
 
+    /**
+     * @throws RepositoryException
+     */
     public function execute(int $userId): ApiConnectionResultDto
     {
         $connection = $this->repository->findByUserId($userId);
 
-        if (false === $connection) {
+        if (null === $connection) {
             return new ApiConnectionResultDto(connected: false);
         }
 
-        $apiKey = $this->encryptor->decrypt($connection['UF_API_KEY_ENCRYPTED']);
+        $apiKey = $this->encryptor->decrypt($connection->getUfApiKeyEncrypted());
 
         return new ApiConnectionResultDto(
             connected: true,
-            status: ConnectionStatusEnum::from($connection['UF_STATUS']),
-            mode: ConnectionModeEnum::from($connection['UF_MODE']),
-            id: (int)$connection['ID'],
+            status: ConnectionStatusEnum::from($connection->getUfStatus()),
+            mode: ConnectionModeEnum::from($connection->getUfMode()),
+            id: $connection->getId(),
             userId: $userId,
             maskedApiKey: $this->masker->mask($apiKey),
-            createdAt: $this->formatDateTime($connection['UF_CREATED_AT']),
-            verifiedAt: null !== $connection['UF_VERIFIED_AT']
-                ? $this->formatDateTime($connection['UF_VERIFIED_AT'])
-                : null,
+            createdAt: $connection->getUfCreatedAt()?->format('c'),
+            verifiedAt: $connection->getUfLastVerifiedAt()?->format('c'),
         );
-    }
-
-    private function formatDateTime(mixed $value): string
-    {
-        return $value instanceof DateTime
-            ? $value->format('c')
-            : (string)$value;
     }
 }

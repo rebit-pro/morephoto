@@ -7,14 +7,15 @@ namespace Rebit\Bybit\Infrastructure\Client;
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\Web\Json;
 use Psr\Log\LoggerInterface;
-use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
-use Rebit\Bybit\Application\Shared\Dto\BybitResponseDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
 use Rebit\Bybit\Infrastructure\Auth\HmacSignatureGenerator;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
-use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
+use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
 use Rebit\Share\Infrastructure\HttpClient\RebitHttpClient;
 use Rebit\Share\Shared\Enum\HttpMethodEnum;
+use Rebit\Share\Shared\Helper\ArrayToDtoMapper;
 
 final readonly class BybitApiClient implements BybitClientInterface
 {
@@ -33,7 +34,7 @@ final readonly class BybitApiClient implements BybitClientInterface
      */
     public function get(
         string $endpoint,
-        BybitCredentialsDto $credentials,
+        BybitCredentials $credentials,
         BybitEnvironmentEnum $environment,
         array $queryParams = [],
     ): BybitResponseDto {
@@ -52,11 +53,11 @@ final readonly class BybitApiClient implements BybitClientInterface
     /**
      * @param array<string, mixed> $body
      *
-     * @throws ArgumentException|BybitApiException
+     * @throws ArgumentException|BybitApiException|\JsonException
      */
     public function post(
         string $endpoint,
-        BybitCredentialsDto $credentials,
+        BybitCredentials $credentials,
         BybitEnvironmentEnum $environment,
         array $body = [],
     ): BybitResponseDto {
@@ -74,7 +75,7 @@ final readonly class BybitApiClient implements BybitClientInterface
      * @return array<string, string>
      */
     private function buildAuthHeaders(
-        BybitCredentialsDto $credentials,
+        BybitCredentials $credentials,
         string $recvWindow,
         string $payload,
     ): array {
@@ -125,13 +126,7 @@ final readonly class BybitApiClient implements BybitClientInterface
             );
         }
 
-        $response = new BybitResponseDto(
-            retCode: (int)($rawResponse['retCode'] ?? -1),
-            retMsg: (string)($rawResponse['retMsg'] ?? ''),
-            result: (array)($rawResponse['result'] ?? []),
-            retExtInfo: (array)($rawResponse['retExtInfo'] ?? []),
-            time: (int)($rawResponse['time'] ?? 0),
-        );
+        $response = ArrayToDtoMapper::map($rawResponse, BybitResponseDto::class);
 
         if (0 !== $response->retCode) {
             $this->logger->warning('Bybit API returned error', [

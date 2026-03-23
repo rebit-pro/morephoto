@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
+use Rebit\Identity\Application\ApiConnection\Service\BybitConnectionResolver;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
@@ -12,6 +12,8 @@ use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
 use Rebit\Identity\Presentation\Controller\ApiConnectionController;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 
 return [
     ApiKeyEncryptor::class => [
@@ -70,6 +72,16 @@ return [
                 $sl->get(ApiConnectionRepository::class),
                 $sl->get(ApiKeyEncryptor::class),
                 $sl->get(ApiKeyMasker::class),
+            );
+        },
+    ],
+    BybitConnectionResolverInterface::class => [
+        'constructor' => static function(): BybitConnectionResolverInterface {
+            $sl = ServiceLocator::getInstance();
+
+            return new BybitConnectionResolver(
+                $sl->get(ApiConnectionRepository::class),
+                $sl->get(ApiKeyEncryptor::class),
             );
         },
     ],

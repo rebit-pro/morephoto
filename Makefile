@@ -84,6 +84,11 @@ api-test-functional-coverage:
 api-cli:
 	docker compose run --rm api-php-cli composer app
 
+MODULE_NAME ?= rebit.wallet
+
+annotate:
+	docker compose run --rm api-php-cli sh -c "cd /app/public && php bitrix/bitrix.php orm:annotate -c -m $(MODULE_NAME) local/modules/$(MODULE_NAME)/orm_annotation.php"
+
 api-migrate:
 	docker compose run --rm api-php-cli php /app/public/local/modules/sprint.migration/tools/migrate.php up
 

@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Rebit\Wallet\Application\Balance\UseCase;
+
+use Rebit\Wallet\Domain\Balance\Dto\Result\BalanceListResultDto;
+use Rebit\Wallet\Domain\Balance\Dto\Result\BalanceResultDto;
+use Rebit\Wallet\Domain\Balance\Entity\Balance;
+use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
+
+final readonly class GetBalancesUseCase
+{
+    public function __construct(
+        private BalanceRepository $balanceRepository,
+    ) {}
+
+    public function execute(int $userId): BalanceListResultDto
+    {
+        $collection = $this->balanceRepository->findByUserId($userId);
+
+        $balances = array_map(
+            static fn(Balance $balance): BalanceResultDto => new BalanceResultDto(
+                id: $balance->getId(),
+                userId: $balance->getUfUserId(),
+                currencyId: $balance->getUfCurrencyId(),
+                available: $balance->getUfAvailable(),
+                locked: $balance->getUfLocked(),
+                total: $balance->getUfTotal(),
+                syncedAt: $balance->getUfSyncedAt()?->format('c'),
+            ),
+            $collection->getAll(),
+        );
+
+        return new BalanceListResultDto($balances);
+    }
+}

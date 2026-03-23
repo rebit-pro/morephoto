@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Rebit\Identity\Application\ApiConnection\UseCase;
 
 use Bitrix\Main\Type\DateTime;
-use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
-use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
-use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
-use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
 use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Share\Application\Contract\Bybit\BybitApiException;
+use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class VerifyApiUseCase
 {
@@ -30,27 +31,27 @@ final readonly class VerifyApiUseCase
 
     /**
      * @throws HttpException
-     * @throws \Exception
+     * @throws RepositoryException
      */
     public function execute(int $userId): ApiConnectionResultDto
     {
         $connection = $this->repository->findActiveByUserId($userId);
 
-        if (false === $connection) {
+        if (null === $connection) {
             throw new HttpException('Active API connection not found', 404);
         }
 
-        $mode = ConnectionModeEnum::from($connection['UF_MODE']);
+        $mode = ConnectionModeEnum::from($connection->getUfMode());
         $environment = match ($mode) {
             ConnectionModeEnum::Testnet => BybitEnvironmentEnum::Testnet,
             ConnectionModeEnum::Mainnet => BybitEnvironmentEnum::Mainnet,
         };
 
-        $apiKey = $this->encryptor->decrypt($connection['UF_API_KEY_ENCRYPTED']);
+        $apiKey = $this->encryptor->decrypt($connection->getUfApiKeyEncrypted());
 
-        $credentials = new BybitCredentialsDto(
+        $credentials = new BybitCredentials(
             apiKey: $apiKey,
-            apiSecret: $this->encryptor->decrypt($connection['UF_SECRET_KEY_ENCRYPTED']),
+            apiSecret: $this->encryptor->decrypt($connection->getUfSecretKeyEncrypted()),
         );
 
         try {
@@ -60,25 +61,24 @@ final readonly class VerifyApiUseCase
             $newStatus = ConnectionStatusEnum::Invalid;
         }
 
-        $connectionId = (int)$connection['ID'];
         $now = new DateTime();
 
-        $this->repository->update($connectionId, [
-            'UF_STATUS' => $newStatus->value,
-            'UF_VERIFIED_AT' => $now,
-            'UF_UPDATED_AT' => $now,
-        ]);
+        $connection
+            ->setUfStatus($newStatus->value)
+            ->setUfLastVerifiedAt($now)
+            ->setUfUpdatedAt($now)
+        ;
+
+        $this->repository->save($connection);
 
         return new ApiConnectionResultDto(
             connected: true,
-            id: $connectionId,
-            userId: $userId,
             status: $newStatus,
             mode: $mode,
+            id: $connection->getId(),
+            userId: $userId,
             maskedApiKey: $this->masker->mask($apiKey),
-            createdAt: $connection['UF_CREATED_AT'] instanceof DateTime
-                ? $connection['UF_CREATED_AT']->format('c')
-                : (string)$connection['UF_CREATED_AT'],
+            createdAt: $connection->getUfCreatedAt()?->format('c'),
             verifiedAt: $now->format('c'),
         );
     }
