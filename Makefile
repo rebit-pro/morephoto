@@ -105,6 +105,7 @@ COMPOSE_DST ?= docker-compose.yml
 VITE_API_URL ?= https://api.rebit-pro.ru
 KEEP_RELEASES ?= 2
 BITRIX_HOST_DIR ?= /srv/rebit-p2p/bitrix
+LOGS_HOST_DIR ?= /srv/rebit-p2p/logs
 
 # --- Build ---
 # Собирает Docker-образы для production
@@ -164,19 +165,24 @@ push-api:
 #   REGISTRY_HOST=ghcr.io REGISTRY_USER=user TOKEN_GIT_HUB=ghp_xxx \
 #   make deploy
 deploy:
-	ssh $(REMOTE) -p $(PORT) 'docker network create --driver=overlay traefik-public || true'
-	ssh $(REMOTE) -p $(PORT) 'rm -rf $(RELEASE_DIR) && mkdir $(RELEASE_DIR)'
-	scp -P $(PORT) $(COMPOSE_SRC) $(REMOTE):$(RELEASE_DIR)/$(COMPOSE_DST)
-	ssh $(REMOTE) -p $(PORT) 'mkdir -p $(BITRIX_HOST_DIR)'
-	scp -P $(PORT) api/deploy/bitrix-settings-extra.php $(REMOTE):$(BITRIX_HOST_DIR)/.settings_extra.php
-	ssh $(REMOTE) -p $(PORT) 'cd $(RELEASE_DIR) && printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\n" "$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" > .env'
-	@if [ -n "$(REGISTRY_HOST)" ] && [ -n "$(REGISTRY_USER)" ] && [ -n "$(TOKEN_GIT_HUB)" ]; then \
-		ssh $(REMOTE) -p $(PORT) 'echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin'; \
-	fi
-	ssh $(REMOTE) -p $(PORT) 'ln -sfn $(RELEASE_DIR) $(LINK_DIR)'
-	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && set -a && . ./.env && set +a && docker stack deploy --with-registry-auth --prune -c $(COMPOSE_DST) $(STACK_NAME)'
-	ssh $(REMOTE) -p $(PORT) 'cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf'
-	ssh $(REMOTE) -p $(PORT) 'docker image prune --all --force'
+	scp -P $(PORT) $(COMPOSE_SRC) api/deploy/bitrix-settings-extra.php $(REMOTE):~/
+	ssh $(REMOTE) -p $(PORT) ' \
+		docker network create --driver=overlay traefik-public 2>/dev/null || true \
+		&& rm -rf $(RELEASE_DIR) && mkdir $(RELEASE_DIR) \
+		&& mv ~/docker-compose-production.yml $(RELEASE_DIR)/$(COMPOSE_DST) \
+		&& mkdir -p $(BITRIX_HOST_DIR) \
+		&& mv ~/bitrix-settings-extra.php $(BITRIX_HOST_DIR)/.settings_extra.php \
+		&& mkdir -p $(LOGS_HOST_DIR)/logstash \
+		&& cd $(RELEASE_DIR) \
+		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\n" \
+			"$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" > .env \
+		&& cd ~ && ln -sfn $(RELEASE_DIR) $(LINK_DIR) \
+		&& if [ -n "$(TOKEN_GIT_HUB)" ]; then echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin; fi \
+		&& cd $(LINK_DIR) && set -a && . ./.env && set +a \
+		&& docker stack deploy --with-registry-auth --prune -c $(COMPOSE_DST) $(STACK_NAME)'
+	ssh $(REMOTE) -p $(PORT) ' \
+		cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf \
+		&& docker image prune --all --force'
 #	@echo "Waiting for services to start..."
 #	sleep 15
 #	$(MAKE) api-migrate-deploy
