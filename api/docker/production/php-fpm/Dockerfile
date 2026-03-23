@@ -50,6 +50,13 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 COPY ./ ./
 RUN composer dump-autoload --no-dev --optimize
 
+# Создаём симлинки маршрутов модулей (routes.php → /local/routes/{module}.php)
+RUN find /app/public/local/modules -maxdepth 2 -name "routes.php" -exec sh -c ' \
+    for f; do \
+        module=$(basename "$(dirname "$f")"); \
+        ln -sf "$f" /app/public/local/routes/"$module".php; \
+    done' _ {} +
+
 RUN mkdir -p /app /var/lib/php/sessions \
     && chown -R www-data:www-data /app /var/lib/php/sessions
 
