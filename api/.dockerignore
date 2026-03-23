@@ -1,3 +1,10 @@
 /.idea
 public/upload
 public/bitrix
+vendor
+var
+logs
+tests
+phpstan.neon
+phpstan-baseline.neon
+phpunit.xml

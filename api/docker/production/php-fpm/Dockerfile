@@ -43,10 +43,14 @@ COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 WORKDIR /app
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
 COPY ./ ./
-RUN composer install --no-dev --optimize-autoloader
-RUN mkdir -p /app \
-    && chown -R www-data:www-data /app \
-    && mkdir -p /var/lib/php/sessions \
-    && chown -R www-data:www-data /var/lib/php/sessions
+RUN composer dump-autoload --no-dev --optimize
+
+RUN mkdir -p /app /var/lib/php/sessions \
+    && chown -R www-data:www-data /app /var/lib/php/sessions
+
 CMD ["php-fpm"]
