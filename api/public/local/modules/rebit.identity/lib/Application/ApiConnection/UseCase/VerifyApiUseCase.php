@@ -9,11 +9,12 @@ use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
 use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
 use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
 use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
-use Rebit\Identity\Domain\ApiConnection\Dto\Result\ApiConnectionResultDto;
+use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
+use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
 use Rebit\Share\Shared\Exception\HttpException;
 
 final readonly class VerifyApiUseCase
@@ -23,6 +24,7 @@ final readonly class VerifyApiUseCase
     public function __construct(
         private ApiConnectionRepository $repository,
         private ApiKeyEncryptor $encryptor,
+        private ApiKeyMasker $masker,
         private BybitClientInterface $bybitClient,
     ) {}
 
@@ -44,9 +46,11 @@ final readonly class VerifyApiUseCase
             ConnectionModeEnum::Mainnet => BybitEnvironmentEnum::Mainnet,
         };
 
+        $apiKey = $this->encryptor->decrypt($connection['UF_API_KEY_ENCRYPTED']);
+
         $credentials = new BybitCredentialsDto(
-            apiKey: $this->encryptor->decrypt($connection['UF_API_KEY_ENCRYPTED']),
-            apiSecret: $this->encryptor->decrypt($connection['UF_API_SECRET_ENCRYPTED']),
+            apiKey: $apiKey,
+            apiSecret: $this->encryptor->decrypt($connection['UF_SECRET_KEY_ENCRYPTED']),
         );
 
         try {
@@ -57,37 +61,25 @@ final readonly class VerifyApiUseCase
         }
 
         $connectionId = (int)$connection['ID'];
+        $now = new DateTime();
 
         $this->repository->update($connectionId, [
             'UF_STATUS' => $newStatus->value,
-            'UF_VERIFIED_AT' => new DateTime(),
+            'UF_VERIFIED_AT' => $now,
+            'UF_UPDATED_AT' => $now,
         ]);
 
         return new ApiConnectionResultDto(
+            connected: true,
             id: $connectionId,
             userId: $userId,
             status: $newStatus,
             mode: $mode,
-            maskedApiKey: $this->maskApiKey(
-                $this->encryptor->decrypt($connection['UF_API_KEY_ENCRYPTED']),
-            ),
+            maskedApiKey: $this->masker->mask($apiKey),
             createdAt: $connection['UF_CREATED_AT'] instanceof DateTime
                 ? $connection['UF_CREATED_AT']->format('c')
                 : (string)$connection['UF_CREATED_AT'],
-            verifiedAt: (new DateTime())->format('c'),
+            verifiedAt: $now->format('c'),
         );
-    }
-
-    private function maskApiKey(string $apiKey): string
-    {
-        $visibleChars = 4;
-
-        if (mb_strlen($apiKey) <= $visibleChars * 2) {
-            return str_repeat('*', mb_strlen($apiKey));
-        }
-
-        return mb_substr($apiKey, 0, $visibleChars)
-            . str_repeat('*', mb_strlen($apiKey) - $visibleChars * 2)
-            . mb_substr($apiKey, -$visibleChars);
     }
 }

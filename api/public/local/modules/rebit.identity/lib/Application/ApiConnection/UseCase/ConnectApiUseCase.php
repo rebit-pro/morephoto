@@ -9,12 +9,13 @@ use Rebit\Bybit\Application\Shared\Dto\BybitCredentialsDto;
 use Rebit\Bybit\Application\Shared\Port\Outgoing\BybitClientInterface;
 use Rebit\Bybit\Infrastructure\Exception\BybitApiException;
 use Rebit\Bybit\Shared\Enum\BybitEnvironmentEnum;
-use Rebit\Identity\Domain\ApiConnection\Dto\Request\ConnectApiRequestDto;
-use Rebit\Identity\Domain\ApiConnection\Dto\Result\ApiConnectionResultDto;
+use Rebit\Identity\Application\ApiConnection\Dto\Request\ConnectApiRequestDto;
+use Rebit\Identity\Application\ApiConnection\Dto\Result\ApiConnectionResultDto;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
+use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
 use Rebit\Share\Shared\Exception\HttpException;
 
 final readonly class ConnectApiUseCase
@@ -24,6 +25,7 @@ final readonly class ConnectApiUseCase
     public function __construct(
         private ApiConnectionRepository $repository,
         private ApiKeyEncryptor $encryptor,
+        private ApiKeyMasker $masker,
         private BybitClientInterface $bybitClient,
     ) {}
 
@@ -35,7 +37,7 @@ final readonly class ConnectApiUseCase
     {
         $mode = ConnectionModeEnum::from($dto->mode);
         $environment = $this->resolveEnvironment($mode);
-        $credentials = new BybitCredentialsDto($dto->apiKey, $dto->apiSecret);
+        $credentials = new BybitCredentialsDto($dto->apiKey, $dto->secretKey);
 
         // Отзываем предыдущее активное подключение (инвариант: только одно активное)
         $this->repository->revokeByUserId($userId);
@@ -43,26 +45,28 @@ final readonly class ConnectApiUseCase
         // Верификация ключей через тестовый запрос к Bybit
         $status = $this->verifyCredentials($credentials, $environment);
 
+        $now = new DateTime();
+
         $connectionId = $this->repository->create([
             'UF_USER_ID' => $userId,
             'UF_API_KEY_ENCRYPTED' => $this->encryptor->encrypt($dto->apiKey),
-            'UF_API_SECRET_ENCRYPTED' => $this->encryptor->encrypt($dto->apiSecret),
+            'UF_SECRET_KEY_ENCRYPTED' => $this->encryptor->encrypt($dto->secretKey),
             'UF_MODE' => $mode->value,
             'UF_STATUS' => $status->value,
-            'UF_CREATED_AT' => new DateTime(),
-            'UF_VERIFIED_AT' => ConnectionStatusEnum::Active === $status ? new DateTime() : null,
+            'UF_CREATED_AT' => $now,
+            'UF_UPDATED_AT' => $now,
+            'UF_VERIFIED_AT' => ConnectionStatusEnum::Active === $status ? $now : null,
         ]);
 
-        $maskedApiKey = $this->maskApiKey($dto->apiKey);
-
         return new ApiConnectionResultDto(
+            connected: true,
             id: $connectionId,
             userId: $userId,
             status: $status,
             mode: $mode,
-            maskedApiKey: $maskedApiKey,
-            createdAt: (new DateTime())->format('c'),
-            verifiedAt: ConnectionStatusEnum::Active === $status ? (new DateTime())->format('c') : null,
+            maskedApiKey: $this->masker->mask($dto->apiKey),
+            createdAt: $now->format('c'),
+            verifiedAt: ConnectionStatusEnum::Active === $status ? $now->format('c') : null,
         );
     }
 
@@ -85,18 +89,5 @@ final readonly class ConnectApiUseCase
             ConnectionModeEnum::Testnet => BybitEnvironmentEnum::Testnet,
             ConnectionModeEnum::Mainnet => BybitEnvironmentEnum::Mainnet,
         };
-    }
-
-    private function maskApiKey(string $apiKey): string
-    {
-        $visibleChars = 4;
-
-        if (mb_strlen($apiKey) <= $visibleChars * 2) {
-            return str_repeat('*', mb_strlen($apiKey));
-        }
-
-        return mb_substr($apiKey, 0, $visibleChars)
-            . str_repeat('*', mb_strlen($apiKey) - $visibleChars * 2)
-            . mb_substr($apiKey, -$visibleChars);
     }
 }

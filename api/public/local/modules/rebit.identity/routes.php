@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bitrix\Main\Routing\RoutingConfigurator;
-use Rebit\Identity\Controller\ApiConnectionController;
+use Rebit\Identity\Presentation\Controller\ApiConnectionController;
 
 return static function(RoutingConfigurator $routes) {
     $routes->post('/api/v1/identity/connection', [ApiConnectionController::class, 'connectAction']);

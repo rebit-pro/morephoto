@@ -48,3 +48,20 @@ if (!class_exists(DateTime::class)) {
         }
     }
 }
+
+namespace Bitrix\Main\Web;
+
+if (!class_exists(Json::class)) {
+    class Json
+    {
+        public static function encode(mixed $data): string
+        {
+            return (string) json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        }
+
+        public static function decode(string $data): mixed
+        {
+            return json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        }
+    }
+}
