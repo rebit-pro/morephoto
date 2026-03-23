@@ -179,7 +179,7 @@ deploy:
 		&& cd ~ && ln -sfn $(RELEASE_DIR) $(LINK_DIR) \
 		&& if [ -n "$(TOKEN_GIT_HUB)" ]; then echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin; fi \
 		&& cd $(LINK_DIR) && set -a && . ./.env && set +a \
-		&& docker stack deploy --with-registry-auth --prune -c $(COMPOSE_DST) $(STACK_NAME)'
+		&& docker stack deploy --with-registry-auth --prune --resolve-image=never -c $(COMPOSE_DST) $(STACK_NAME)'
 	ssh $(REMOTE) -p $(PORT) ' \
 		cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf \
 		&& docker image prune --all --force'
@@ -207,7 +207,7 @@ rollback:
 	@if [ -z "$(ROLLBACK_BUILD_NUMBER)" ]; then echo "Set ROLLBACK_BUILD_NUMBER"; exit 1; fi
 	ssh $(REMOTE) -p $(PORT) 'test -d site_$(ROLLBACK_BUILD_NUMBER)'
 	ssh $(REMOTE) -p $(PORT) 'ln -sfn site_$(ROLLBACK_BUILD_NUMBER) $(LINK_DIR)'
-	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && set -a && . ./.env && set +a && docker stack deploy --with-registry-auth --prune -c $(COMPOSE_DST) $(STACK_NAME)'
+	ssh $(REMOTE) -p $(PORT) 'cd $(LINK_DIR) && set -a && . ./.env && set +a && docker stack deploy --with-registry-auth --prune --resolve-image=never -c $(COMPOSE_DST) $(STACK_NAME)'
 
 php-cli:
 	docker compose run --rm api-php-cli bash
