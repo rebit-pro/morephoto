@@ -1,19 +1,35 @@
+# General
 /xxx
 /.vscode
 /.idea
 .env
 
+# PHP
+**.php-cs-fixer.cache
+**.htaccess
+**test.php
+
+# Dumps
+/dump.sql.7z
+/dump.sql.7z:Zone.Identifier
+
+# Logs
+/logs/
+/api/logs/*
+!/api/logs/.gitkeep
+!/api/logs/logstash/
+/api/logs/logstash/*
+!/api/logs/logstash/.gitkeep
+
+# API
 **/vendor/
-**/logs/
+/api/var/*
+!/api/var/.gitkeep
+/api/tcp
+/api/log/
 /api/public/bitrix/
 /api/public/upload/
 /api/public/include/
 /api/public/local/routes/*
 !/api/public/local/routes/.gitkeep
-/api/log/
-/api/tcp:
-/dump.sql.7z
-/dump.sql.7z:Zone.Identifier
-**.php-cs-fixer.cache
-**test.php
-**.htaccess
+/api/public/local/composer.lock
