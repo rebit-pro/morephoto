@@ -67,6 +67,7 @@ jobs:
           context: frontend
           file: frontend/docker/production/nginx/Dockerfile
           push: true
+          provenance: false
           tags: ${{ secrets.REGISTRY }}/rebit-p2p-frontend:${{ github.sha }}
           build-args: VITE_API_URL=https://api.rebit-pro.ru
           cache-from: type=gha,scope=frontend
@@ -92,6 +93,7 @@ jobs:
           context: api
           file: api/docker/production/nginx/Dockerfile
           push: true
+          provenance: false
           tags: ${{ secrets.REGISTRY }}/rebit-p2p-api:${{ github.sha }}
           cache-from: type=gha,scope=api-nginx
           cache-to: type=gha,mode=max,scope=api-nginx
@@ -101,6 +103,7 @@ jobs:
           context: api
           file: api/docker/production/php-fpm/Dockerfile
           push: true
+          provenance: false
           tags: ${{ secrets.REGISTRY }}/rebit-p2p-api-php-fpm:${{ github.sha }}
           cache-from: type=gha,scope=api-php-fpm
           cache-to: type=gha,mode=max,scope=api-php-fpm
@@ -110,6 +113,7 @@ jobs:
           context: api
           file: api/docker/production/php-cli/Dockerfile
           push: true
+          provenance: false
           tags: ${{ secrets.REGISTRY }}/rebit-p2p-api-php-cli:${{ github.sha }}
           cache-from: type=gha,scope=api-php-cli
           cache-to: type=gha,mode=max,scope=api-php-cli
