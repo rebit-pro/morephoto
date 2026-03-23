@@ -17,6 +17,14 @@ jobs:
           php-version: '8.4'
           extensions: intl, mbstring, curl, json, openssl, simplexml
           tools: composer:v2
+      - name: "📦 Cache Composer dependencies"
+        uses: actions/cache@v4
+        with:
+          path: |
+            api/vendor
+            ~/.composer/cache
+          key: composer-${{ hashFiles('api/composer.lock') }}
+          restore-keys: composer-
       - name: "📦 Install dependencies"
         working-directory: api
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -32,15 +40,17 @@ jobs:
       - name: "🧪 Tests (phpunit)"
         working-directory: api
         run: composer test
+
   frontend-checks:
     runs-on: ubuntu-latest
     steps:
       - name: "⏭️ Skip (no frontend checks yet)"
         run: echo "Frontend checks are disabled"
-  build-and-push:
+
+  build-frontend:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [ api-checks, frontend-checks ]
+    needs: [ frontend-checks ]
     steps:
       - uses: actions/checkout@v5
       - name: "🔧 Set up Docker Buildx"
@@ -51,28 +61,63 @@ jobs:
           registry: ${{ secrets.REGISTRY_HOST }}
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.TOKEN_GIT_HUB }}
-      - name: "🏗️ Build images"
-        env:
-          REGISTRY: ${{ secrets.REGISTRY }}
-          IMAGE_TAG: ${{ github.sha }}
-          BUILD_NUMBER: ${{ github.run_number }}
-        run: |
-          IMAGE_TAG="${IMAGE_TAG::8}"
-          export IMAGE_TAG
-          make build
-      - name: "📤 Push images"
-        env:
-          REGISTRY: ${{ secrets.REGISTRY }}
-          IMAGE_TAG: ${{ github.sha }}
-          BUILD_NUMBER: ${{ github.run_number }}
-        run: |
-          IMAGE_TAG="${IMAGE_TAG::8}"
-          export IMAGE_TAG
-          make push
+      - name: "🏗️ Build & push frontend"
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: frontend/docker/production/nginx/Dockerfile
+          push: true
+          tags: ${{ secrets.REGISTRY }}/rebit-p2p-frontend:${{ github.sha }}
+          build-args: VITE_API_URL=https://api.rebit-pro.ru
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  build-api:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ api-checks ]
+    steps:
+      - uses: actions/checkout@v5
+      - name: "🔧 Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+      - name: "🔑 Log in to Docker registry"
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_HOST }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.TOKEN_GIT_HUB }}
+      - name: "🏗️ Build & push api-nginx"
+        uses: docker/build-push-action@v6
+        with:
+          context: api
+          file: api/docker/production/nginx/Dockerfile
+          push: true
+          tags: ${{ secrets.REGISTRY }}/rebit-p2p-api:${{ github.sha }}
+          cache-from: type=gha,scope=api-nginx
+          cache-to: type=gha,mode=max,scope=api-nginx
+      - name: "🏗️ Build & push api-php-fpm"
+        uses: docker/build-push-action@v6
+        with:
+          context: api
+          file: api/docker/production/php-fpm/Dockerfile
+          push: true
+          tags: ${{ secrets.REGISTRY }}/rebit-p2p-api-php-fpm:${{ github.sha }}
+          cache-from: type=gha,scope=api-php-fpm
+          cache-to: type=gha,mode=max,scope=api-php-fpm
+      - name: "🏗️ Build & push api-php-cli"
+        uses: docker/build-push-action@v6
+        with:
+          context: api
+          file: api/docker/production/php-cli/Dockerfile
+          push: true
+          tags: ${{ secrets.REGISTRY }}/rebit-p2p-api-php-cli:${{ github.sha }}
+          cache-from: type=gha,scope=api-php-cli
+          cache-to: type=gha,mode=max,scope=api-php-cli
+
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build-and-push
+    needs: [ build-frontend, build-api ]
     environment: production
     steps:
       - uses: actions/checkout@v5
@@ -100,7 +145,4 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           APP_DEBUG: ${{ secrets.APP_DEBUG }}
           APP_ENV: ${{ secrets.APP_ENV }}
-        run: |
-          IMAGE_TAG="${IMAGE_TAG::8}"
-          export IMAGE_TAG
-          make deploy
+        run: make deploy
