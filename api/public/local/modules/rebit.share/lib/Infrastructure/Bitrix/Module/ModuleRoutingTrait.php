@@ -99,6 +99,10 @@ trait ModuleRoutingTrait
      */
     private function removeRouteSymlink(): void
     {
+        if (!is_link($this->routeFilePath)) {
+            return;
+        }
+
         if (!unlink($this->routeFilePath)) {
             Log::error("Не удалось удалить симлинк {$this->routeFilePath}");
         }
