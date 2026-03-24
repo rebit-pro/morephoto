@@ -37,8 +37,8 @@ rebit.share
     ├── rebit.auth           (реализует TokenResolverInterface)
     ├── rebit.bybit          (реализует BybitClientInterface)
     ├── rebit.identity       (реализует BybitConnectionResolverInterface)
-    ├── rebit.wallet         (потребляет BybitClientInterface, BybitConnectionResolverInterface; реализует BalanceQueryInterface)
-    ├── rebit.exchange       (потребляет BybitClientInterface, BybitConnectionResolverInterface, BalanceQueryInterface)
+    ├── rebit.wallet         (потребляет BybitClientInterface, BybitConnectionResolverInterface, CurrencyQueryInterface; реализует BalanceQueryInterface)
+    ├── rebit.exchange       (потребляет BybitClientInterface, BybitConnectionResolverInterface, BalanceQueryInterface; реализует CurrencyQueryInterface)
     ├── rebit.notification   (запланирован)
     └── rebit.security       (запланирован)
 ```
@@ -55,17 +55,18 @@ rebit.share
 | Контракт | Путь в `rebit.share` | Реализация | Потребители |
 |----------|----------------------|------------|-------------|
 | `TokenResolverInterface` | `Application/Contract/Auth/` | `rebit.auth` → `TokenResolver` | Middleware аутентификации |
-| `BybitClientInterface` | `Application/Contract/Bybit/` | `rebit.bybit` → `BybitApiClient` | `rebit.identity`, `rebit.wallet` |
-| `BybitConnectionResolverInterface` | `Application/Contract/Bybit/` | `rebit.identity` → `BybitConnectionResolver` | `rebit.wallet` |
-| `CacheCleanerInterface` | `Application/Contract/Cache/` | `rebit.share` → Infrastructure | Все модули |
+| `BybitClientInterface` | `Application/Contract/Bybit/` | `rebit.bybit` → `BybitApiClient` | `rebit.identity`, `rebit.wallet`, `rebit.exchange` |
+| `BybitConnectionResolverInterface` | `Application/Contract/Bybit/` | `rebit.identity` → `BybitConnectionResolver` | `rebit.wallet`, `rebit.exchange` |
+| `CacheCleanerInterface` | `Application/Contract/Cache/` | `rebit.share` → `BitrixCacheCleaner` | Все модули |
+| `BalanceQueryInterface` | `Application/Contract/Wallet/` | `rebit.wallet` → `BalanceQueryAdapter` | `rebit.exchange` |
+| `CurrencyQueryInterface` | `Application/Contract/Exchange/` | `rebit.exchange` → `CurrencyQueryAdapter` | `rebit.wallet` (`SyncBalancesUseCase`) |
 | `FileServiceInterface` | `Application/Contract/File/` | ⚠️ не реализован | — |
 
-### Планируемые контракты (для `rebit.exchange`)
+### Планируемые контракты
 
 | Контракт | Путь в `rebit.share` | Поставщик | Потребитель | Назначение |
 |----------|----------------------|-----------|-------------|------------|
-| `BalanceQueryInterface` | `Application/Contract/Wallet/` | `rebit.wallet` | `rebit.exchange` | Проверка достаточности баланса перед созданием объявления |
-| `NotificationDispatcherInterface` | `Application/Contract/Notification/` | `rebit.notification` | `rebit.exchange` | Отправка уведомлений о событиях сделки (контракт создаётся заранее, реализация — при создании модуля) |
+| `NotificationDispatcherInterface` | `Application/Contract/Notification/` | `rebit.notification` | `rebit.exchange` | Отправка уведомлений о событиях сделки (реализация — при создании модуля) |
 
 ### Структура контракта (пример: Bybit)
 
@@ -203,8 +204,12 @@ rebit.share/
     │   │   │   └── BybitApiException.php
     │   │   ├── Cache/
     │   │   │   └── CacheCleanerInterface.php
-    │   │   └── File/
-    │   │       └── FileServiceInterface.php
+    │   │   ├── Exchange/
+    │   │   │   └── CurrencyQueryInterface.php
+    │   │   ├── File/
+    │   │   │   └── FileServiceInterface.php
+    │   │   └── Wallet/
+    │   │       └── BalanceQueryInterface.php
     │   ├── Interface/
     │   │   ├── RequestDtoInterface.php
     │   │   └── ResultDtoInterface.php
@@ -214,6 +219,16 @@ rebit.share/
     │       └── UploadFileUseCase.php
     ├── Domain/
     │   └── File/
+    │       ├── Dto/
+    │       │   ├── Request/
+    │       │   │   └── UploadRequestFileRequestDto.php
+    │       │   └── Result/
+    │       │       └── UploadFileResultDto.php
+    │       ├── Exception/
+    │       │   ├── FileUploadFailedException.php
+    │       │   └── InvalidFileException.php
+    │       └── Service/
+    │           └── FileUploadService.php
     ├── Infrastructure/
     │   ├── Bitrix/
     │   │   ├── Module/
@@ -221,6 +236,7 @@ rebit.share/
     │   │   │   ├── ModuleRoutingTrait.php
     │   │   │   └── ModuleComponentInstallerTrait.php
     │   │   ├── Cache/
+    │   │   │   └── BitrixCacheCleaner.php
     │   │   ├── ControllerJson.php
     │   │   └── ControllerBuilder.php
     │   ├── Controller/
@@ -228,48 +244,105 @@ rebit.share/
     │   │   ├── AbstractJsonController.php
     │   │   ├── AbstractController.php
     │   │   ├── Auth/
+    │   │   │   ├── AuthenticatedControllerInterface.php
+    │   │   │   └── AuthenticatedControllerTrait.php
     │   │   ├── Request/
+    │   │   │   ├── RequestFileToDtoMapper.php
+    │   │   │   ├── RequestParameterFactory.php
+    │   │   │   ├── RequestToCollectionMapper.php
+    │   │   │   ├── RequestToDtoMapper.php
+    │   │   │   └── RequestToEntityMapper.php
     │   │   ├── Responses/
+    │   │   │   ├── AbstractResponse.php
+    │   │   │   ├── JsonExceptionResponse.php
+    │   │   │   └── JsonResponse.php
     │   │   ├── Normalizer/
+    │   │   │   ├── CommonNormalizer.php
+    │   │   │   ├── DateNormalizer.php
+    │   │   │   ├── DateTimeNormalizer.php
+    │   │   │   ├── EnumNormalizer.php
+    │   │   │   ├── ObjectNormalizer.php
+    │   │   │   └── ScalarNormalizer.php
     │   │   ├── Serializers/
+    │   │   │   └── CommonSerializer.php
     │   │   ├── Filters/
+    │   │   │   ├── BearerTokenFilter.php
+    │   │   │   └── LoggerFilter.php
     │   │   └── Attribute/
+    │   │       └── SkipWhenNull.php
+    │   ├── Dto/
+    │   │   └── Metadata/
+    │   │       ├── DtoClassMetadata.php
+    │   │       ├── DtoMetadataService.php
+    │   │       ├── DtoParamTypeEnum.php
+    │   │       └── DtoParameterMetadata.php
+    │   ├── Exception/
+    │   │   ├── DtoInterfaceNotImplementException.php
+    │   │   ├── EntityNotFoundException.php
+    │   │   ├── RequestParameterException.php
+    │   │   └── ValidationHttpException.php
+    │   ├── Factory/
+    │   │   └── DtoFactory.php
+    │   ├── Helpers/
+    │   │   ├── DtoMapper.php
+    │   │   ├── JsonSerializerHelper.php
+    │   │   ├── MappingException.php
+    │   │   ├── NormalizerHelper.php
+    │   │   ├── RequestHelper.php
+    │   │   └── ValidationHelper.php
+    │   ├── HttpClient/
+    │   │   ├── Exception/
+    │   │   │   └── HttpClientException.php
+    │   │   ├── RebitHttpClient.php
+    │   │   └── RebitHttpClientFactory.php
+    │   ├── Interface/
+    │   │   ├── HasViewModelInterface.php
+    │   │   ├── RequestMapperInterface.php
+    │   │   └── SerializerInterface.php
+    │   ├── Logger/
+    │   │   ├── CommonLoggerProcessor.php
+    │   │   └── RequestIdGenerator.php
     │   ├── Repository/
     │   │   ├── AbstractHLBlockRepository.php
     │   │   ├── AbstractRepository.php
     │   │   └── RepositoryExceptionTrait.php
-    │   ├── Helpers/
-    │   │   ├── DtoMapper.php
-    │   │   ├── ValidationHelper.php
-    │   │   ├── RequestHelper.php
-    │   │   ├── NormalizerHelper.php
-    │   │   └── JsonSerializerHelper.php
-    │   ├── HttpClient/
-    │   ├── Serializer/
-    │   ├── Logger/
-    │   ├── Factory/
-    │   ├── Dto/
-    │   └── Exception/
+    │   └── Serializer/
+    │       └── NameConverter/
+    │           └── CustomNameConverter.php
     ├── Presentation/
     │   ├── Controller/
     │   │   └── FileController.php
     │   └── Command/
+    │       ├── Attribute/
+    │       │   └── WithLock.php           # атрибут для команд с эксклюзивной блокировкой
     │       └── RebitCommand.php
     └── Shared/
-        ├── Facade/
-        │   ├── Log.php
-        │   └── Cache.php
         ├── Enum/
-        │   ├── LogChannelEnum.php
-        │   └── HttpMethodEnum.php
+        │   ├── HttpMethodEnum.php
+        │   └── LogChannelEnum.php
         ├── Exception/
         │   ├── HttpException.php
         │   ├── RebitException.php
         │   └── RepositoryException.php
+        ├── Facade/
+        │   ├── Cache.php
+        │   └── Log.php
         ├── Helper/
-        ├── Dto/
+        │   ├── ArrayToDtoMapper.php
+        │   ├── DtoToArrayNormalizer.php
+        │   ├── PathHelper.php
+        │   └── StringHelper.php
         ├── Interface/
+        │   ├── DtoInterface.php
+        │   ├── NormalizerInterface.php
+        │   └── RequestFileDtoInterface.php
         └── ValueObject/
+            ├── AbstractDateRange.php
+            ├── CacheKey.php
+            ├── DateRange.php
+            ├── DateTimeRange.php
+            ├── Image.php
+            └── Phone.php
 ```
 
 ### Что предоставляет
@@ -278,12 +351,13 @@ rebit.share/
 |-----------|-----|--------|
 | Базовые контроллеры | HTTP-слой для всех модулей | `BaseJsonController`, `AbstractJsonController` |
 | Базовые репозитории | ORM-обёртки | `AbstractHLBlockRepository`, `AbstractRepository` |
-| Контракты | Межмодульные интерфейсы | `BybitClientInterface`, `TokenResolverInterface` |
+| Контракты | Межмодульные интерфейсы | `BybitClientInterface`, `TokenResolverInterface`, `BalanceQueryInterface`, `CurrencyQueryInterface` |
 | DTO-интерфейсы | Стандарт для входа/выхода | `RequestDtoInterface`, `ResultDtoInterface` |
 | Module-трейты | Установка/маршруты модулей | `ModuleRoutingTrait`, `ModuleComponentInstallerTrait` |
-| Хелперы | Маппинг, валидация, сериализация | `DtoMapper`, `ValidationHelper` |
+| Хелперы | Маппинг, валидация, сериализация | `DtoMapper`, `ValidationHelper`, `ArrayToDtoMapper` |
 | Фасады | Логирование, кэширование | `Log`, `Cache` |
-| CLI-команды | Базовый класс команд | `RebitCommand` |
+| CLI-команды | Базовый класс команд + атрибут блокировки | `RebitCommand`, `WithLock` |
+| Value Objects | Общие объекты-значения | `Phone`, `Image`, `DateRange`, `CacheKey` |
 
 ---
 
@@ -568,10 +642,14 @@ rebit.wallet/
     │       └── Enum/
     │           └── TransactionTypeEnum.php
     ├── Infrastructure/
+    │   ├── Adapter/
+    │   │   └── BalanceQueryAdapter.php         # реализует BalanceQueryInterface
     │   ├── Bybit/
     │   │   └── BybitBalanceGateway.php         # реализует BybitBalanceGatewayInterface
-    │   └── Bridge/
-    │       └── SyncBalancesBridge.php
+    │   ├── Bridge/
+    │   │   └── SyncBalancesBridge.php
+    │   └── Controller/
+    │       └── BaseWalletController.php        # базовый контроллер с инициализацией userId
     └── Presentation/
         ├── Controller/
         │   ├── BalanceController.php
@@ -586,6 +664,13 @@ rebit.wallet/
 |----------------------------|------------------|
 | `BybitClientInterface` | `BybitBalanceGateway` |
 | `BybitConnectionResolverInterface` | `BybitBalanceGateway`, `SyncBalancesCommand` |
+| `CurrencyQueryInterface` | `SyncBalancesUseCase` (сопоставление кода валюты с ID)
+
+### Реализуемые контракты
+
+| Контракт из `rebit.share` | Адаптер |
+|----------------------------|---------|
+| `BalanceQueryInterface` | `Infrastructure/Adapter/BalanceQueryAdapter` |
 
 ### Внутренние порты
 
@@ -620,8 +705,9 @@ GetBalancesUseCase::class
 LockFundsUseCase::class
 UnlockFundsUseCase::class
 BybitBalanceGatewayInterface::class → BybitBalanceGateway
-SyncBalancesUseCase::class
+SyncBalancesUseCase::class           # потребляет CurrencyQueryInterface
 SyncBalancesCommand::class
+BalanceQueryInterface::class → BalanceQueryAdapter
 BalanceController::class
 ```
 
@@ -1327,12 +1413,20 @@ rebit.exchange/
     │   ├── PaymentMethod/
     │   │   └── UseCase/ → GetPaymentMethodsUseCase
     │   ├── OrderBook/
+    │   │   ├── Port/
+    │   │   │   └── BybitOrderBookGatewayInterface.php
     │   │   └── UseCase/ → GetOrderBookUseCase, SyncOrderBookUseCase, CleanStaleOrdersUseCase
     │   ├── Advertisement/
+    │   │   ├── Port/
+    │   │   │   └── BybitAdvertisementGatewayInterface.php
     │   │   └── UseCase/ → ListAdvertisementsUseCase, CreateAdvertisementUseCase, DeactivateAdvertisementUseCase
     │   ├── Trade/
+    │   │   ├── Port/
+    │   │   │   └── BybitTradeGatewayInterface.php
     │   │   └── UseCase/ → ListTradesUseCase, GetTradeUseCase, ConfirmPaymentUseCase, ConfirmReceiptUseCase, SyncTradeHistoryUseCase
     │   ├── TradeChat/
+    │   │   ├── Port/
+    │   │   │   └── BybitChatGatewayInterface.php
     │   │   └── UseCase/ → GetChatHistoryUseCase, SendMessageUseCase, ExecuteChatScriptUseCase, ProcessPendingChatScriptsUseCase
     │   └── ChatScript/
     │       └── UseCase/ → ListChatScriptsUseCase, CreateChatScriptUseCase, UpdateChatScriptUseCase, DeleteChatScriptUseCase
@@ -1343,12 +1437,42 @@ rebit.exchange/
     │   ├── Advertisement/Entity, Repository, Enum (AdvertisementStatusEnum, PriceTypeEnum)
     │   ├── Trade/Entity, Repository, Enum (TradeStatusEnum, CancelReasonEnum)
     │   ├── TradeChat/Entity, Repository, Enum (ContentTypeEnum, MessageTypeEnum)
-    │   ├── ChatScript/Entity, Repository, Enum (ExecutionStatusEnum)
+    │   ├── ChatScript/Entity (ChatScript, ChatScriptStep, ChatScriptExecution + коллекции), Repository (x3), Enum (ExecutionStatusEnum)
     │   └── Shared/Enum (SideEnum: buy/sell)
+    ├── Infrastructure/
+    │   ├── Adapter/
+    │   │   └── CurrencyQueryAdapter.php        # реализует CurrencyQueryInterface
+    │   ├── Bybit/
+    │   │   ├── BybitAdvertisementGateway.php   # реализует BybitAdvertisementGatewayInterface
+    │   │   ├── BybitChatGateway.php            # реализует BybitChatGatewayInterface
+    │   │   ├── BybitOrderBookGateway.php       # реализует BybitOrderBookGatewayInterface
+    │   │   └── BybitTradeGateway.php           # реализует BybitTradeGatewayInterface
+    │   └── Controller/
+    │       └── BaseExchangeController.php      # базовый контроллер с инициализацией userId
     └── Presentation/
-        └── Controller/ → CurrencyController, PaymentMethodController, OrderBookController,
-                          AdvertisementController, TradeController, TradeChatController, ChatScriptController
+        ├── Controller/ → CurrencyController, PaymentMethodController, OrderBookController,
+        │                 AdvertisementController, TradeController, TradeChatController, ChatScriptController
+        └── Command/
+            ├── SyncOrderBookCommand.php        # polling стакана ордеров (каждые 10 сек)
+            ├── CleanStaleOrdersCommand.php     # очистка устаревших записей стакана (каждую 1 мин)
+            ├── SyncTradesCommand.php           # polling новых/изменённых сделок (каждые 10 сек)
+            ├── SyncTradeHistoryCommand.php     # дозагрузка истории сделок (каждые 10 мин)
+            └── ExecuteChatScriptsCommand.php   # выполнение отложенных шагов скриптов (каждые 5 сек)
 ```
+
+### Реализуемые контракты
+
+| Контракт из `rebit.share` | Адаптер |
+|----------------------------|---------|
+| `CurrencyQueryInterface` | `Infrastructure/Adapter/CurrencyQueryAdapter` |
+
+### Потребляемые контракты
+
+| Контракт из `rebit.share` | Где используется |
+|----------------------------|------------------|
+| `BybitClientInterface` | Все Bybit-шлюзы в `Infrastructure/Bybit/` |
+| `BybitConnectionResolverInterface` | Все Bybit-шлюзы в `Infrastructure/Bybit/` |
+| `BalanceQueryInterface` | `CreateAdvertisementUseCase` (проверка баланса перед созданием объявления) |
 
 ### HL-блоки
 
@@ -1462,19 +1586,19 @@ POST   /api/v1/security/alerts/{id}/resolve
 
 ### Существующие
 
-| Команда | Модуль | Класс | Описание |
-|---------|--------|-------|----------|
-| Синхронизация балансов | `rebit.wallet` | `Presentation/Command/SyncBalancesCommand` | Синхронизация балансов активных пользователей с Bybit |
+| Команда | Модуль | Класс | Описание | Интервал |
+|---------|--------|-------|----------|----------|
+| Синхронизация балансов | `rebit.wallet` | `Presentation/Command/SyncBalancesCommand` | Синхронизация балансов активных пользователей с Bybit | — |
+| Синхронизация стакана | `rebit.exchange` | `Presentation/Command/SyncOrderBookCommand` | Polling `POST /v5/p2p/item/online` → обновление `rebit_order_book` | 10 сек |
+| Очистка стакана | `rebit.exchange` | `Presentation/Command/CleanStaleOrdersCommand` | Удаление записей `rebit_order_book` старше 5 мин | 1 мин |
+| Синхронизация сделок | `rebit.exchange` | `Presentation/Command/SyncTradesCommand` | Polling `order/pending/simplifyList` → обнаружение новых ордеров и обновление статусов | 10 сек |
+| Синхронизация истории сделок | `rebit.exchange` | `Presentation/Command/SyncTradeHistoryCommand` | Polling `order/simplifyList` → дозагрузка завершённых ордеров в `rebit_trade` | 10 мин |
+| Выполнение шагов скриптов | `rebit.exchange` | `Presentation/Command/ExecuteChatScriptsCommand` | Отправка отложенных сообщений из `rebit_chat_script_execution` через `order/message/send` | 5 сек |
 
 ### Запланированные
 
 | Команда | Модуль | Описание | Интервал |
 |---------|--------|----------|----------|
-| Синхронизация стакана | `rebit.exchange` | Polling `POST /v5/p2p/item/online` → обновление `rebit_order_book` | 10 сек |
-| Очистка стакана | `rebit.exchange` | Удаление записей `rebit_order_book` старше 5 мин | 1 мин |
-| Синхронизация сделок | `rebit.exchange` | Polling `order/pending/simplifyList` → обнаружение новых ордеров и обновление статусов (включая отмену по таймеру Bybit) | 10 сек |
-| Синхронизация истории сделок | `rebit.exchange` | Polling `order/simplifyList` → дозагрузка завершённых ордеров в `rebit_trade` | 10 мин |
-| Выполнение шагов скриптов | `rebit.exchange` | Отправка отложенных сообщений из `rebit_trade_chat_script_step` через `order/message/send` | 5 сек |
 | Мониторинг активности | `rebit.security` | Анализ паттернов подозрительной активности | 5 мин |
 
 ---
@@ -1677,7 +1801,8 @@ final class FeatureController extends BaseJsonController
 | `rebit.bybit` | — | — | — | — | — | — | — | — |
 | `rebit.identity` | 1 | 4 | 1+coll | 1 | 2 | 3 | 2 | — |
 | `rebit.wallet` | 2 | 5 | 2+coll | 2 | 1 | 5 | 1 | 1 |
-| **Итого** | **5** | **12** | **5** | **4** | **5** | **8** | **4** | **1** |
+| `rebit.exchange` | 7 | 19 | 7+coll | 8 | 6 | — | — | 4 |
+| **Итого** | **12** | **31** | **12** | **12** | **11** | **8** | **4** | **5** |
 
 ### Межмодульные контракты
 
@@ -1687,6 +1812,7 @@ final class FeatureController extends BaseJsonController
 | `BybitClientInterface` | `rebit.bybit` | `rebit.identity`, `rebit.wallet`, `rebit.exchange` |
 | `BybitConnectionResolverInterface` | `rebit.identity` | `rebit.wallet`, `rebit.exchange` |
 | `CacheCleanerInterface` | `rebit.share` | Все модули |
+| `BalanceQueryInterface` | `rebit.wallet` | `rebit.exchange` |
+| `CurrencyQueryInterface` | `rebit.exchange` | `rebit.wallet` |
 | `FileServiceInterface` | ⚠️ не реализован | — |
-| `BalanceQueryInterface` | `rebit.wallet` | `rebit.exchange` (планируется) |
-| `NotificationDispatcherInterface` | `rebit.notification` | `rebit.exchange` (планируется) |
+| `NotificationDispatcherInterface` | 🔜 `rebit.notification` | `rebit.exchange` (планируется) |
