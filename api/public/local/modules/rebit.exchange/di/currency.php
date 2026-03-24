@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+use Bitrix\Main\DI\ServiceLocator;
+use Rebit\Exchange\Application\Currency\UseCase\GetCurrenciesUseCase;
+use Rebit\Exchange\Application\Currency\UseCase\GetCurrencyPairsUseCase;
+use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
+use Rebit\Exchange\Domain\Currency\Repository\CurrencyRepository;
+use Rebit\Exchange\Presentation\Controller\CurrencyController;
+
+return [
+    CurrencyRepository::class => [
+        'className' => CurrencyRepository::class,
+    ],
+    CurrencyPairRepository::class => [
+        'className' => CurrencyPairRepository::class,
+    ],
+    GetCurrenciesUseCase::class => [
+        'constructor' => static function(): GetCurrenciesUseCase {
+            return new GetCurrenciesUseCase(
+                ServiceLocator::getInstance()->get(CurrencyRepository::class),
+            );
+        },
+    ],
+    GetCurrencyPairsUseCase::class => [
+        'constructor' => static function(): GetCurrencyPairsUseCase {
+            return new GetCurrencyPairsUseCase(
+                ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            );
+        },
+    ],
+    CurrencyController::class => [
+        'constructor' => static function(): CurrencyController {
+            $sl = ServiceLocator::getInstance();
+
+            return new CurrencyController(
+                $sl->get(GetCurrenciesUseCase::class),
+                $sl->get(GetCurrencyPairsUseCase::class),
+            );
+        },
+    ],
+];

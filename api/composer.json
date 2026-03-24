@@ -71,6 +71,7 @@
             "Rebit\\Auth\\": "public/local/modules/rebit.auth/lib/",
             "Rebit\\Bybit\\": "public/local/modules/rebit.bybit/lib/",
             "Rebit\\Identity\\": "public/local/modules/rebit.identity/lib/",
+            "Rebit\\Exchange\\": "public/local/modules/rebit.exchange/lib/",
             "Rebit\\Share\\": "public/local/modules/rebit.share/lib/",
             "Rebit\\Wallet\\": "public/local/modules/rebit.wallet/lib/"
         }
