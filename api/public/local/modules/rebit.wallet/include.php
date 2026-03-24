@@ -8,6 +8,5 @@ use Rebit\Share\Infrastructure\Bitrix\Module\ModuleHelper;
 Loader::includeModule('highloadblock');
 
 ModuleHelper::validateModuleInstalled('rebit.share');
-ModuleHelper::validateModuleInstalled('rebit.auth');
 
 ModuleHelper::compileHLEntities(['RebitBalance', 'RebitTransaction']);

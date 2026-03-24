@@ -134,7 +134,7 @@
 
 ### 2.5. `rebit_advertisement` — Объявления пользователей
 
-Собственные P2P-объявления (маркет-мейкинг).
+Собственные P2P-объявления (маркет-мейкинг). CRUD через Bybit API (`item/create`, `item/update`, `item/cancel`). При создании Bybit сам замораживает средства (`frozenQuantity`).
 
 | Поле | Тип | Обязательное | Описание |
 |------|-----|:---:|----------|
@@ -145,13 +145,16 @@
 | `UF_SIDE` | string(4) | ✅ | Тип: `buy` / `sell` |
 | `UF_PRICE_TYPE` | string(10) | ✅ | Тип цены: `fixed` / `floating` |
 | `UF_PRICE` | double | ✅ | Цена (фиксированная) или коэффициент (плавающая) |
+| `UF_PREMIUM` | double | ❌ | Надбавка к рыночной цене (%). Bybit `premium` |
 | `UF_QUANTITY` | double | ✅ | Выставленный объём токена |
 | `UF_QUANTITY_REMAINING` | double | ✅ | Оставшийся объём |
 | `UF_MIN_AMOUNT` | double | ✅ | Мин. сумма сделки (фиат) |
 | `UF_MAX_AMOUNT` | double | ✅ | Макс. сумма сделки (фиат) |
 | `UF_PAYMENT_METHOD_IDS` | string(255) | ✅ | ID методов оплаты (JSON-массив) |
-| `UF_CONDITIONS` | text | ❌ | Условия сделки (комментарий) |
-| `UF_CHAT_SCRIPT_ID` | int | ❌ | FK → rebit_trade_chat_script (автоскрипт при открытии сделки) |
+| `UF_PAYMENT_PERIOD` | int | ✅ | Время на оплату (минуты). Bybit `paymentPeriod` |
+| `UF_FEE_RATE` | double | ❌ | Ставка комиссии. Bybit `feeRate` |
+| `UF_CONDITIONS` | text | ❌ | Условия сделки / описание. Bybit `remark` |
+| `UF_CHAT_SCRIPT_ID` | int | ❌ | FK → rebit_trade_chat_script (автоскрипт при обнаружении сделки) |
 | `UF_STATUS` | string(20) | ✅ | Статус: `active`, `paused`, `completed`, `cancelled` |
 | `UF_CREATED_AT` | datetime | ✅ | Дата создания |
 | `UF_UPDATED_AT` | datetime | ✅ | Дата обновления |
@@ -165,12 +168,13 @@
 
 ### 2.6. `rebit_trade` — Сделки
 
-Основная таблица P2P-сделок.
+Основная таблица P2P-сделок. Rebit **не создаёт** сделки — они обнаруживаются через polling Bybit API (`order/pending/simplifyList`) и синхронизируются локально.
 
 | Поле | Тип | Обязательное | Описание |
 |------|-----|:---:|----------|
 | `ID` | int | ✅ | PK |
 | `UF_BYBIT_ORDER_ID` | string(64) | ❌ | ID ордера в Bybit |
+| `UF_BYBIT_STATUS` | int | ❌ | Сырой код статуса Bybit (10, 20, 30, 40, 50) для отладки синхронизации |
 | `UF_BUYER_USER_ID` | int | ✅ | FK → b_user.ID (покупатель) |
 | `UF_SELLER_USER_ID` | int | ❌ | FK → b_user.ID (продавец; null если контрагент внешний) |
 | `UF_ADVERTISEMENT_ID` | int | ❌ | FK → rebit_advertisement (если по объявлению) |
@@ -205,17 +209,20 @@
 
 ---
 
-### 2.7. `rebit_trade_message` — Чат сделки (real-time)
+### 2.7. `rebit_trade_message` — Чат сделки
 
-Сообщения в real-time чате сделки. Чат работает через WebSocket, пока сделка активна.
+Сообщения в чате сделки. Отправка через Bybit API (`order/message/send`), история хранится **только локально** (Bybit не предоставляет API для чтения истории). Сообщения контрагента из UI Bybit не видны.
 
 | Поле | Тип | Обязательное | Описание |
 |------|-----|:---:|----------|
 | `ID` | int | ✅ | PK |
 | `UF_TRADE_ID` | int | ✅ | FK → rebit_trade |
 | `UF_USER_ID` | int | ✅ | FK → b_user.ID (автор; для автосообщений — владелец скрипта) |
-| `UF_MESSAGE` | text | ✅ | Текст сообщения |
+| `UF_MESSAGE` | text | ✅ | Текст сообщения или URL файла (из `oss/upload_file`) |
 | `UF_MESSAGE_TYPE` | string(10) | ✅ | Тип: `user` (ручное), `system` (смена статуса), `script` (автоскрипт) |
+| `UF_CONTENT_TYPE` | string(10) | ✅ | Формат контента для Bybit: `str`, `pic`, `pdf`, `video` |
+| `UF_BYBIT_MSG_UUID` | string(36) | ✅ | UUID для дедупликации при отправке в Bybit |
+| `UF_FILE_NAME` | string(255) | ❌ | Имя файла (для pic/pdf/video) |
 | `UF_SCRIPT_STEP_ID` | int | ❌ | FK → rebit_trade_chat_script_step (если отправлено скриптом) |
 | `UF_IS_READ` | boolean | ✅ | Прочитано контрагентом |
 | `UF_CREATED_AT` | datetime | ✅ | Время отправки |
@@ -266,7 +273,7 @@
 
 ### 3.1. `rebit_balance` — Балансы пользователей
 
-Текущие балансы пользователей по валютам.
+Текущие балансы пользователей по валютам. Зеркало данных Bybit, обновляется через `SyncBalances`. `UF_LOCKED` синхронизируется с `frozenQuantity` из Bybit. При расхождении — приоритет данным Bybit.
 
 | Поле | Тип | Обязательное | Описание |
 |------|-----|:---:|----------|
@@ -294,7 +301,7 @@
 | `ID` | int | ✅ | PK |
 | `UF_USER_ID` | int | ✅ | FK → b_user.ID |
 | `UF_CURRENCY_ID` | int | ✅ | FK → rebit_currency |
-| `UF_TYPE` | string(20) | ✅ | Тип: `deposit`, `withdrawal`, `trade_buy`, `trade_sell`, `lock`, `unlock`, `fee` |
+| `UF_TYPE` | string(20) | ✅ | Тип: `trade_buy`, `trade_sell`, `lock`, `unlock`, `fee`, `sync_adjustment` |
 | `UF_AMOUNT` | double | ✅ | Сумма операции (положительная для зачисления, отрицательная для списания) |
 | `UF_BALANCE_AFTER` | double | ✅ | Баланс после операции |
 | `UF_TRADE_ID` | int | ❌ | FK → rebit_trade (если связана со сделкой) |
@@ -501,9 +508,9 @@ rebit_transaction
 | 3 | `RebitCurrencyPair` | `rebit_currency_pair` | Exchange | 6 |
 | 4 | `RebitPaymentMethod` | `rebit_payment_method` | Exchange | 5 |
 | 5 | `RebitOrderBook` | `rebit_order_book` | Exchange | 15 |
-| 6 | `RebitAdvertisement` | `rebit_advertisement` | Exchange | 17 |
-| 7 | `RebitTrade` | `rebit_trade` | Exchange | 23 |
-| 8 | `RebitTradeMessage` | `rebit_trade_message` | Exchange | 8 |
+| 6 | `RebitAdvertisement` | `rebit_advertisement` | Exchange | 20 |
+| 7 | `RebitTrade` | `rebit_trade` | Exchange | 24 |
+| 8 | `RebitTradeMessage` | `rebit_trade_message` | Exchange | 11 |
 | 9 | `RebitTradeChatScript` | `rebit_trade_chat_script` | Exchange | 5 |
 | 10 | `RebitTradeChatScriptStep` | `rebit_trade_chat_script_step` | Exchange | 5 |
 | 11 | `RebitBalance` | `rebit_balance` | Wallet | 7 |
@@ -531,6 +538,6 @@ rebit_transaction
 
 5. **JSON-поля** (`UF_PAYMENT_METHOD_IDS`, `UF_PAYMENT_DETAILS`, `UF_CHANNELS`, `UF_PAYLOAD`): хранить как `string`/`text` с JSON-сериализацией. Валидация на уровне домена.
 
-6. **Real-time чат:** доставка сообщений через WebSocket (Bitrix Pull & Push). Сообщения пишутся в `rebit_trade_message` синхронно, а затем пушатся в канал сделки. При реконнекте — клиент запрашивает сообщения с последнего известного `ID`. Антиспам: rate-limit 10 msg / 30 сек на уровне приложения.
+6. **Чат сделки:** отправка сообщений через Bybit API (`POST /v5/p2p/order/message/send`). Все отправленные сообщения дублируются в `rebit_trade_message` для локальной истории. Сообщения контрагента, отправленные через UI Bybit, **не** отображаются (нет API для чтения). Для уведомления о новых локальных сообщениях — Bitrix Pull & Push. Антиспам: rate-limit 10 msg / 30 сек на уровне приложения.
 
 7. **Скрипты чата:** шаги с `UF_DELAY_SECONDS > 0` выполняются через отложенные задачи (cron-агент или очередь). При отмене сделки до завершения скрипта — оставшиеся шаги не отправляются.
