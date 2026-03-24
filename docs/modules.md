@@ -5,6 +5,8 @@
 > Общая инфраструктура и межмодульные контракты — в `rebit.share`.
 > Архитектурные правила описаны в [architecture-guide](architecture-guide/README.md).
 
+> **Для фронтенда:** все работающие эндпоинты описаны в разделе [10. API-справочник для фронтенда](#10-api-справочник-для-фронтенда).
+
 ---
 
 ## 1. Карта модулей
@@ -17,7 +19,7 @@
 | 4 | `rebit.identity` | Управление API-ключами Bybit | `Rebit\Identity` | `rebit.share` | ✅ |
 | 5 | `rebit.wallet` | Балансы, транзакции | `Rebit\Wallet` | `rebit.share` | ✅ |
 | 6 | `rebit.dev` | Инструменты разработки | `Rebit\Dev` | — | ✅ |
-| 7 | `rebit.exchange` | P2P-торговля, сделки, чат | `Rebit\Exchange` | `rebit.share` | 🔜 запланирован |
+| 7 | `rebit.exchange` | P2P-торговля, сделки, чат | `Rebit\Exchange` | `rebit.share` | ✅ |
 | 8 | `rebit.notification` | Уведомления, каналы доставки | `Rebit\Notification` | `rebit.share` | 🔜 запланирован |
 | 9 | `rebit.security` | Сессии, 2FA, аудит | `Rebit\Security` | `rebit.share` | 🔜 запланирован |
 
@@ -651,119 +653,735 @@ rebit.dev/
 
 ---
 
-## 10. Запланированные модули
+## 10. API-справочник для фронтенда
 
-Следующие модули описаны в [domain.md](domain.md) и будут реализованы по мере развития платформы.
-Каждый из них будет зависеть **только** от `rebit.share`.
+Все работающие эндпоинты. Для каждого указаны: метод, путь, нужна ли авторизация, параметры запроса и форма ответа.
 
-### 10.1. `rebit.exchange` — P2P-торговля
+### 10.1. Общее
+
+**Base URL (dev):** `https://api.rebit-p2p.loc`
+
+**Аутентификация:** Bearer-токен в заголовке запроса:
+```
+Authorization: Bearer <token>
+```
+Токен получается через `POST /api/v1/auth/login`.
+
+**Формат запросов и ответов:** JSON (`Content-Type: application/json`).
+
+**Конверт ответа:**
+```json
+// Успешный ответ
+{ "data": { ... } }
+
+// Ошибка
+{
+  "data": null,
+  "error": {
+    "message": "Текст ошибки",
+    "debug": { ... }   // только в dev-окружении
+  }
+}
+```
+
+**Обозначения в таблицах:**
+- 🔒 — требует Bearer-токен
+- 📦 — тело запроса JSON
+- ❓ — query-параметр (GET)
+
+---
+
+### 10.2. `rebit.auth` — Аутентификация
+
+#### `POST /api/v1/auth/login`
+
+Вход по номеру телефона и паролю. Возвращает токен.
+
+**Body:**
+```json
+{
+  "phone": "+79991234567",
+  "password": "secret"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "token": "eyJ...",
+    "expiresAt": "2026-04-01T12:00:00+00:00",
+    "userId": 42
+  }
+}
+```
+
+---
+
+#### `POST /api/v1/auth/logout` 🔒
+
+Инвалидирует текущий токен. Тело не требуется.
+
+**Response:**
+```json
+{ "data": { "success": true } }
+```
+
+---
+
+### 10.3. `rebit.identity` — Подключение Bybit API
+
+Управление ключами Bybit (API Key + Secret) для P2P-торговли.
+
+#### `GET /api/v1/identity/connection/status` 🔒
+
+Статус подключения Bybit-аккаунта.
+
+**Response:**
+```json
+{
+  "data": {
+    "isConnected": true,
+    "status": "active",
+    "mode": "real",
+    "maskedApiKey": "****ABCD",
+    "connectedAt": "2026-03-20T10:00:00+00:00"
+  }
+}
+```
+
+| Поле | Тип | Значения |
+|------|-----|---------|
+| `status` | string | `active` / `inactive` / `error` |
+| `mode` | string | `real` / `testnet` |
+
+---
+
+#### `POST /api/v1/identity/connection` 🔒 📦
+
+Подключение Bybit API-ключа.
+
+**Body:**
+```json
+{
+  "apiKey": "your_bybit_api_key",
+  "apiSecret": "your_bybit_api_secret",
+  "mode": "real"
+}
+```
+
+| Поле | Тип | Обязательный | Значения |
+|------|-----|:---:|---------|
+| `apiKey` | string | ✅ | — |
+| `apiSecret` | string | ✅ | — |
+| `mode` | string | ✅ | `real` / `testnet` |
+
+---
+
+#### `DELETE /api/v1/identity/connection` 🔒
+
+Отключение Bybit-аккаунта.
+
+---
+
+#### `POST /api/v1/identity/connection/verify` 🔒
+
+Проверка валидности текущего ключа.
+
+---
+
+### 10.4. `rebit.wallet` — Балансы и транзакции
+
+#### `GET /api/v1/wallet/balances` 🔒
+
+Список балансов пользователя по всем валютам.
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "userId": 42,
+        "currencyId": 1,
+        "available": 250.50,
+        "locked": 50.00,
+        "total": 300.50,
+        "syncedAt": "2026-03-24T12:00:00+00:00"
+      }
+    ]
+  }
+}
+```
+
+> `currencyId` — ID из справочника `/api/v1/exchange/currencies`.
+> `locked` — средства, зарезервированные под активные объявления (замораживает Bybit).
+
+---
+
+#### `POST /api/v1/wallet/balances/sync` 🔒
+
+Принудительная синхронизация балансов с Bybit. Тело не требуется.
+
+---
+
+#### `GET /api/v1/wallet/transactions` 🔒
+
+История транзакций пользователя с фильтрацией и пагинацией.
+
+**Query-параметры:**
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|:---:|---------|
+| `type` | string | — | Тип транзакции (см. ниже) |
+| `currencyId` | int | — | Фильтр по валюте |
+| `dateFrom` | string | — | Формат `YYYY-MM-DD` |
+| `dateTo` | string | — | Формат `YYYY-MM-DD` |
+| `limit` | int | 50 | Кол-во записей |
+| `offset` | int | 0 | Смещение (пагинация) |
+
+**Значения `type`:**
+
+| Значение | Описание |
+|----------|---------|
+| `deposit` | Пополнение |
+| `withdrawal` | Вывод |
+| `trade_buy` | Покупка по сделке |
+| `trade_sell` | Продажа по сделке |
+| `lock` | Заморозка средств |
+| `unlock` | Разморозка средств |
+| `fee` | Комиссия |
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": 101,
+        "userId": 42,
+        "currencyId": 1,
+        "type": "trade_sell",
+        "amount": 100.00,
+        "balanceAfter": 350.50,
+        "tradeId": 7,
+        "description": "Продажа USDT по сделке #7",
+        "bybitTxId": null,
+        "createdAt": "2026-03-24T11:00:00+00:00"
+      }
+    ],
+    "total": 42
+  }
+}
+```
+
+---
+
+### 10.5. `rebit.exchange` — P2P-торговля
+
+#### Справочники (публичные, без авторизации)
+
+##### `GET /api/v1/exchange/currencies` 🔒
+
+Список поддерживаемых валют.
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      { "id": 1, "code": "USDT", "name": "Tether USD", "type": "crypto", "decimals": 2, "sort": 10 },
+      { "id": 2, "code": "USDC", "name": "USD Coin",   "type": "crypto", "decimals": 2, "sort": 20 },
+      { "id": 3, "code": "BTC",  "name": "Bitcoin",    "type": "crypto", "decimals": 8, "sort": 30 },
+      { "id": 4, "code": "RUB",  "name": "Российский рубль", "type": "fiat", "decimals": 2, "sort": 100 }
+    ]
+  }
+}
+```
+
+| Поле `type` | Описание |
+|------------|---------|
+| `crypto` | Криптовалюта |
+| `fiat` | Фиатная валюта |
+
+---
+
+##### `GET /api/v1/exchange/currency-pairs` 🔒
+
+Список торговых пар.
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      { "id": 1, "code": "USDT_RUB", "tokenCurrencyId": 1, "fiatCurrencyId": 4, "isDefault": true,  "sort": 10 },
+      { "id": 2, "code": "BTC_RUB",  "tokenCurrencyId": 3, "fiatCurrencyId": 4, "isDefault": false, "sort": 20 },
+      { "id": 3, "code": "USDC_RUB", "tokenCurrencyId": 2, "fiatCurrencyId": 4, "isDefault": false, "sort": 30 }
+    ]
+  }
+}
+```
+
+> `isDefault: true` — пара, выбранная по умолчанию на главной странице.
+
+---
+
+##### `GET /api/v1/exchange/payment-methods` 🔒
+
+Справочник способов оплаты.
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      { "id": 19, "code": "SBP",       "name": "СБП",          "sort": 10 },
+      { "id": 20, "code": "TINKOFF",   "name": "Tinkoff",       "sort": 20 },
+      { "id": 21, "code": "SBERBANK",  "name": "Сбербанк",      "sort": 30 },
+      { "id": 22, "code": "RAIFFEISEN","name": "Райффайзен",    "sort": 40 },
+      { "id": 23, "code": "YUMONEY",   "name": "ЮMoney",        "sort": 50 },
+      { "id": 24, "code": "GAZPROM",   "name": "Газпромбанк",   "sort": 60 },
+      { "id": 25, "code": "VTB",       "name": "ВТБ",           "sort": 70 },
+      { "id": 26, "code": "ALFA",      "name": "Альфа-Банк",    "sort": 80 },
+      { "id": 27, "code": "CASH",      "name": "Наличные",      "sort": 100 }
+    ]
+  }
+}
+```
+
+---
+
+#### Стакан ордеров
+
+##### `GET /api/v1/exchange/orderbook` 🔒
+
+Стакан P2P-ордеров с Bybit (закэшированный).
+
+**Query-параметры:**
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|:---:|---------|
+| `tokenCode` | string | ✅ | Код криптовалюты (`USDT`, `BTC`, `USDC`) |
+| `fiatCode` | string | ✅ | Код фиата (`RUB`) |
+| `side` | string | — | `buy` / `sell` — если не указан, возвращаются обе стороны |
+
+**Response:**
+```json
+{
+  "data": {
+    "buy": [
+      {
+        "id": 1,
+        "bybitOrderId": "1234567890",
+        "side": "buy",
+        "price": 91.50,
+        "amount": 500.00,
+        "minLimit": 1000.00,
+        "maxLimit": 50000.00,
+        "username": "trader_user",
+        "counterpartyRating": 98.5,
+        "completedTrades": 342,
+        "completionRate": 99.1,
+        "paymentMethods": ["SBP", "TINKOFF"],
+        "paymentTimeLimit": 15
+      }
+    ],
+    "sell": [ ... ]
+  }
+}
+```
+
+> ⚠️ Стакан обновляется фоновым процессом каждые 10 секунд. Данные могут быть не актуальнее 10 сек.
+
+---
+
+#### Объявления
+
+##### `GET /api/v1/exchange/advertisements` 🔒
+
+Список объявлений текущего пользователя (синхронизируются с Bybit).
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": 5,
+        "bybitAdId": "1765432100000",
+        "currencyPairId": 1,
+        "side": "sell",
+        "priceType": "fixed",
+        "price": 91.50,
+        "premium": 0.00,
+        "quantity": 1000.00,
+        "quantityRemaining": 750.00,
+        "minAmount": 1000.00,
+        "maxAmount": 50000.00,
+        "paymentMethodIds": ["SBP", "TINKOFF"],
+        "paymentPeriod": 15,
+        "feeRate": 0.002,
+        "conditions": "Только верифицированные пользователи",
+        "chatScriptId": 2,
+        "status": "active",
+        "createdAt": "2026-03-20T10:00:00+00:00",
+        "updatedAt": "2026-03-24T09:00:00+00:00"
+      }
+    ]
+  }
+}
+```
+
+| Поле `side` | Описание |
+|------------|---------|
+| `buy` | Объявление на покупку (я покупаю крипту за фиат) |
+| `sell` | Объявление на продажу (я продаю крипту за фиат) |
+
+| Поле `priceType` | Описание |
+|-----------------|---------|
+| `fixed` | Фиксированная цена |
+| `floating` | Плавающая (привязана к рынку через `premium`) |
+
+| Поле `status` | Описание |
+|--------------|---------|
+| `active` | Активно, принимает заявки |
+| `paused` | На паузе |
+| `completed` | Полностью выполнено (кол-во = 0) |
+| `cancelled` | Отменено |
+
+---
+
+##### `POST /api/v1/exchange/advertisements` 🔒 📦
+
+Создание нового объявления через Bybit API.
+
+**Body:**
+```json
+{
+  "currencyPairId": 1,
+  "side": "sell",
+  "priceType": "fixed",
+  "price": "91.50",
+  "premium": null,
+  "quantity": "1000",
+  "minAmount": "1000",
+  "maxAmount": "50000",
+  "paymentMethodIds": ["SBP", "TINKOFF"],
+  "paymentPeriod": 15,
+  "conditions": "Только верифицированные пользователи",
+  "chatScriptId": 2
+}
+```
+
+| Поле | Тип | Обязательный | Описание |
+|------|-----|:---:|---------|
+| `currencyPairId` | int | ✅ | ID пары из `/exchange/currency-pairs` |
+| `side` | string | ✅ | `buy` / `sell` |
+| `priceType` | string | ✅ | `fixed` / `floating` |
+| `price` | string | ✅ | Цена (строка, т.к. Bybit принимает строку) |
+| `premium` | string\|null | — | Наценка в % для `floating` типа |
+| `quantity` | string | ✅ | Объём в крипте |
+| `minAmount` | string | ✅ | Мин. сумма сделки в фиате |
+| `maxAmount` | string | ✅ | Макс. сумма сделки в фиате |
+| `paymentMethodIds` | string[] | ✅ | Коды способов оплаты |
+| `paymentPeriod` | int | ✅ | Время оплаты в минутах (1–1440) |
+| `conditions` | string | — | Условия для контрагента |
+| `chatScriptId` | int\|null | — | ID скрипта автосообщений |
+
+---
+
+##### `DELETE /api/v1/exchange/advertisements/{id}` 🔒
+
+Деактивация объявления. `{id}` — локальный ID.
+
+---
+
+#### Сделки
+
+##### `GET /api/v1/exchange/trades` 🔒
+
+Список сделок пользователя (buyer или seller).
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": 7,
+        "bybitOrderId": "1765000000001",
+        "bybitStatus": 10,
+        "side": "sell",
+        "price": 91.50,
+        "quantity": 100.00,
+        "fiatAmount": 9150.00,
+        "fee": 0.20,
+        "status": "pending_payment",
+        "counterpartyName": "buyer_nick",
+        "currencyPairId": 1,
+        "advertisementId": 5,
+        "paymentDeadline": "2026-03-24T12:15:00+00:00",
+        "paidAt": null,
+        "completedAt": null,
+        "cancelledAt": null,
+        "cancelReason": null,
+        "createdAt": "2026-03-24T12:00:00+00:00",
+        "updatedAt": "2026-03-24T12:00:00+00:00"
+      }
+    ]
+  }
+}
+```
+
+**Статусы сделки (`status`):**
+
+| Значение | Описание | Действие для пользователя |
+|----------|---------|--------------------------|
+| `pending_payment` | Ожидает оплаты от покупателя | Покупатель: перевести деньги и нажать «Оплатил» |
+| `payment_sent` | Покупатель отметил оплату | Продавец: подтвердить получение |
+| `payment_confirmed` | Продавец подтвердил | Ожидание завершения на Bybit |
+| `completed` | Сделка завершена | — |
+| `cancelled` | Отменена | — |
+| `disputed` | Открыт арбитраж | Ожидание решения Bybit |
+
+> **Важно:** `side` — это сторона **текущего пользователя** в сделке.
+> `buy` = я покупаю крипту, `sell` = я продаю крипту.
+
+---
+
+##### `GET /api/v1/exchange/trades/{id}` 🔒
+
+Детали одной сделки. Ответ той же формы, что элемент в списке.
+
+---
+
+##### `POST /api/v1/exchange/trades/{id}/pay` 🔒
+
+Подтвердить оплату (действие покупателя). Переводит сделку в статус `payment_sent`.
+Тело не требуется.
+
+---
+
+##### `POST /api/v1/exchange/trades/{id}/release` 🔒
+
+Подтвердить получение оплаты и освободить крипту (действие продавца).
+Переводит сделку в статус `completed`. Тело не требуется.
+
+---
+
+#### Чат сделки
+
+##### `GET /api/v1/exchange/trades/{tradeId}/chat` 🔒
+
+История сообщений в чате сделки (только локально сохранённые).
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": 15,
+        "tradeId": 7,
+        "userId": 42,
+        "message": "Оплатил, ждите зачисления",
+        "messageType": "user",
+        "contentType": "str",
+        "fileName": null,
+        "createdAt": "2026-03-24T12:05:00+00:00"
+      }
+    ]
+  }
+}
+```
+
+| Поле `messageType` | Описание |
+|-------------------|---------|
+| `user` | Сообщение пользователя |
+| `system` | Системное (смена статуса) |
+| `script` | Автоматическое от скрипта |
+
+| Поле `contentType` | Описание |
+|-------------------|---------|
+| `str` | Текст |
+| `pic` | Изображение |
+| `pdf` | PDF-документ |
+| `video` | Видео |
+
+> ⚠️ **Ограничение:** сообщения контрагента из UI Bybit **не отображаются** — Bybit API не предоставляет эндпоинт истории чата.
+
+---
+
+##### `POST /api/v1/exchange/trades/{tradeId}/chat` 🔒 📦
+
+Отправить сообщение в чат сделки.
+
+**Body:**
+```json
+{
+  "tradeId": 7,
+  "message": "Перевод выполнен",
+  "contentType": "str",
+  "fileName": null
+}
+```
+
+| Поле | Тип | По умолчанию | Описание |
+|------|-----|:---:|---------|
+| `tradeId` | int | — | ID сделки |
+| `message` | string | — | Текст сообщения или URL файла |
+| `contentType` | string | `str` | `str` / `pic` / `pdf` / `video` |
+| `fileName` | string\|null | null | Имя файла (для `pic`, `pdf`, `video`) |
+
+---
+
+#### Скрипты автосообщений
+
+Позволяют настроить авто-отправку сообщений по расписанию при открытии сделки.
+
+##### `GET /api/v1/exchange/chat-scripts` 🔒
+
+Список скриптов пользователя.
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": 2,
+        "name": "Приветствие покупателя",
+        "isActive": true,
+        "createdAt": "2026-03-20T10:00:00+00:00",
+        "updatedAt": "2026-03-20T10:00:00+00:00",
+        "steps": [
+          { "id": 1, "sort": 10, "message": "Здравствуйте! Переводите на карту Tinkoff.", "delaySeconds": 0 },
+          { "id": 2, "sort": 20, "message": "Как только переведёте — нажмите «Оплатил».", "delaySeconds": 30 }
+        ]
+      }
+    ]
+  }
+}
+```
+
+---
+
+##### `POST /api/v1/exchange/chat-scripts` 🔒 📦
+
+Создать новый скрипт.
+
+**Body:**
+```json
+{
+  "name": "Приветствие покупателя",
+  "isActive": true,
+  "steps": [
+    { "sort": 10, "message": "Здравствуйте! Переводите на карту Tinkoff.", "delaySeconds": 0 },
+    { "sort": 20, "message": "Как только переведёте — нажмите «Оплатил».", "delaySeconds": 30 }
+  ]
+}
+```
+
+---
+
+##### `PATCH /api/v1/exchange/chat-scripts/{id}` 🔒 📦
+
+Обновить скрипт. Body аналогичен `POST`, плюс `"id"` в теле.
+
+---
+
+##### `DELETE /api/v1/exchange/chat-scripts/{id}` 🔒
+
+Удалить скрипт.
+
+---
+
+## 11. Модуль `rebit.exchange` — Техническое описание
+
+**Статус: ✅ реализован**
 
 **Домен:** Exchange — стаканы ордеров, объявления, сделки, чат сделки, скрипты автосообщений.
 
-Самый крупный модуль. Фичи сгруппированы по поддоменам.
-
-> ⚠️ **Важно:** Bybit P2P API имеет существенные ограничения — ряд операций невозможен через API
-> и реализуется через polling или локальное хранение.
-> Подробнее: [api.md § 9. Ограничения Bybit P2P API](api.md#9-ограничения-bybit-p2p-api).
-
-**Поддомены:**
-
-| Поддомен | Ответственность |
-|----------|----------------|
-| Currency | Валюты и валютные пары (локальный справочник) |
-| PaymentMethod | Способы оплаты (локальный справочник, заполняется из ответов Bybit) |
-| OrderBook | Стакан P2P-ордеров (кэш из Bybit, `POST /v5/p2p/item/online`) |
-| Advertisement | Объявления пользователя (полноценный CRUD через Bybit API) |
-| Trade | Жизненный цикл сделки (ограничен: чтение + confirm/release, без создания и отмены) |
-| TradeChat | Чат внутри сделки (отправка через Bybit API, история — только локальная) |
-| ChatScript | Скрипты автосообщений трейдера (полностью локальный функционал) |
-
-### Маршруты и маппинг на Bybit API
+### Структура
 
 ```
-# Стакан → Bybit: POST /v5/p2p/item/online
-GET    /api/v1/exchange/orderbook
-
-# Справочники → локальные данные (без Bybit API)
-GET    /api/v1/exchange/currencies
-GET    /api/v1/exchange/currency-pairs
-GET    /api/v1/exchange/payment-methods
-
-# Объявления → Bybit: item/create, item/update, item/personal/list, item/info, item/cancel
-GET    /api/v1/exchange/advertisements
-POST   /api/v1/exchange/advertisements
-PATCH  /api/v1/exchange/advertisements/{id}
-DELETE /api/v1/exchange/advertisements/{id}
-
-# Сделки → Bybit: order/simplifyList, order/pending/simplifyList, order/info, order/pay, order/finish
-GET    /api/v1/exchange/trades
-GET    /api/v1/exchange/trades/{id}
-POST   /api/v1/exchange/trades/{id}/confirm-payment    ← Bybit: order/pay
-POST   /api/v1/exchange/trades/{id}/confirm-receipt     ← Bybit: order/finish
-
-# Контрагент → Bybit: POST /v5/p2p/user/order/personal/info
-GET    /api/v1/exchange/trades/{id}/counterparty
-
-# Чат сделки → Bybit: order/message/send + oss/upload_file; история — только из локальной БД
-GET    /api/v1/exchange/trades/{id}/chat                ← local-only (rebit_trade_message)
-POST   /api/v1/exchange/trades/{id}/chat                ← Bybit: order/message/send + локальное сохранение
-POST   /api/v1/exchange/trades/{id}/chat/read           ← local-only
-POST   /api/v1/exchange/trades/{id}/chat/upload         ← Bybit: oss/upload_file
-
-# Скрипты автосообщений → полностью локальный функционал
-GET    /api/v1/exchange/chat-scripts
-POST   /api/v1/exchange/chat-scripts
-PATCH  /api/v1/exchange/chat-scripts/{id}
-DELETE /api/v1/exchange/chat-scripts/{id}
+rebit.exchange/
+├── .settings.php
+├── include.php
+├── routes.php
+├── orm_annotation.php
+├── di/
+│   ├── currency.php
+│   ├── payment-method.php
+│   ├── order-book.php
+│   ├── advertisement.php
+│   ├── trade.php
+│   ├── trade-chat.php
+│   └── chat-script.php
+└── lib/
+    ├── Application/
+    │   ├── Currency/
+    │   │   └── UseCase/ → GetCurrenciesUseCase, GetCurrencyPairsUseCase
+    │   ├── PaymentMethod/
+    │   │   └── UseCase/ → GetPaymentMethodsUseCase
+    │   ├── OrderBook/
+    │   │   └── UseCase/ → GetOrderBookUseCase, SyncOrderBookUseCase, CleanStaleOrdersUseCase
+    │   ├── Advertisement/
+    │   │   └── UseCase/ → ListAdvertisementsUseCase, CreateAdvertisementUseCase, DeactivateAdvertisementUseCase
+    │   ├── Trade/
+    │   │   └── UseCase/ → ListTradesUseCase, GetTradeUseCase, ConfirmPaymentUseCase, ConfirmReceiptUseCase, SyncTradeHistoryUseCase
+    │   ├── TradeChat/
+    │   │   └── UseCase/ → GetChatHistoryUseCase, SendMessageUseCase, ExecuteChatScriptUseCase, ProcessPendingChatScriptsUseCase
+    │   └── ChatScript/
+    │       └── UseCase/ → ListChatScriptsUseCase, CreateChatScriptUseCase, UpdateChatScriptUseCase, DeleteChatScriptUseCase
+    ├── Domain/
+    │   ├── Currency/Entity, Repository, Enum (CurrencyTypeEnum)
+    │   ├── PaymentMethod/Entity, Repository
+    │   ├── OrderBook/Entity, Repository
+    │   ├── Advertisement/Entity, Repository, Enum (AdvertisementStatusEnum, PriceTypeEnum)
+    │   ├── Trade/Entity, Repository, Enum (TradeStatusEnum, CancelReasonEnum)
+    │   ├── TradeChat/Entity, Repository, Enum (ContentTypeEnum, MessageTypeEnum)
+    │   ├── ChatScript/Entity, Repository, Enum (ExecutionStatusEnum)
+    │   └── Shared/Enum (SideEnum: buy/sell)
+    └── Presentation/
+        └── Controller/ → CurrencyController, PaymentMethodController, OrderBookController,
+                          AdvertisementController, TradeController, TradeChatController, ChatScriptController
 ```
 
-### Ограничения Bybit P2P API и архитектурные решения
+### HL-блоки
 
-| Операция | Bybit API | Решение в Rebit |
-|----------|:---------:|-----------------|
-| Создание сделки | ❌ нет эндпоинта | Сделки создаются на Bybit (UI биржи). Rebit обнаруживает новые ордера через polling `order/pending/simplifyList` |
-| Отмена сделки | ❌ нет эндпоинта | Отмена по таймеру на стороне Bybit. Rebit обновляет статус через polling `order/info` |
-| Открытие арбитража | ❌ нет эндпоинта | Редирект пользователя в UI Bybit. Статус `disputed` определяется через polling |
-| История чата | ❌ нет эндпоинта | Все отправленные сообщения дублируются в `rebit_trade_message`. Сообщения контрагента из UI Bybit **не** отображаются |
-| Платёжные методы пользователя | ❌ нет прямого эндпоинта | Извлекаются из `paymentTerms` в ответах `item/personal/list` и `order/info` |
-| Справочник платёжных методов | ❌ нет прямого эндпоинта | Локальная таблица `rebit_payment_method`, заполняется из ответов API + вручную |
+| HL-блок | Таблица | Назначение |
+|---------|---------|-----------|
+| `RebitCurrency` | `rebit_currency` | Справочник валют |
+| `RebitCurrencyPair` | `rebit_currency_pair` | Торговые пары |
+| `RebitPaymentMethod` | `rebit_payment_method` | Способы оплаты |
+| `RebitOrderBook` | `rebit_order_book` | Кэш стакана P2P-ордеров |
+| `RebitAdvertisement` | `rebit_advertisement` | Объявления пользователей |
+| `RebitTrade` | `rebit_trade` | Сделки |
+| `RebitTradeMessage` | `rebit_trade_message` | Сообщения чата сделки |
+| `RebitTradeChatScript` | `rebit_trade_chat_script` | Скрипты автосообщений |
+| `RebitTradeChatScriptStep` | `rebit_trade_chat_script_step` | Шаги скрипта |
+| `RebitChatScriptExecution` | `rebit_chat_script_execution` | Очередь исполнения скриптов |
 
-### Потребляемые контракты
+### Ограничения Bybit P2P API
 
-| Контракт из `rebit.share` | Где используется |
-|----------------------------|------------------|
-| `BybitClientInterface` | Синхронизация стакана, CRUD объявлений, управление сделками, чат |
-| `BybitConnectionResolverInterface` | Определение подключения пользователя при каждом запросе к Bybit |
-| `BalanceQueryInterface` | Проверка баланса перед созданием объявления (планируемый контракт) |
+| Операция | Bybit API | Решение |
+|----------|:---------:|--------|
+| Создание сделки | ❌ | Сделки создаются на UI Bybit. Rebit обнаруживает их через polling `order/pending/simplifyList` |
+| Отмена сделки | ❌ | Отмена по таймеру Bybit. Статус обновляется через polling `order/info` |
+| Арбитраж | ❌ | Редирект в UI Bybit. Статус `disputed` — через polling |
+| История чата | ❌ | Только исходящие сообщения сохраняются локально в `rebit_trade_message` |
+| Способы оплаты пользователя | ❌ | Извлекаются из `paymentTerms` в ответах `item/personal/list` и `order/info` |
 
-### Планируемые DI-файлы
+---
 
-```
-di/
-├── currency.php           # Currency, CurrencyPair
-├── payment-method.php     # PaymentMethod
-├── orderbook.php          # OrderBook sync
-├── advertisement.php      # Advertisement CRUD
-├── trade.php              # Trade lifecycle
-├── trade-chat.php         # TradeChat + message sending
-└── chat-script.php        # ChatScript CRUD
-```
+## 12. Запланированные модули
 
-### Планируемые HL-блоки
+Следующие модули описаны в [domain.md](domain.md) и будут реализованы по мере развития платформы.
 
-| HL-блок | Таблица |
-|---------|---------|
-| `RebitCurrency` | `rebit_currency` |
-| `RebitCurrencyPair` | `rebit_currency_pair` |
-| `RebitPaymentMethod` | `rebit_payment_method` |
-| `RebitOrderBook` | `rebit_order_book` |
-| `RebitAdvertisement` | `rebit_advertisement` |
-| `RebitTrade` | `rebit_trade` |
-| `RebitTradeMessage` | `rebit_trade_message` |
-| `RebitTradeChatScript` | `rebit_trade_chat_script` |
-| `RebitTradeChatScriptStep` | `rebit_trade_chat_script_step` |
-
-### 10.2. `rebit.notification` — Уведомления
+### 12.2. `rebit.notification` — Уведомления
 
 **Домен:** Notification — формирование, хранение и доставка уведомлений.
 
@@ -793,7 +1411,7 @@ PATCH  /api/v1/notifications/preferences
 | `RebitNotification` | `rebit_notification` |
 | `RebitNotificationPreference` | `rebit_notification_preference` |
 
-### 10.3. `rebit.security` — Безопасность
+### 12.3. `rebit.security` — Безопасность
 
 **Домен:** Security — сессии, 2FA, аудит, мониторинг подозрительной активности.
 
@@ -838,7 +1456,7 @@ POST   /api/v1/security/alerts/{id}/resolve
 
 ---
 
-## 11. Фоновые процессы
+## 13. Фоновые процессы
 
 Фоновые процессы размещаются в `Presentation/Command/` модуля, к чьему домену они относятся.
 
@@ -861,9 +1479,9 @@ POST   /api/v1/security/alerts/{id}/resolve
 
 ---
 
-## 12. Шаблоны файлов
+## 14. Шаблоны файлов
 
-### 12.1. `include.php`
+### 14.1. `include.php`
 
 ```php
 <?php
@@ -880,7 +1498,7 @@ ModuleHelper::validateModuleInstalled('rebit.share');
 ModuleHelper::compileHLEntities(['RebitEntityName']);
 ```
 
-### 12.2. `.settings.php`
+### 14.2. `.settings.php`
 
 ```php
 <?php
@@ -898,7 +1516,7 @@ return [
 ];
 ```
 
-### 12.3. `install/index.php`
+### 14.3. `install/index.php`
 
 ```php
 <?php
@@ -942,7 +1560,7 @@ class Rebit_Example extends CModule
 }
 ```
 
-### 12.4. `routes.php`
+### 14.4. `routes.php`
 
 ```php
 <?php
@@ -958,7 +1576,7 @@ return static function(RoutingConfigurator $routes) {
 };
 ```
 
-### 12.5. DI-файл домена
+### 14.5. DI-файл домена
 
 ```php
 <?php
@@ -991,7 +1609,7 @@ return [
 ];
 ```
 
-### 12.6. UseCase
+### 14.6. UseCase
 
 ```php
 <?php
@@ -1017,7 +1635,7 @@ final readonly class GetFeatureUseCase
 }
 ```
 
-### 12.7. Controller
+### 14.7. Controller
 
 ```php
 <?php
@@ -1048,7 +1666,7 @@ final class FeatureController extends BaseJsonController
 
 ---
 
-## 13. Сводная статистика
+## 15. Сводная статистика
 
 ### Реализованные модули
 
