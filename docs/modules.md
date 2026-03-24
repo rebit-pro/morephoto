@@ -1,6 +1,6 @@
 # Прототип модулей Bitrix: P2P-платформа Rebit
 
-> Модули лежат в `local/modules/rebit.<name>/`.
+> Модули лежат в `api/public/local/modules/rebit.<name>/`.
 > Каждый модуль соответствует одному Bounded Context из [domain.md](domain.md).
 > Общая инфраструктура — в `rebit.share` (уже существует).
 

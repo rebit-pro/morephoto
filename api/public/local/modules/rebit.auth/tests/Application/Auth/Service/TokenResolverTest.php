@@ -7,7 +7,7 @@ namespace Rebit\Auth\Tests\Application\Auth\Service;
 use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
-use Rebit\Auth\Application\Auth\Service\TokenResolver;
+use Rebit\Auth\Infrastructure\Adapter\TokenResolver;
 use Rebit\Auth\Domain\User\Entity\UserToken;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
 use Rebit\Share\Shared\Exception\HttpException;

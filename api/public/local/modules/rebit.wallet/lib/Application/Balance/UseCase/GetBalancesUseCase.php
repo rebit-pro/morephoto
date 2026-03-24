@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Balance\UseCase;
 
-use Rebit\Wallet\Domain\Balance\Dto\Result\BalanceListResultDto;
-use Rebit\Wallet\Domain\Balance\Dto\Result\BalanceResultDto;
+use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Wallet\Application\Balance\Dto\Result\BalanceListResultDto;
+use Rebit\Wallet\Application\Balance\Dto\Result\BalanceResultDto;
 use Rebit\Wallet\Domain\Balance\Entity\Balance;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 
@@ -15,6 +16,9 @@ final readonly class GetBalancesUseCase
         private BalanceRepository $balanceRepository,
     ) {}
 
+    /**
+     * @throws RepositoryException
+     */
     public function execute(int $userId): BalanceListResultDto
     {
         $collection = $this->balanceRepository->findByUserId($userId);

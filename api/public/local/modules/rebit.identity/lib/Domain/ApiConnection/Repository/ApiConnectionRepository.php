@@ -116,4 +116,29 @@ final class ApiConnectionRepository
 
         $this->persist($connection);
     }
+
+    /**
+     * Список userId с активным подключением.
+     *
+     * @return array<int, int>
+     *
+     * @throws RepositoryException
+     */
+    public function getActiveUserIds(): array
+    {
+        return $this->query(function(): array {
+            /** @var array<int, array{UF_USER_ID: int|string}> $rows */
+            $rows = ApiConnectionTable::query()
+                ->setSelect(['UF_USER_ID'])
+                ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
+                ->exec()
+                ->fetchAll()
+            ;
+
+            return array_map(
+                static fn(array $row): int => (int)$row['UF_USER_ID'],
+                $rows,
+            );
+        });
+    }
 }

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Rebit\Wallet\Application\Transaction\UseCase;
 
 use Bitrix\Main\Type\DateTime;
-use Rebit\Wallet\Domain\Transaction\Dto\Request\TransactionFilterDto;
-use Rebit\Wallet\Domain\Transaction\Dto\Result\TransactionListResultDto;
-use Rebit\Wallet\Domain\Transaction\Dto\Result\TransactionResultDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionListResultDto;
+use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionResultDto;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
 

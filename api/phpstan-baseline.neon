@@ -7,18 +7,6 @@ parameters:
 			path: public/local/modules/rebit.auth/lib/Presentation/Controller/AuthController.php
 
 		-
-			message: '#^Parameter \#1 \$encoded of method Rebit\\Identity\\Domain\\ApiConnection\\Service\\ApiKeyEncryptor\:\:decrypt\(\) expects string, string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/Service/BybitConnectionResolver.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Rebit\\Identity\\Domain\\ApiConnection\\Enum\\ConnectionModeEnum\:\:from\(\) expects int\|string, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.identity/lib/Application/ApiConnection/Service/BybitConnectionResolver.php
-
-		-
 			message: '#^Parameter \$id of class Rebit\\Identity\\Application\\ApiConnection\\Dto\\Result\\ApiConnectionResultDto constructor expects int\|null, int given\.$#'
 			identifier: argument.type
 			count: 1
@@ -97,16 +85,22 @@ parameters:
 			path: public/local/modules/rebit.identity/lib/Domain/ApiConnection/Service/ApiKeyEncryptor.php
 
 		-
+			message: '#^Parameter \#1 \$encoded of method Rebit\\Identity\\Domain\\ApiConnection\\Service\\ApiKeyEncryptor\:\:decrypt\(\) expects string, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: public/local/modules/rebit.identity/lib/Infrastructure/Adapter/BybitConnectionResolver.php
+
+		-
+			message: '#^Parameter \#1 \$value of static method Rebit\\Identity\\Domain\\ApiConnection\\Enum\\ConnectionModeEnum\:\:from\(\) expects int\|string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.identity/lib/Infrastructure/Adapter/BybitConnectionResolver.php
+
+		-
 			message: '#^Call to an undefined static method Rebit\\Identity\\Infrastructure\\Controller\\BaseIdentityController\:\:__construct\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
 			path: public/local/modules/rebit.identity/lib/Presentation/Controller/ApiConnectionController.php
-
-		-
-			message: '#^Call to an undefined static method Rebit\\Share\\Infrastructure\\Controller\\BaseJsonController\:\:__construct\(\)\.$#'
-			identifier: staticMethod.notFound
-			count: 1
-			path: public/local/modules/rebit.share/lib/Controller/FileController.php
 
 		-
 			message: '#^Variable \$currentUser on left side of \?\? always exists and is not nullable\.$#'
@@ -212,6 +206,12 @@ parameters:
 			path: public/local/modules/rebit.share/lib/Infrastructure/Logger/CommonLoggerProcessor.php
 
 		-
+			message: '#^Call to an undefined static method Rebit\\Share\\Infrastructure\\Controller\\BaseJsonController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.share/lib/Presentation/Controller/FileController.php
+
+		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 1
@@ -236,37 +236,37 @@ parameters:
 			path: public/local/modules/rebit.share/lib/Shared/ValueObject/DateRange.php
 
 		-
-			message: '#^Parameter \$available of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
+			message: '#^Parameter \$available of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
 
 		-
-			message: '#^Parameter \$currencyId of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
+			message: '#^Parameter \$currencyId of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
 
 		-
-			message: '#^Parameter \$id of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
+			message: '#^Parameter \$id of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
 
 		-
-			message: '#^Parameter \$locked of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
+			message: '#^Parameter \$locked of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
 
 		-
-			message: '#^Parameter \$total of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
+			message: '#^Parameter \$total of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
 
 		-
-			message: '#^Parameter \$userId of class Rebit\\Wallet\\Domain\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
+			message: '#^Parameter \$userId of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
@@ -296,7 +296,7 @@ parameters:
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/UnlockFundsUseCase.php
 
 		-
-			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(Rebit\\Wallet\\Domain\\Transaction\\Entity\\Transaction\)\: mixed\)\|null, Closure\(array\)\: Rebit\\Wallet\\Domain\\Transaction\\Dto\\Result\\TransactionResultDto given\.$#'
+			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(Rebit\\Wallet\\Domain\\Transaction\\Entity\\Transaction\)\: mixed\)\|null, Closure\(array\)\: Rebit\\Wallet\\Application\\Transaction\\Dto\\Result\\TransactionResultDto given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php

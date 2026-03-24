@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Rebit\Wallet\Application\Balance\UseCase;
 
 use Psr\Log\LoggerInterface;
-use Rebit\Share\Application\Contract\Bybit\BybitApiException;
-use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
-use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
-use Rebit\Wallet\Domain\Balance\Dto\Result\BalanceListResultDto;
+use Rebit\Wallet\Application\Balance\Port\BybitBalanceGatewayInterface;
+use Rebit\Wallet\Application\Balance\Dto\Result\BalanceListResultDto;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 
@@ -21,13 +19,10 @@ use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
  */
 final readonly class SyncBalancesUseCase
 {
-    private const string WALLET_BALANCE_ENDPOINT = '/v5/account/wallet-balance';
-
     public function __construct(
         private BalanceRepository $balanceRepository,
         private BalanceCalculator $balanceCalculator,
-        private BybitConnectionResolverInterface $connectionResolver,
-        private BybitClientInterface $bybitClient,
+        private BybitBalanceGatewayInterface $balanceGateway,
         private LoggerInterface $logger,
     ) {}
 
@@ -37,62 +32,11 @@ final readonly class SyncBalancesUseCase
      */
     public function execute(int $userId): BalanceListResultDto
     {
-        $connection = $this->connectionResolver->resolve($userId);
-
-        try {
-            $response = $this->bybitClient->get(
-                self::WALLET_BALANCE_ENDPOINT,
-                $connection->credentials,
-                $connection->environment,
-                ['accountType' => 'UNIFIED'],
-            );
-        } catch (BybitApiException $e) {
-            throw new HttpException(
-                'Ошибка синхронизации с Bybit: ' . $e->getMessage(),
-                502,
-            );
-        }
-
-        $coins = $this->extractCoins($response->result);
+        $coins = $this->balanceGateway->fetchBalances($userId);
 
         $this->syncCoins($userId, $coins);
 
-        return (new GetBalancesUseCase($this->balanceRepository))->execute($userId);
-    }
-
-    /**
-     * Извлекает данные по монетам из ответа Bybit.
-     *
-     * @param array<string, mixed> $result
-     *
-     * @return array<int, array{
-     *     coin: string,
-     *     available: float,
-     *     locked: float,
-     *     total: float,
-     * }>
-     */
-    private function extractCoins(array $result): array
-    {
-        $coins = [];
-
-        $accounts = $result['list'] ?? [];
-
-        foreach ($accounts as $account) {
-            foreach ($account['coin'] ?? [] as $coinData) {
-                $total = (float)($coinData['walletBalance'] ?? 0);
-                $locked = (float)($coinData['locked'] ?? 0);
-
-                $coins[] = [
-                    'coin' => (string)($coinData['coin'] ?? ''),
-                    'available' => $total - $locked,
-                    'locked' => $locked,
-                    'total' => $total,
-                ];
-            }
-        }
-
-        return $coins;
+        return new GetBalancesUseCase($this->balanceRepository)->execute($userId);
     }
 
     /**

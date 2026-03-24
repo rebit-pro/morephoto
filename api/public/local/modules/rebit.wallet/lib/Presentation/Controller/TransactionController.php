@@ -7,7 +7,7 @@ namespace Rebit\Wallet\Presentation\Controller;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Wallet\Application\Transaction\UseCase\ExportTransactionsUseCase;
 use Rebit\Wallet\Application\Transaction\UseCase\ListTransactionsUseCase;
-use Rebit\Wallet\Domain\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
 use Rebit\Wallet\Infrastructure\Controller\BaseWalletController;
 
 final class TransactionController extends BaseWalletController

@@ -6,6 +6,7 @@ return [
     'services' => [
         'value' => array_merge(
             require __DIR__ . '/di/Layers/Infrastructure.php',
+            require __DIR__ . '/di/file.php',
         ),
     ],
 ];
