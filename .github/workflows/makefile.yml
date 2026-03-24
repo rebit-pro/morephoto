@@ -149,4 +149,5 @@ jobs:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
           APP_DEBUG: ${{ secrets.APP_DEBUG }}
           APP_ENV: ${{ secrets.APP_ENV }}
+          REBIT_ENCRYPTION_KEY: ${{ secrets.REBIT_ENCRYPTION_KEY }}
         run: make deploy
