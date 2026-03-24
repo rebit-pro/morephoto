@@ -120,10 +120,24 @@ RELEASE_DIR ?= site_$(BUILD_NUMBER)
 LINK_DIR ?= site
 COMPOSE_SRC ?= docker-compose-production.yml
 COMPOSE_DST ?= docker-compose.yml
+APP_DEBUG ?= 0
+APP_ENV ?= production
 VITE_API_URL ?= https://api.rebit-pro.ru
 KEEP_RELEASES ?= 2
 BITRIX_HOST_DIR ?= /srv/rebit-p2p/bitrix
 LOGS_HOST_DIR ?= /srv/rebit-p2p/logs
+
+guard-%:
+	@if [ -z '$($*)' ]; then echo 'Required variable $* is not set'; exit 1; fi
+
+deploy-check-env: \
+	guard-HOST \
+	guard-BUILD_NUMBER \
+	guard-REGISTRY \
+	guard-IMAGE_TAG \
+	guard-MYSQL_PASSWORD \
+	guard-MYSQL_ROOT_PASSWORD \
+	guard-REBIT_ENCRYPTION_KEY
 
 # --- Build ---
 # Собирает Docker-образы для production
@@ -171,7 +185,9 @@ push-api:
 #
 # Требуемые переменные:
 #   HOST, PORT, DEPLOY_USER, BUILD_NUMBER, REGISTRY, IMAGE_TAG,
-#   MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, APP_DEBUG, APP_ENV, REBIT_ENCRYPTION_KEY
+#   MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, REBIT_ENCRYPTION_KEY
+# Опционально:
+#   APP_DEBUG, APP_ENV
 # Опционально (для docker login на сервере):
 #   REGISTRY_HOST, REGISTRY_USER, TOKEN_GIT_HUB
 #
@@ -182,7 +198,7 @@ push-api:
 #   APP_DEBUG=0 APP_ENV=production REBIT_ENCRYPTION_KEY=base64:secret \
 #   REGISTRY_HOST=ghcr.io REGISTRY_USER=user TOKEN_GIT_HUB=ghp_xxx \
 #   make deploy
-deploy:
+deploy: deploy-check-env
 	scp -P $(PORT) $(COMPOSE_SRC) api/deploy/bitrix-settings-extra.php $(REMOTE):~/
 	ssh $(REMOTE) -p $(PORT) ' \
 		docker network create --driver=overlay traefik-public 2>/dev/null || true \
