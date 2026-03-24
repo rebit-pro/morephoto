@@ -80,10 +80,9 @@ final class LoggerFilter extends Base
 
         $requestData = $this->extractRequestData($controller);
         $responseData = $this->extractResponseData($response);
-        $payload = [
-            'request' => $requestData,
+        $payload = array_merge($requestData, [
             'response' => $responseData,
-        ];
+        ]);
 
         Log::channel($channel)->info('RESPONSE', array_merge($payload, $this->extraData));
 

@@ -56,11 +56,25 @@ final readonly class SyncBalancesUseCase
      */
     private function syncCoins(int $userId, array $coins): void
     {
+        if ([] !== $coins) {
+            $this->logger->info('Bybit coins received', [
+                'userId' => $userId,
+                'count' => count($coins),
+                'coins' => array_column($coins, 'coin'),
+            ]);
+        }
+
         foreach ($coins as $coin) {
             // @todo Получить currencyId из CurrencyRepository по коду монеты
             $currencyId = $this->resolveCurrencyId($coin['coin']);
 
             if (null === $currencyId) {
+                $this->logger->warning('Skipped unknown coin: currencyId not resolved', [
+                    'userId' => $userId,
+                    'coin' => $coin['coin'],
+                    'total' => $coin['total'],
+                ]);
+
                 continue;
             }
 
