@@ -7,7 +7,7 @@ namespace Rebit\Wallet\Domain\Transaction\Repository;
 use Bitrix\Main\Type\DateTime;
 use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
-use Rebit\Wallet\Domain\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
 use Rebit\Wallet\Domain\Transaction\Entity\Table\TransactionTable;
 use Rebit\Wallet\Domain\Transaction\Entity\Transaction;
 use Rebit\Wallet\Domain\Transaction\Entity\TransactionCollection;

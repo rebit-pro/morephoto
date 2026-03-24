@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Balance\UseCase;
 
-use Rebit\Wallet\Domain\Balance\Dto\Request\LockFundsDto;
+use Rebit\Wallet\Application\Balance\Dto\Request\LockFundsDto;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;

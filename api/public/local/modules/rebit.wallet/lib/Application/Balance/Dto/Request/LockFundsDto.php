@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Wallet\Domain\Balance\Dto\Request;
+namespace Rebit\Wallet\Application\Balance\Dto\Request;
 
 /**
  * DTO для блокировки средств под сделку.

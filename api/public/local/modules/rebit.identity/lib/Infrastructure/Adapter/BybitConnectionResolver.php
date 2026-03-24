@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Identity\Application\ApiConnection\Service;
+namespace Rebit\Identity\Infrastructure\Adapter;
 
-use Rebit\Identity\Domain\ApiConnection\Entity\Table\ApiConnectionTable;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionModeEnum;
-use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionDto;
@@ -15,6 +13,10 @@ use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
 use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
 use Rebit\Share\Shared\Exception\HttpException;
 
+/**
+ * Адаптер для резолва подключения к Bybit.
+ * Реализует контракт из rebit.share, делегирует ORM-запросы в репозиторий.
+ */
 final readonly class BybitConnectionResolver implements BybitConnectionResolverInterface
 {
     public function __construct(
@@ -51,17 +53,6 @@ final readonly class BybitConnectionResolver implements BybitConnectionResolverI
      */
     public function getActiveUserIds(): array
     {
-        /** @var array<int, array{UF_USER_ID: int|string}> $rows */
-        $rows = ApiConnectionTable::query()
-            ->setSelect(['UF_USER_ID'])
-            ->where('UF_STATUS', ConnectionStatusEnum::Active->value)
-            ->exec()
-            ->fetchAll()
-        ;
-
-        return array_map(
-            static fn(array $row): int => (int)$row['UF_USER_ID'],
-            $rows,
-        );
+        return $this->repository->getActiveUserIds();
     }
 }

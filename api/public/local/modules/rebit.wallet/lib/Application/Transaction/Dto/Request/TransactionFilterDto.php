@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Wallet\Domain\Transaction\Dto\Request;
+namespace Rebit\Wallet\Application\Transaction\Dto\Request;
 
 use Rebit\Share\Application\Interface\RequestDtoInterface;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Share\Controller;
+namespace Rebit\Share\Presentation\Controller;
 
 use Rebit\Share\Application\UseCase\UploadFileUseCase;
 use Rebit\Share\Domain\File\Dto\Request\UploadRequestFileRequestDto;

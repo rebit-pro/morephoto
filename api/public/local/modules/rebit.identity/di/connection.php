@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
-use Rebit\Identity\Application\ApiConnection\Service\BybitConnectionResolver;
+use Rebit\Identity\Infrastructure\Adapter\BybitConnectionResolver;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Wallet\Domain\Transaction\Dto\Result;
+namespace Rebit\Wallet\Application\Transaction\Dto\Result;
 
 use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;

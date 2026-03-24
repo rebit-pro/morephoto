@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
-use Rebit\Auth\Application\Auth\Service\TokenResolver;
+use Rebit\Auth\Infrastructure\Adapter\TokenResolver;
 use Rebit\Auth\Application\Auth\UseCase\LoginUseCase;
 use Rebit\Auth\Application\Auth\UseCase\LogoutUseCase;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
