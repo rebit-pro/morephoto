@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useExchangeStore } from '@/stores/exchange';
 import type { CurrencyPair } from '@/api/exchange';
 
 const exchange = useExchangeStore();
 const selectedMethods = ref<string[]>([]);
+const limitMin = ref<string>('');
+const limitMax = ref<string>('');
+
+const hasActiveFilters = computed(
+  () => 0 < selectedMethods.value.length || '' !== limitMin.value || '' !== limitMax.value
+);
 
 function onSelectPair(pair: CurrencyPair): void {
   exchange.selectPair(pair);
@@ -21,21 +27,24 @@ function toggleMethod(method: string): void {
 
 function clearFilters(): void {
   selectedMethods.value = [];
+  limitMin.value = '';
+  limitMax.value = '';
 }
 
-const isActivePair = computed(() => (pair: CurrencyPair) =>
-  pair.token === exchange.selectedPair.token && pair.fiat === exchange.selectedPair.fiat
+const isActivePair = computed(
+  () => (pair: CurrencyPair) =>
+    pair.token === exchange.selectedPair.token && pair.fiat === exchange.selectedPair.fiat
 );
 
-defineExpose({ selectedMethods });
+defineExpose({ selectedMethods, limitMin, limitMax });
 </script>
 
 <template>
   <v-card variant="outlined" rounded="md">
-    <v-card-text>
+    <v-card-text class="d-flex flex-column ga-4">
       <!-- Валютные пары -->
-      <div class="d-flex align-center ga-3 flex-wrap mb-3">
-        <span class="text-body-1 font-weight-medium">Пара:</span>
+      <div class="d-flex align-center ga-3 flex-wrap">
+        <span class="text-body-2 font-weight-medium filter-label">Пара:</span>
         <v-chip-group mandatory>
           <v-chip
             v-for="pair in exchange.currencyPairs"
@@ -52,7 +61,7 @@ defineExpose({ selectedMethods });
 
       <!-- Методы оплаты -->
       <div v-if="0 < exchange.paymentMethods.length" class="d-flex align-center ga-3 flex-wrap">
-        <span class="text-body-2 text-lightText">Оплата:</span>
+        <span class="text-body-2 font-weight-medium filter-label">Оплата:</span>
         <v-chip
           v-for="method in exchange.paymentMethods"
           :key="method.id"
@@ -63,16 +72,49 @@ defineExpose({ selectedMethods });
         >
           {{ method.name }}
         </v-chip>
-        <v-btn
-          v-if="0 < selectedMethods.length"
-          variant="text"
-          size="x-small"
-          color="error"
-          @click="clearFilters"
-        >
-          Сбросить
+      </div>
+
+      <!-- Фильтр по лимитам -->
+      <div class="d-flex align-center ga-3 flex-wrap">
+        <span class="text-body-2 font-weight-medium filter-label">Лимиты:</span>
+        <v-text-field
+          v-model="limitMin"
+          label="От"
+          type="number"
+          min="0"
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          style="max-width: 140px"
+          :suffix="exchange.selectedPair.fiat"
+        />
+        <v-text-field
+          v-model="limitMax"
+          label="До"
+          type="number"
+          min="0"
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          style="max-width: 140px"
+          :suffix="exchange.selectedPair.fiat"
+        />
+      </div>
+
+      <!-- Сброс -->
+      <div v-if="hasActiveFilters">
+        <v-btn variant="text" size="x-small" color="error" prepend-icon="mdi-close-circle" @click="clearFilters">
+          Сбросить фильтры
         </v-btn>
       </div>
     </v-card-text>
   </v-card>
 </template>
+
+<style scoped>
+.filter-label {
+  min-width: 60px;
+}
+</style>

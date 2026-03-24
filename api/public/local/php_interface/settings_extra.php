@@ -19,8 +19,6 @@ return [
                     dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/logstash/' . $channel->value . '.log',
                     maxFiles: 30,
                     level: Logger::INFO,
-                    filePermission: 0644,
-                    useLocking: true,
                 ),
                 'formatter' => static fn(LogChannelEnum $channel) => new LogstashFormatter($channel->value),
                 'processor' => static function(LogChannelEnum $channel, array $record): array {
