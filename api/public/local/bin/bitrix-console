@@ -27,6 +27,27 @@ use Bitrix\Main\ModuleManager;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 
+/**
+ * @param class-string<Command> $commandClass
+ */
+function canInstantiateCommandWithoutDependencies(string $commandClass): bool
+{
+    $reflection = new \ReflectionClass($commandClass);
+    $constructor = $reflection->getConstructor();
+
+    if (null === $constructor) {
+        return true;
+    }
+
+    foreach ($constructor->getParameters() as $parameter) {
+        if (!$parameter->isOptional()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 $application = new Application('Rebit Console', '1.0.0');
 
 $serviceLocator = ServiceLocator::getInstance();
@@ -50,7 +71,11 @@ foreach (ModuleManager::getInstalledModules() as $moduleId => $_) {
         try {
             /** @var Command $command */
             $command = $serviceLocator->get($commandClass);
-        } catch (\Throwable) {
+        } catch (\Throwable $exception) {
+            if (!canInstantiateCommandWithoutDependencies($commandClass)) {
+                throw $exception;
+            }
+
             $command = new $commandClass();
         }
 
