@@ -63,8 +63,9 @@ final class PaymentMethodRepository
      * Используется в GetOrderBookUseCase для замены числовых Bybit payment IDs
      * на человекочитаемые коды из локального справочника.
      *
-     * @param  array<int, int|string> $bybitIds
-     * @return array<string, string>  ключ — Bybit ID (строка), значение — UF_CODE
+     * @param array<int, int|string> $bybitIds
+     *
+     * @return array<string, string> ключ — Bybit ID (строка), значение — UF_CODE
      *
      * @throws RepositoryException
      */
@@ -80,7 +81,8 @@ final class PaymentMethodRepository
             $result = PaymentMethodTable::query()
                 ->setSelect(['UF_BYBIT_ID', 'UF_CODE'])
                 ->whereIn('UF_BYBIT_ID', $intIds)
-                ->exec();
+                ->exec()
+            ;
 
             $map = [];
             while ($row = $result->fetch()) {

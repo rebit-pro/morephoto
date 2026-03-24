@@ -12,6 +12,7 @@ use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntry;
 use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntryCollection;
 use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
+use Rebit\Exchange\Domain\PaymentMethod\Repository\PaymentMethodRepository;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -30,8 +31,15 @@ final class GetOrderBookUseCaseTest extends TestCase
     private function makeUseCase(
         OrderBookRepository $orderBookRepo,
         CurrencyPairRepository $pairRepo,
+        ?PaymentMethodRepository $paymentMethodRepo = null,
     ): GetOrderBookUseCase {
-        return new GetOrderBookUseCase($orderBookRepo, $pairRepo);
+        if (null === $paymentMethodRepo) {
+            // По умолчанию: маппинг Bybit ID не находит совпадений → Bybit IDs возвращаются как есть
+            $paymentMethodRepo = $this->createStub(PaymentMethodRepository::class);
+            $paymentMethodRepo->method('mapBybitIdsToCode')->willReturn([]);
+        }
+
+        return new GetOrderBookUseCase($orderBookRepo, $pairRepo, $paymentMethodRepo);
     }
 
     public function testThrows404WhenPairNotFound(): void
