@@ -33,8 +33,11 @@ return [
     ],
     GetCurrencyPairsUseCase::class => [
         'constructor' => static function(): GetCurrencyPairsUseCase {
+            $sl = ServiceLocator::getInstance();
+
             return new GetCurrencyPairsUseCase(
-                ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+                $sl->get(CurrencyPairRepository::class),
+                $sl->get(CurrencyRepository::class),
             );
         },
     ],

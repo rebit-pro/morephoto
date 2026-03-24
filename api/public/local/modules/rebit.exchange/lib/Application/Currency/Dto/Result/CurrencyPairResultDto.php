@@ -13,6 +13,8 @@ final readonly class CurrencyPairResultDto implements ResultDtoInterface
         public string $code,
         public int $tokenCurrencyId,
         public int $fiatCurrencyId,
+        public string $tokenCode,
+        public string $fiatCode,
         public bool $isDefault,
         public int $sort,
     ) {}
