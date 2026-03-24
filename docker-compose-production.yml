@@ -102,10 +102,13 @@ services:
           start_period: 15s
     api-cron:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
-        command: ["supercronic", "/etc/supercronic/crontab"]
+        command: ["sh", "-lc", "exec /usr/local/bin/supercronic /etc/supercronic/crontab"]
         environment:
           APP_DEBUG: ${APP_DEBUG:-0}
           APP_ENV: ${APP_ENV:-production}
+          REDIS_HOST: ${REDIS_HOST:-redis}
+          REDIS_PORT: ${REDIS_PORT:-6379}
+          SHELL: /bin/sh
           REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
           BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
           BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}

@@ -21,4 +21,7 @@ if (file_exists(__DIR__ . '/include/dev.php')) {
 
 Loader::includeModule('rebit.share');
 Loader::includeModule('rebit.auth');
+Loader::includeModule('rebit.bybit');
 Loader::includeModule('rebit.identity');
+Loader::includeModule('rebit.wallet');
+Loader::includeModule('rebit.exchange');
