@@ -102,6 +102,26 @@ services:
             APP_DEBUG: 1
             XDEBUG_MODE: off
 
+    api-cron:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["supercronic", "/app/docker/common/cron/crontab"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
+            BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
+
     api-mysql:
         build:
             context: api/docker

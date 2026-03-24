@@ -46,6 +46,12 @@ RUN mv $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
 COPY ./common/php/conf.d /usr/local/etc/php/conf.d
 COPY ./development/php/conf.d /usr/local/etc/php/conf.d
 
+# Supercronic — cron-демон для Docker (поддержка секундных интервалов)
+ENV SUPERCRONIC_VERSION=v0.2.33
+RUN curl -fsSL "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-amd64" \
+        -o /usr/local/bin/supercronic \
+    && chmod +x /usr/local/bin/supercronic
+
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
 # Установка последней версии Composer v2
