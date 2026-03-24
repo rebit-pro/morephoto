@@ -32,7 +32,7 @@ use Symfony\Component\Console\Command\Command;
  */
 function canInstantiateCommandWithoutDependencies(string $commandClass): bool
 {
-    $reflection = new \ReflectionClass($commandClass);
+    $reflection = new ReflectionClass($commandClass);
     $constructor = $reflection->getConstructor();
 
     if (null === $constructor) {
@@ -71,7 +71,7 @@ foreach (ModuleManager::getInstalledModules() as $moduleId => $_) {
         try {
             /** @var Command $command */
             $command = $serviceLocator->get($commandClass);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             if (!canInstantiateCommandWithoutDependencies($commandClass)) {
                 throw $exception;
             }
