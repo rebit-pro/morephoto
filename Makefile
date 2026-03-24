@@ -171,7 +171,7 @@ push-api:
 #
 # Требуемые переменные:
 #   HOST, PORT, DEPLOY_USER, BUILD_NUMBER, REGISTRY, IMAGE_TAG,
-#   MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, APP_DEBUG, APP_ENV
+#   MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, APP_DEBUG, APP_ENV, REBIT_ENCRYPTION_KEY
 # Опционально (для docker login на сервере):
 #   REGISTRY_HOST, REGISTRY_USER, TOKEN_GIT_HUB
 #
@@ -179,7 +179,7 @@ push-api:
 #   HOST=1.2.3.4 PORT=22 DEPLOY_USER=deploy BUILD_NUMBER=42 \
 #   REGISTRY=ghcr.io/rebit-pro IMAGE_TAG=abc12345 \
 #   MYSQL_PASSWORD=secret MYSQL_ROOT_PASSWORD=rootsecret \
-#   APP_DEBUG=0 APP_ENV=production \
+#   APP_DEBUG=0 APP_ENV=production REBIT_ENCRYPTION_KEY=base64:secret \
 #   REGISTRY_HOST=ghcr.io REGISTRY_USER=user TOKEN_GIT_HUB=ghp_xxx \
 #   make deploy
 deploy:
@@ -192,8 +192,8 @@ deploy:
 		&& mv ~/bitrix-settings-extra.php $(BITRIX_HOST_DIR)/.settings_extra.php \
 		&& mkdir -p $(LOGS_HOST_DIR)/logstash \
 		&& cd $(RELEASE_DIR) \
-		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\n" \
-			"$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" > .env \
+		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\nREBIT_ENCRYPTION_KEY=%s\n" \
+			"$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" "$(REBIT_ENCRYPTION_KEY)" > .env \
 		&& cd ~ && ln -sfn $(RELEASE_DIR) $(LINK_DIR) \
 		&& if [ -n "$(TOKEN_GIT_HUB)" ]; then echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin; fi \
 		&& docker pull $(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) \
