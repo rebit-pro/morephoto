@@ -235,6 +235,7 @@ final class BybitApiClientTest extends TestCase
         self::assertSame(0, $result->retCode);
         self::assertSame('OK', $result->retMsg);
     }
+
     public function testNormalizesOldP2PFormatOnError(): void
     {
         $httpClient = $this->createStub(RebitHttpClient::class);

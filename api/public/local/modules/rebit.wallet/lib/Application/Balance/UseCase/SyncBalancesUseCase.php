@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Wallet\Application\Balance\UseCase;
+
 use Psr\Log\LoggerInterface;
 use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 use Rebit\Share\Shared\Exception\HttpException;
@@ -9,6 +12,7 @@ use Rebit\Wallet\Application\Balance\Port\BybitBalanceGatewayInterface;
 use Rebit\Wallet\Application\Balance\Dto\Result\BalanceListResultDto;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
+
 /**
  * Синхронизация балансов пользователя с Bybit.
  *
@@ -23,6 +27,7 @@ final readonly class SyncBalancesUseCase
         private CurrencyQueryInterface $currencyQuery,
         private LoggerInterface $logger,
     ) {}
+
     /**
      * @throws HttpException
      * @throws RepositoryException
@@ -31,8 +36,10 @@ final readonly class SyncBalancesUseCase
     {
         $coins = $this->balanceGateway->fetchBalances($userId);
         $this->syncCoins($userId, $coins);
+
         return new GetBalancesUseCase($this->balanceRepository)->execute($userId);
     }
+
     /**
      * Синхронизирует балансы по монетам с локальной базой.
      *

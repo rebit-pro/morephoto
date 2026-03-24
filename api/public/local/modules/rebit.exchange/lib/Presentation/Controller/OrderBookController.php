@@ -1,9 +1,13 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Exchange\Presentation\Controller;
+
 use Rebit\Exchange\Application\OrderBook\UseCase\GetOrderBookUseCase;
 use Rebit\Exchange\Infrastructure\Controller\BaseExchangeController;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
+
 final class OrderBookController extends BaseExchangeController
 {
     public function __construct(
@@ -11,6 +15,7 @@ final class OrderBookController extends BaseExchangeController
     ) {
         parent::__construct();
     }
+
     /**
      * GET /api/v1/exchange/orderbook?token=USDT&fiat=RUB
      */

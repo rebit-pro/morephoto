@@ -9,6 +9,7 @@ use Rebit\Exchange\Application\OrderBook\UseCase\GetOrderBookUseCase;
 use Rebit\Exchange\Application\OrderBook\UseCase\SyncOrderBookUseCase;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
+use Rebit\Exchange\Domain\PaymentMethod\Repository\PaymentMethodRepository;
 use Rebit\Exchange\Infrastructure\Bybit\BybitOrderBookGateway;
 use Rebit\Exchange\Presentation\Command\CleanStaleOrdersCommand;
 use Rebit\Exchange\Presentation\Command\SyncOrderBookCommand;
@@ -35,9 +36,11 @@ return [
     GetOrderBookUseCase::class => [
         'constructor' => static function(): GetOrderBookUseCase {
             $sl = ServiceLocator::getInstance();
+
             return new GetOrderBookUseCase(
                 $sl->get(OrderBookRepository::class),
                 $sl->get(CurrencyPairRepository::class),
+                $sl->get(PaymentMethodRepository::class),
             );
         },
     ],

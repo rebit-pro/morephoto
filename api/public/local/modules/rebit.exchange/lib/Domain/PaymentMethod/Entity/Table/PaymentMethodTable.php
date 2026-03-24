@@ -28,6 +28,7 @@ final class PaymentMethodTable extends DataManager
                 ->configurePrimary()
                 ->configureAutocomplete(),
 
+            new IntegerField('UF_BYBIT_ID'),
             new StringField('UF_CODE'),
             new StringField('UF_NAME'),
             new IntegerField('UF_ICON'),

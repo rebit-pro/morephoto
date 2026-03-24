@@ -398,19 +398,25 @@ parameters:
 			path: public/local/modules/rebit.share/lib/Shared/ValueObject/DateRange.php
 
 		-
-			message: '#^Method Rebit\\Wallet\\Application\\Balance\\UseCase\\SyncBalancesUseCase\:\:resolveCurrencyId\(\) never returns int so it can be removed from the return type\.$#'
-			identifier: return.unusedType
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
 			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/SyncBalancesUseCase.php
+			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php
 
 		-
-			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(Rebit\\Wallet\\Domain\\Transaction\\Entity\\Transaction\)\: mixed\)\|null, Closure\(array\)\: Rebit\\Wallet\\Application\\Transaction\\Dto\\Result\\TransactionResultDto given\.$#'
+			message: '#^Parameter \$bybitTxId of class Rebit\\Wallet\\Application\\Transaction\\Dto\\Result\\TransactionResultDto constructor expects string\|null, string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php
 
 		-
-			message: '#^Parameter \#2 \$array of function array_map expects array, Rebit\\Wallet\\Domain\\Transaction\\Entity\\TransactionCollection given\.$#'
+			message: '#^Parameter \$description of class Rebit\\Wallet\\Application\\Transaction\\Dto\\Result\\TransactionResultDto constructor expects string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php
+
+		-
+			message: '#^Parameter \$tradeId of class Rebit\\Wallet\\Application\\Transaction\\Dto\\Result\\TransactionResultDto constructor expects int\|null, int given\.$#'
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php

@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Exchange\Tests\Application\OrderBook\UseCase;
+
 use PHPUnit\Framework\TestCase;
 use Rebit\Exchange\Application\OrderBook\Dto\Result\OrderBookBothSidesResultDto;
 use Rebit\Exchange\Application\OrderBook\UseCase\GetOrderBookUseCase;
@@ -9,7 +12,9 @@ use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntry;
 use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntryCollection;
 use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
+use Rebit\Exchange\Domain\PaymentMethod\Repository\PaymentMethodRepository;
 use Rebit\Share\Shared\Exception\HttpException;
+
 /**
  * @internal
  */
@@ -19,14 +24,24 @@ final class GetOrderBookUseCaseTest extends TestCase
     {
         $collection = $this->createStub(OrderBookEntryCollection::class);
         $collection->method('getIterator')->willReturn(new \ArrayIterator($entries));
+
         return $collection;
     }
+
     private function makeUseCase(
         OrderBookRepository $orderBookRepo,
         CurrencyPairRepository $pairRepo,
+        ?PaymentMethodRepository $paymentMethodRepo = null,
     ): GetOrderBookUseCase {
-        return new GetOrderBookUseCase($orderBookRepo, $pairRepo);
+        if (null === $paymentMethodRepo) {
+            // По умолчанию: маппинг Bybit ID не находит совпадений → Bybit IDs возвращаются как есть
+            $paymentMethodRepo = $this->createStub(PaymentMethodRepository::class);
+            $paymentMethodRepo->method('mapBybitIdsToCode')->willReturn([]);
+        }
+
+        return new GetOrderBookUseCase($orderBookRepo, $pairRepo, $paymentMethodRepo);
     }
+
     public function testThrows404WhenPairNotFound(): void
     {
         $pairRepo = $this->createStub(CurrencyPairRepository::class);
@@ -37,6 +52,7 @@ final class GetOrderBookUseCaseTest extends TestCase
         $this->expectExceptionCode(404);
         $this->makeUseCase($orderBookRepo, $pairRepo)->execute('USDT', 'RUB');
     }
+
     public function testReturnsBothSidesWhenPairFound(): void
     {
         $pair = $this->createStub(CurrencyPair::class);
@@ -53,6 +69,7 @@ final class GetOrderBookUseCaseTest extends TestCase
         self::assertSame([], $result->buy);
         self::assertSame([], $result->sell);
     }
+
     public function testMapsEntryFieldsCorrectly(): void
     {
         $pair = $this->createStub(CurrencyPair::class);
@@ -77,7 +94,7 @@ final class GetOrderBookUseCaseTest extends TestCase
         $orderBookRepo
             ->method('findByCurrencyPairAndSide')
             ->willReturnCallback(fn(int $id, string $side) => match ($side) {
-                'buy'  => $this->makeCollection([$entry]),
+                'buy' => $this->makeCollection([$entry]),
                 default => $this->makeCollection([]),
             })
         ;
@@ -99,6 +116,7 @@ final class GetOrderBookUseCaseTest extends TestCase
         self::assertSame(['pm_1', 'pm_2'], $item->paymentMethods);
         self::assertSame(15, $item->paymentTimeLimit);
     }
+
     public function testInvalidJsonPaymentMethodsDecodedAsEmptyArray(): void
     {
         $pair = $this->createStub(CurrencyPair::class);
