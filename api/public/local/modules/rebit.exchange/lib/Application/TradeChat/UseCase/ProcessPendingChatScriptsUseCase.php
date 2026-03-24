@@ -71,7 +71,7 @@ final readonly class ProcessPendingChatScriptsUseCase
     }
 
     /**
-     * @return bool|null true = шаг отправлен, null = исполнение завершено/отменено
+     * @return null|bool true = шаг отправлен, null = исполнение завершено/отменено
      *
      * @throws HttpException
      */

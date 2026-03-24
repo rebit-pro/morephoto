@@ -10,19 +10,19 @@
 # │  │ │ │ │ │
 
 # SyncOrderBook — синхронизация стакана P2P-ордеров с Bybit (каждые 10 сек)
-*/10 * * * * * cd /app/public && php bitrix/bitrix.php app:exchange:sync-order-book 2>&1
+*/10 * * * * * cd /app/public && php local/bin/bitrix-console app:exchange:sync-order-book 2>&1
 
 # SyncActiveTrades — синхронизация активных P2P-сделок с Bybit (каждые 10 сек)
-5/10 * * * * * cd /app/public && php bitrix/bitrix.php app:exchange:sync-trades 2>&1
+5/10 * * * * * cd /app/public && php local/bin/bitrix-console app:exchange:sync-trades 2>&1
 
 # ExecuteChatScripts — отправка отложенных шагов чат-скриптов (каждые 5 сек)
-*/5 * * * * * cd /app/public && php bitrix/bitrix.php app:exchange:execute-chat-scripts 2>&1
+*/5 * * * * * cd /app/public && php local/bin/bitrix-console app:exchange:execute-chat-scripts 2>&1
 
 # CleanStaleOrders — удаление записей стакана старше 5 мин (каждую минуту)
-0 * * * * * cd /app/public && php bitrix/bitrix.php app:exchange:clean-stale-orders 2>&1
+0 * * * * * cd /app/public && php local/bin/bitrix-console app:exchange:clean-stale-orders 2>&1
 
 # SyncBalances — синхронизация балансов пользователей с Bybit (каждые 5 мин)
-0 */5 * * * * cd /app/public && php bitrix/bitrix.php app:wallet:sync-balances 2>&1
+0 */5 * * * * cd /app/public && php local/bin/bitrix-console app:wallet:sync-balances 2>&1
 
 # SyncTradeHistory — дозагрузка завершённых сделок из Bybit (каждые 10 мин)
-0 */10 * * * * cd /app/public && php bitrix/bitrix.php app:exchange:sync-trade-history 2>&1
+0 */10 * * * * cd /app/public && php local/bin/bitrix-console app:exchange:sync-trade-history 2>&1

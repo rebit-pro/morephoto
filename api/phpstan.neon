@@ -31,6 +31,7 @@ parameters:
             - public/local/modules/rebit.exchange/lib/Domain/Advertisement/Entity/AdvertisementCollection.php
             - public/local/modules/rebit.exchange/lib/Domain/ChatScript/Entity/ChatScriptCollection.php
             - public/local/modules/rebit.exchange/lib/Domain/ChatScript/Entity/ChatScriptStepCollection.php
+            - public/local/modules/rebit.exchange/lib/Domain/ChatScript/Entity/ChatScriptExecutionCollection.php
             - public/local/modules/rebit.exchange/lib/Domain/Currency/Entity/CurrencyCollection.php
             - public/local/modules/rebit.exchange/lib/Domain/Currency/Entity/CurrencyPairCollection.php
             - public/local/modules/rebit.exchange/lib/Domain/OrderBook/Entity/OrderBookEntryCollection.php

@@ -500,3 +500,36 @@ if (!class_exists(EO_ChatScriptStep_Collection::class)) {
         public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
     }
 }
+
+if (!class_exists(EO_ChatScriptExecution::class)) {
+    class EO_ChatScriptExecution
+    {
+        public function getId(): int { return 0; }
+        public function getUfTradeId(): int { return 0; }
+        public function getUfScriptId(): int { return 0; }
+        public function getUfUserId(): int { return 0; }
+        public function getUfLastStepSort(): int { return 0; }
+        public function getUfStatus(): string { return ''; }
+        public function getUfNextRunAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function setUfLastStepSort(int $value): static { return $this; }
+        public function setUfStatus(string $value): static { return $this; }
+        public function setUfNextRunAt(?\Bitrix\Main\Type\DateTime $value): static { return $this; }
+        public function save(): \Bitrix\Main\ORM\Data\Result { return new \Bitrix\Main\ORM\Data\Result(); }
+    }
+}
+
+if (!class_exists(EO_ChatScriptExecution_Collection::class)) {
+    /** @implements \ArrayAccess<int, EO_ChatScriptExecution> */
+    class EO_ChatScriptExecution_Collection implements \IteratorAggregate, \ArrayAccess, \Countable
+    {
+        /** @var array<int, EO_ChatScriptExecution> */
+        private array $items = [];
+        public function getIterator(): \ArrayIterator { return new \ArrayIterator($this->items); }
+        public function count(): int { return count($this->items); }
+        public function offsetExists(mixed $offset): bool { return isset($this->items[$offset]); }
+        public function offsetGet(mixed $offset): mixed { return $this->items[$offset] ?? null; }
+        public function offsetSet(mixed $offset, mixed $value): void { if (null === $offset) { $this->items[] = $value; } else { $this->items[$offset] = $value; } }
+        public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
+    }
+}
