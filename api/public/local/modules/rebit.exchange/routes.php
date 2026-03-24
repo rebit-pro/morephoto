@@ -18,7 +18,7 @@ return static function(RoutingConfigurator $routes) {
     $routes->get('/api/v1/exchange/payment-methods', [PaymentMethodController::class, 'listAction']);
 
     // Стакан ордеров
-    $routes->get('/api/v1/exchange/order-book', [OrderBookController::class, 'listAction']);
+    $routes->get('/api/v1/exchange/orderbook', [OrderBookController::class, 'listAction']);
 
     // Объявления
     $routes->get('/api/v1/exchange/advertisements', [AdvertisementController::class, 'listAction']);

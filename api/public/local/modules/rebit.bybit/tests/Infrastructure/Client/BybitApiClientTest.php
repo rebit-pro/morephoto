@@ -210,4 +210,49 @@ final class BybitApiClientTest extends TestCase
             self::assertSame(33004, $e->getBybitRetCode());
         }
     }
+
+    public function testNormalizesOldP2PFormatOnSuccess(): void
+    {
+        $httpClient = $this->createMock(RebitHttpClient::class);
+        $httpClient
+            ->expects($this->once())
+            ->method('post')
+            ->willReturn([
+                'ret_code' => 0,
+                'ret_msg' => 'OK',
+                'result' => ['items' => []],
+                'ext_info' => [],
+                'time_now' => '1677131201.177999',
+            ])
+        ;
+        $credentials = new BybitCredentials('api-key', 'api-secret');
+        $result = $this->createClient($httpClient)->post(
+            '/v5/p2p/item/online',
+            $credentials,
+            BybitEnvironmentEnum::Mainnet,
+            ['tokenId' => 'USDT', 'currencyId' => 'RUB'],
+        );
+        self::assertSame(0, $result->retCode);
+        self::assertSame('OK', $result->retMsg);
+    }
+    public function testNormalizesOldP2PFormatOnError(): void
+    {
+        $httpClient = $this->createStub(RebitHttpClient::class);
+        $httpClient
+            ->method('post')
+            ->willReturn([
+                'ret_code' => 10004,
+                'ret_msg' => 'error sign!',
+                'result' => [],
+                'ext_info' => [],
+                'time_now' => '1677131201.177999',
+            ])
+        ;
+        $credentials = new BybitCredentials('key', 'secret');
+        $this->expectException(BybitApiException::class);
+        $this->expectExceptionMessage('Bybit API error [10004]: error sign!');
+        $this->createClient($httpClient)
+            ->post('/v5/p2p/order/pending/simplifyList', $credentials, BybitEnvironmentEnum::Mainnet)
+        ;
+    }
 }

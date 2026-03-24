@@ -34,8 +34,10 @@ return [
     ],
     GetOrderBookUseCase::class => [
         'constructor' => static function(): GetOrderBookUseCase {
+            $sl = ServiceLocator::getInstance();
             return new GetOrderBookUseCase(
-                ServiceLocator::getInstance()->get(OrderBookRepository::class),
+                $sl->get(OrderBookRepository::class),
+                $sl->get(CurrencyPairRepository::class),
             );
         },
     ],
