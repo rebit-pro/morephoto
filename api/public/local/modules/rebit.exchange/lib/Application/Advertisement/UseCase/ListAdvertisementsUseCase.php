@@ -20,6 +20,7 @@ final readonly class ListAdvertisementsUseCase
 
     /**
      * @throws RepositoryException
+     * @throws \JsonException
      */
     public function execute(int $userId, ?string $status = null): AdvertisementListResultDto
     {
@@ -27,7 +28,7 @@ final readonly class ListAdvertisementsUseCase
 
         $items = [];
         foreach ($ads as $ad) {
-            $paymentIds = json_decode($ad->getUfPaymentMethodIds() ?: '[]', true);
+            $paymentIds = json_decode($ad->getUfPaymentMethodIds() ?: '[]', true, 512, JSON_THROW_ON_ERROR);
 
             $items[] = new AdvertisementResultDto(
                 id: $ad->getId(),

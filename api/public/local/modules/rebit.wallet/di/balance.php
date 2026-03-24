@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
@@ -19,6 +20,7 @@ use Rebit\Wallet\Presentation\Command\SyncBalancesCommand;
 use Rebit\Wallet\Presentation\Controller\BalanceController;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Facade\Log;
+
 return [
     BalanceCalculator::class => [
         'className' => BalanceCalculator::class,
@@ -36,6 +38,7 @@ return [
     LockFundsUseCase::class => [
         'constructor' => static function(): LockFundsUseCase {
             $sl = ServiceLocator::getInstance();
+
             return new LockFundsUseCase(
                 $sl->get(BalanceRepository::class),
                 $sl->get(TransactionRepository::class),
@@ -46,6 +49,7 @@ return [
     UnlockFundsUseCase::class => [
         'constructor' => static function(): UnlockFundsUseCase {
             $sl = ServiceLocator::getInstance();
+
             return new UnlockFundsUseCase(
                 $sl->get(BalanceRepository::class),
                 $sl->get(TransactionRepository::class),
@@ -56,6 +60,7 @@ return [
     BybitBalanceGatewayInterface::class => [
         'constructor' => static function(): BybitBalanceGatewayInterface {
             $sl = ServiceLocator::getInstance();
+
             return new BybitBalanceGateway(
                 $sl->get(BybitConnectionResolverInterface::class),
                 $sl->get(BybitClientInterface::class),
@@ -65,6 +70,7 @@ return [
     SyncBalancesUseCase::class => [
         'constructor' => static function(): SyncBalancesUseCase {
             $sl = ServiceLocator::getInstance();
+
             return new SyncBalancesUseCase(
                 $sl->get(BalanceRepository::class),
                 $sl->get(BalanceCalculator::class),
@@ -77,6 +83,7 @@ return [
     SyncBalancesCommand::class => [
         'constructor' => static function(): SyncBalancesCommand {
             $sl = ServiceLocator::getInstance();
+
             return new SyncBalancesCommand(
                 $sl->get(SyncBalancesUseCase::class),
                 $sl->get(BybitConnectionResolverInterface::class),
@@ -93,6 +100,7 @@ return [
     BalanceController::class => [
         'constructor' => static function(): BalanceController {
             $sl = ServiceLocator::getInstance();
+
             return new BalanceController(
                 $sl->get(GetBalancesUseCase::class),
                 $sl->get(SyncBalancesUseCase::class),

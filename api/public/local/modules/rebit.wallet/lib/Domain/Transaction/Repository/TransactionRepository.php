@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Domain\Transaction\Repository;
 
+use Bitrix\Main\ORM\Fields\ExpressionField;
 use Bitrix\Main\Type\DateTime;
 use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
@@ -66,9 +67,8 @@ final class TransactionRepository
     {
         return $this->query(function() use ($userId, $filter): int {
             $query = TransactionTable::query()
-                ->addSelect('ID')
+                ->addSelect(new ExpressionField('CNT', 'COUNT(*)'))
                 ->where('UF_USER_ID', $userId)
-                ->setCountTotal(true)
             ;
 
             if (null !== $filter->type && '' !== $filter->type) {
@@ -87,9 +87,9 @@ final class TransactionRepository
                 $query->where('UF_CREATED_AT', '<=', new DateTime($filter->dateTo, 'Y-m-d'));
             }
 
-            $query->exec();
+            $row = $query->exec()->fetch();
 
-            return $query->getCount();
+            return (int)($row['CNT'] ?? 0);
         });
     }
 
@@ -108,7 +108,6 @@ final class TransactionRepository
         ?string $description = null,
         ?string $bybitTxId = null,
     ): Transaction {
-        /** @var Transaction $transaction */
         $transaction = TransactionTable::createObject()
             ->setUfUserId($userId)
             ->setUfCurrencyId($currencyId)

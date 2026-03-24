@@ -100,6 +100,7 @@ final class CurrencyPairRepository
         if (null === $fiatCurrency) {
             return null;
         }
+
         return $this->query(
             fn(): ?CurrencyPair => CurrencyPairTable::query()
                 ->setSelect(['*'])

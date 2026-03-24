@@ -1,7 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Exchange\Application\OrderBook\Dto\Result;
+
 use Rebit\Share\Application\Interface\ResultDtoInterface;
+
 final readonly class OrderBookEntryResultDto implements ResultDtoInterface
 {
     /**

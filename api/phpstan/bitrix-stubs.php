@@ -173,6 +173,8 @@ namespace Bitrix\Main\ORM\Data {
         public static function getById(int|string $primary): \Bitrix\Main\ORM\Query\Result {}
         /** @param array<string, mixed> $parameters */
         public static function getList(array $parameters = []): \Bitrix\Main\ORM\Query\Result {}
+        /** @param array<string, mixed> $filter */
+        public static function getCount(array $filter = [], array $cache = []): int {}
     }
     class AddResult {}
     class UpdateResult {}

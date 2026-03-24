@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Bybit\Infrastructure\Client;
+
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\Web\Json;
 use Psr\Log\LoggerInterface;
@@ -13,14 +16,17 @@ use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
 use Rebit\Share\Infrastructure\HttpClient\RebitHttpClient;
 use Rebit\Share\Shared\Enum\HttpMethodEnum;
 use Rebit\Share\Shared\Helper\ArrayToDtoMapper;
+
 final readonly class BybitApiClient implements BybitClientInterface
 {
     private const string DEFAULT_RECV_WINDOW = '5000';
+
     public function __construct(
         private RebitHttpClient $httpClient,
         private HmacSignatureGenerator $signatureGenerator,
         private LoggerInterface $logger,
     ) {}
+
     /**
      * @param array<string, string> $queryParams
      *
@@ -38,8 +44,10 @@ final readonly class BybitApiClient implements BybitClientInterface
             $url .= '?' . $queryString;
         }
         $headers = $this->buildAuthHeaders($credentials, self::DEFAULT_RECV_WINDOW, $queryString);
+
         return $this->executeRequest(HttpMethodEnum::GET, $url, $headers);
     }
+
     /**
      * @param array<string, mixed> $body
      *
@@ -55,8 +63,10 @@ final readonly class BybitApiClient implements BybitClientInterface
         $url = $environment->baseUrl() . $endpoint;
         $headers = $this->buildAuthHeaders($credentials, self::DEFAULT_RECV_WINDOW, $jsonBody);
         $headers['Content-Type'] = 'application/json';
+
         return $this->executeRequest(HttpMethodEnum::POST, $url, $headers, $body);
     }
+
     /**
      * @return array<string, string>
      */
@@ -73,6 +83,7 @@ final readonly class BybitApiClient implements BybitClientInterface
             recvWindow: $recvWindow,
             payload: $payload,
         );
+
         return [
             'X-BAPI-API-KEY' => $credentials->apiKey,
             'X-BAPI-TIMESTAMP' => $timestamp,
@@ -80,6 +91,7 @@ final readonly class BybitApiClient implements BybitClientInterface
             'X-BAPI-RECV-WINDOW' => $recvWindow,
         ];
     }
+
     /**
      * @param array<string, string> $headers
      * @param array<string, mixed>  $body
@@ -120,8 +132,10 @@ final readonly class BybitApiClient implements BybitClientInterface
                 bybitRetCode: $response->retCode,
             );
         }
+
         return $response;
     }
+
     /**
      * Нормализует ответ Bybit API к единому формату DTO.
      *
@@ -137,6 +151,7 @@ final readonly class BybitApiClient implements BybitClientInterface
         if (!array_key_exists('ret_code', $rawResponse)) {
             return $rawResponse;
         }
+
         return [
             'retCode' => (int)($rawResponse['ret_code'] ?? 0),
             'retMsg' => (string)($rawResponse['ret_msg'] ?? ''),
@@ -147,6 +162,7 @@ final readonly class BybitApiClient implements BybitClientInterface
                 : 0,
         ];
     }
+
     /**
      * @param array<string, string> $params
      */
@@ -155,8 +171,10 @@ final readonly class BybitApiClient implements BybitClientInterface
         if ([] === $params) {
             return '';
         }
+
         return http_build_query($params);
     }
+
     private function currentTimestampMs(): int
     {
         return (int)round(microtime(true) * 1000);
