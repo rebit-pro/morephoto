@@ -1622,6 +1622,16 @@ namespace {
      * @method \EO_RebitAdvertisement          resetUfPrice()
      * @method \EO_RebitAdvertisement          unsetUfPrice()
      * @method null|\float                     fillUfPrice()
+     * @method null|\float                     getUfPremium()
+     * @method \EO_RebitAdvertisement          setUfPremium(null|\Bitrix\Main\DB\SqlExpression|\float $ufPremium)
+     * @method bool                            hasUfPremium()
+     * @method bool                            isUfPremiumFilled()
+     * @method bool                            isUfPremiumChanged()
+     * @method null|\float                     remindActualUfPremium()
+     * @method null|\float                     requireUfPremium()
+     * @method \EO_RebitAdvertisement          resetUfPremium()
+     * @method \EO_RebitAdvertisement          unsetUfPremium()
+     * @method null|\float                     fillUfPremium()
      * @method null|\float                     getUfQuantity()
      * @method \EO_RebitAdvertisement          setUfQuantity(null|\Bitrix\Main\DB\SqlExpression|\float $ufQuantity)
      * @method bool                            hasUfQuantity()
@@ -1672,6 +1682,26 @@ namespace {
      * @method \EO_RebitAdvertisement          resetUfPaymentMethodIds()
      * @method \EO_RebitAdvertisement          unsetUfPaymentMethodIds()
      * @method null|\string                    fillUfPaymentMethodIds()
+     * @method null|\int                       getUfPaymentPeriod()
+     * @method \EO_RebitAdvertisement          setUfPaymentPeriod(null|\Bitrix\Main\DB\SqlExpression|\int $ufPaymentPeriod)
+     * @method bool                            hasUfPaymentPeriod()
+     * @method bool                            isUfPaymentPeriodFilled()
+     * @method bool                            isUfPaymentPeriodChanged()
+     * @method null|\int                       remindActualUfPaymentPeriod()
+     * @method null|\int                       requireUfPaymentPeriod()
+     * @method \EO_RebitAdvertisement          resetUfPaymentPeriod()
+     * @method \EO_RebitAdvertisement          unsetUfPaymentPeriod()
+     * @method null|\int                       fillUfPaymentPeriod()
+     * @method null|\float                     getUfFeeRate()
+     * @method \EO_RebitAdvertisement          setUfFeeRate(null|\Bitrix\Main\DB\SqlExpression|\float $ufFeeRate)
+     * @method bool                            hasUfFeeRate()
+     * @method bool                            isUfFeeRateFilled()
+     * @method bool                            isUfFeeRateChanged()
+     * @method null|\float                     remindActualUfFeeRate()
+     * @method null|\float                     requireUfFeeRate()
+     * @method \EO_RebitAdvertisement          resetUfFeeRate()
+     * @method \EO_RebitAdvertisement          unsetUfFeeRate()
+     * @method null|\float                     fillUfFeeRate()
      * @method null|\string                    getUfConditions()
      * @method \EO_RebitAdvertisement          setUfConditions(null|\Bitrix\Main\DB\SqlExpression|\string $ufConditions)
      * @method bool                            hasUfConditions()
@@ -1784,6 +1814,8 @@ namespace {
      * @method null|\string[]                    fillUfPriceType()
      * @method null|\float[]                     getUfPriceList()
      * @method null|\float[]                     fillUfPrice()
+     * @method null|\float[]                     getUfPremiumList()
+     * @method null|\float[]                     fillUfPremium()
      * @method null|\float[]                     getUfQuantityList()
      * @method null|\float[]                     fillUfQuantity()
      * @method null|\float[]                     getUfQuantityRemainingList()
@@ -1794,6 +1826,10 @@ namespace {
      * @method null|\float[]                     fillUfMaxAmount()
      * @method null|\string[]                    getUfPaymentMethodIdsList()
      * @method null|\string[]                    fillUfPaymentMethodIds()
+     * @method null|\int[]                       getUfPaymentPeriodList()
+     * @method null|\int[]                       fillUfPaymentPeriod()
+     * @method null|\float[]                     getUfFeeRateList()
+     * @method null|\float[]                     fillUfFeeRate()
      * @method null|\string[]                    getUfConditionsList()
      * @method null|\string[]                    fillUfConditions()
      * @method null|\int[]                       getUfChatScriptIdList()
@@ -1911,6 +1947,16 @@ namespace {
      * @method \EO_RebitTrade                  resetUfBybitOrderId()
      * @method \EO_RebitTrade                  unsetUfBybitOrderId()
      * @method null|\string                    fillUfBybitOrderId()
+     * @method null|\int                       getUfBybitStatus()
+     * @method \EO_RebitTrade                  setUfBybitStatus(null|\Bitrix\Main\DB\SqlExpression|\int $ufBybitStatus)
+     * @method bool                            hasUfBybitStatus()
+     * @method bool                            isUfBybitStatusFilled()
+     * @method bool                            isUfBybitStatusChanged()
+     * @method null|\int                       remindActualUfBybitStatus()
+     * @method null|\int                       requireUfBybitStatus()
+     * @method \EO_RebitTrade                  resetUfBybitStatus()
+     * @method \EO_RebitTrade                  unsetUfBybitStatus()
+     * @method null|\int                       fillUfBybitStatus()
      * @method null|\int                       getUfBuyerUserId()
      * @method \EO_RebitTrade                  setUfBuyerUserId(null|\Bitrix\Main\DB\SqlExpression|\int $ufBuyerUserId)
      * @method bool                            hasUfBuyerUserId()
@@ -2193,6 +2239,8 @@ namespace {
      * @method \int[]                            getIdList()
      * @method null|\string[]                    getUfBybitOrderIdList()
      * @method null|\string[]                    fillUfBybitOrderId()
+     * @method null|\int[]                       getUfBybitStatusList()
+     * @method null|\int[]                       fillUfBybitStatus()
      * @method null|\int[]                       getUfBuyerUserIdList()
      * @method null|\int[]                       fillUfBuyerUserId()
      * @method null|\int[]                       getUfSellerUserIdList()
@@ -2366,6 +2414,36 @@ namespace {
      * @method \EO_RebitTradeMessage           resetUfMessage()
      * @method \EO_RebitTradeMessage           unsetUfMessage()
      * @method null|\string                    fillUfMessage()
+     * @method null|\string                    getUfContentType()
+     * @method \EO_RebitTradeMessage           setUfContentType(null|\Bitrix\Main\DB\SqlExpression|\string $ufContentType)
+     * @method bool                            hasUfContentType()
+     * @method bool                            isUfContentTypeFilled()
+     * @method bool                            isUfContentTypeChanged()
+     * @method null|\string                    remindActualUfContentType()
+     * @method null|\string                    requireUfContentType()
+     * @method \EO_RebitTradeMessage           resetUfContentType()
+     * @method \EO_RebitTradeMessage           unsetUfContentType()
+     * @method null|\string                    fillUfContentType()
+     * @method null|\string                    getUfBybitMsgUuid()
+     * @method \EO_RebitTradeMessage           setUfBybitMsgUuid(null|\Bitrix\Main\DB\SqlExpression|\string $ufBybitMsgUuid)
+     * @method bool                            hasUfBybitMsgUuid()
+     * @method bool                            isUfBybitMsgUuidFilled()
+     * @method bool                            isUfBybitMsgUuidChanged()
+     * @method null|\string                    remindActualUfBybitMsgUuid()
+     * @method null|\string                    requireUfBybitMsgUuid()
+     * @method \EO_RebitTradeMessage           resetUfBybitMsgUuid()
+     * @method \EO_RebitTradeMessage           unsetUfBybitMsgUuid()
+     * @method null|\string                    fillUfBybitMsgUuid()
+     * @method null|\string                    getUfFileName()
+     * @method \EO_RebitTradeMessage           setUfFileName(null|\Bitrix\Main\DB\SqlExpression|\string $ufFileName)
+     * @method bool                            hasUfFileName()
+     * @method bool                            isUfFileNameFilled()
+     * @method bool                            isUfFileNameChanged()
+     * @method null|\string                    remindActualUfFileName()
+     * @method null|\string                    requireUfFileName()
+     * @method \EO_RebitTradeMessage           resetUfFileName()
+     * @method \EO_RebitTradeMessage           unsetUfFileName()
+     * @method null|\string                    fillUfFileName()
      * @method null|\string                    getUfMessageType()
      * @method \EO_RebitTradeMessage           setUfMessageType(null|\Bitrix\Main\DB\SqlExpression|\string $ufMessageType)
      * @method bool                            hasUfMessageType()
@@ -2462,6 +2540,12 @@ namespace {
      * @method null|\int[]                       fillUfUserId()
      * @method null|\string[]                    getUfMessageList()
      * @method null|\string[]                    fillUfMessage()
+     * @method null|\string[]                    getUfContentTypeList()
+     * @method null|\string[]                    fillUfContentType()
+     * @method null|\string[]                    getUfBybitMsgUuidList()
+     * @method null|\string[]                    fillUfBybitMsgUuid()
+     * @method null|\string[]                    getUfFileNameList()
+     * @method null|\string[]                    fillUfFileName()
      * @method null|\string[]                    getUfMessageTypeList()
      * @method null|\string[]                    fillUfMessageType()
      * @method null|\int[]                       getUfScriptStepIdList()
@@ -3143,6 +3227,237 @@ namespace Rebit\Exchange\Domain\ChatScript\Entity\Table {
      * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStepCollection wakeUpCollection($rows)
      */
     class EO_ChatScriptStep_Entity extends Entity {}
+}
+// ORMENTITYANNOTATION:Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptExecutionTable
+
+namespace Rebit\Exchange\Domain\ChatScript\Entity\Table {
+    use Bitrix\Main\Authentication\Context;
+    use Bitrix\Main\ORM\Entity;
+    use Bitrix\Main\Type\Dictionary;
+
+    /**
+     * ChatScriptExecution
+     *
+     * @see ChatScriptExecutionTable
+     *
+     * Custom methods:
+     * ---------------
+     *
+     * @method \int                                                         getId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setId(\Bitrix\Main\DB\SqlExpression|\int $id)
+     * @method bool                                                         hasId()
+     * @method bool                                                         isIdFilled()
+     * @method bool                                                         isIdChanged()
+     * @method \int                                                         getUfTradeId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfTradeId(\Bitrix\Main\DB\SqlExpression|\int $ufTradeId)
+     * @method bool                                                         hasUfTradeId()
+     * @method bool                                                         isUfTradeIdFilled()
+     * @method bool                                                         isUfTradeIdChanged()
+     * @method \int                                                         remindActualUfTradeId()
+     * @method \int                                                         requireUfTradeId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfTradeId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfTradeId()
+     * @method \int                                                         fillUfTradeId()
+     * @method \int                                                         getUfScriptId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfScriptId(\Bitrix\Main\DB\SqlExpression|\int $ufScriptId)
+     * @method bool                                                         hasUfScriptId()
+     * @method bool                                                         isUfScriptIdFilled()
+     * @method bool                                                         isUfScriptIdChanged()
+     * @method \int                                                         remindActualUfScriptId()
+     * @method \int                                                         requireUfScriptId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfScriptId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfScriptId()
+     * @method \int                                                         fillUfScriptId()
+     * @method \int                                                         getUfUserId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfUserId(\Bitrix\Main\DB\SqlExpression|\int $ufUserId)
+     * @method bool                                                         hasUfUserId()
+     * @method bool                                                         isUfUserIdFilled()
+     * @method bool                                                         isUfUserIdChanged()
+     * @method \int                                                         remindActualUfUserId()
+     * @method \int                                                         requireUfUserId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfUserId()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfUserId()
+     * @method \int                                                         fillUfUserId()
+     * @method \int                                                         getUfLastStepSort()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfLastStepSort(\Bitrix\Main\DB\SqlExpression|\int $ufLastStepSort)
+     * @method bool                                                         hasUfLastStepSort()
+     * @method bool                                                         isUfLastStepSortFilled()
+     * @method bool                                                         isUfLastStepSortChanged()
+     * @method \int                                                         remindActualUfLastStepSort()
+     * @method \int                                                         requireUfLastStepSort()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfLastStepSort()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfLastStepSort()
+     * @method \int                                                         fillUfLastStepSort()
+     * @method \string                                                      getUfStatus()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfStatus(\Bitrix\Main\DB\SqlExpression|\string $ufStatus)
+     * @method bool                                                         hasUfStatus()
+     * @method bool                                                         isUfStatusFilled()
+     * @method bool                                                         isUfStatusChanged()
+     * @method \string                                                      remindActualUfStatus()
+     * @method \string                                                      requireUfStatus()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfStatus()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfStatus()
+     * @method \string                                                      fillUfStatus()
+     * @method \Bitrix\Main\Type\DateTime                                   getUfNextRunAt()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfNextRunAt(\Bitrix\Main\DB\SqlExpression|\Bitrix\Main\Type\DateTime $ufNextRunAt)
+     * @method bool                                                         hasUfNextRunAt()
+     * @method bool                                                         isUfNextRunAtFilled()
+     * @method bool                                                         isUfNextRunAtChanged()
+     * @method \Bitrix\Main\Type\DateTime                                   remindActualUfNextRunAt()
+     * @method \Bitrix\Main\Type\DateTime                                   requireUfNextRunAt()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfNextRunAt()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfNextRunAt()
+     * @method \Bitrix\Main\Type\DateTime                                   fillUfNextRunAt()
+     * @method \Bitrix\Main\Type\DateTime                                   getUfCreatedAt()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution setUfCreatedAt(\Bitrix\Main\DB\SqlExpression|\Bitrix\Main\Type\DateTime $ufCreatedAt)
+     * @method bool                                                         hasUfCreatedAt()
+     * @method bool                                                         isUfCreatedAtFilled()
+     * @method bool                                                         isUfCreatedAtChanged()
+     * @method \Bitrix\Main\Type\DateTime                                   remindActualUfCreatedAt()
+     * @method \Bitrix\Main\Type\DateTime                                   requireUfCreatedAt()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution resetUfCreatedAt()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution unsetUfCreatedAt()
+     * @method \Bitrix\Main\Type\DateTime                                   fillUfCreatedAt()
+     *
+     * Common methods:
+     * ---------------
+     *
+     * @property Entity     $entity
+     * @property array      $primary
+     * @property int        $state       @see \Bitrix\Main\ORM\Objectify\State
+     * @property Dictionary $customData
+     * @property Context    $authContext
+     *
+     * @method        mixed                                                                                           get($fieldName)
+     * @method        mixed                                                                                           remindActual($fieldName)
+     * @method        mixed                                                                                           require($fieldName)
+     * @method        bool                                                                                            has($fieldName)
+     * @method        bool                                                                                            isFilled($fieldName)
+     * @method        bool                                                                                            isChanged($fieldName)
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution                                    set($fieldName, $value)
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution                                    reset($fieldName)
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution                                    unset($fieldName)
+     * @method        void                                                                                            addTo($fieldName, $value)
+     * @method        void                                                                                            removeFrom($fieldName, $value)
+     * @method        void                                                                                            removeAll($fieldName)
+     * @method        \Bitrix\Main\ORM\Data\Result                                                                    delete()
+     * @method        mixed                                                                                           fill($fields = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL)                                                                    flag or array of field names
+     * @method        mixed[]                                                                                         collectValues($valuesType = \Bitrix\Main\ORM\Objectify\Values::ALL, $fieldsMask = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL)
+     * @method        \Bitrix\Main\ORM\Data\AddResult|\Bitrix\Main\ORM\Data\Result|\Bitrix\Main\ORM\Data\UpdateResult save()
+     * @method static \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution                                    wakeUp($data)
+     */
+    class EO_ChatScriptExecution
+    {
+        // @var \Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptExecutionTable
+        public static $dataClass = '\Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptExecutionTable';
+
+        /**
+         * @param array|bool $setDefaultValues
+         */
+        public function __construct($setDefaultValues = true) {}
+    }
+}
+
+namespace Rebit\Exchange\Domain\ChatScript\Entity\Table {
+    use Bitrix\Main\ORM\Entity;
+
+    /**
+     * ChatScriptExecutionCollection
+     *
+     * Custom methods:
+     * ---------------
+     *
+     * @method \int[]                       getIdList()
+     * @method \int[]                       getUfTradeIdList()
+     * @method \int[]                       fillUfTradeId()
+     * @method \int[]                       getUfScriptIdList()
+     * @method \int[]                       fillUfScriptId()
+     * @method \int[]                       getUfUserIdList()
+     * @method \int[]                       fillUfUserId()
+     * @method \int[]                       getUfLastStepSortList()
+     * @method \int[]                       fillUfLastStepSort()
+     * @method \string[]                    getUfStatusList()
+     * @method \string[]                    fillUfStatus()
+     * @method \Bitrix\Main\Type\DateTime[] getUfNextRunAtList()
+     * @method \Bitrix\Main\Type\DateTime[] fillUfNextRunAt()
+     * @method \Bitrix\Main\Type\DateTime[] getUfCreatedAtList()
+     * @method \Bitrix\Main\Type\DateTime[] fillUfCreatedAt()
+     *
+     * Common methods:
+     * ---------------
+     *
+     * @property Entity $entity
+     *
+     * @method        void                                                                   add(\Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution $object)
+     * @method        bool                                                                   has(\Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution $object)
+     * @method        bool                                                                   hasByPrimary($primary)
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           getByPrimary($primary)
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution[]         getAll()
+     * @method        bool                                                                   remove(\Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution $object)
+     * @method        void                                                                   removeByPrimary($primary)
+     * @method        null|array|\Bitrix\Main\ORM\Objectify\Collection                       fill($fields = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL)                                                                                                     flag or array of field names
+     * @method static \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection wakeUp($data)
+     * @method        \Bitrix\Main\ORM\Data\Result                                           save($ignoreEvents = false)
+     * @method        void                                                                   offsetSet()                                                                                                                                                    ArrayAccess
+     * @method        void                                                                   offsetExists()                                                                                                                                                 ArrayAccess
+     * @method        void                                                                   offsetUnset()                                                                                                                                                  ArrayAccess
+     * @method        void                                                                   offsetGet()                                                                                                                                                    ArrayAccess
+     * @method        void                                                                   rewind()                                                                                                                                                       Iterator
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           current()                                                                                                                                                      Iterator
+     * @method        mixed                                                                  key()                                                                                                                                                          Iterator
+     * @method        void                                                                   next()                                                                                                                                                         Iterator
+     * @method        bool                                                                   valid()                                                                                                                                                        Iterator
+     * @method        int                                                                    count()                                                                                                                                                        Countable
+     * @method        \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection merge(?\Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection $collection)
+     * @method        bool                                                                   isEmpty()
+     * @method        array                                                                  collectValues(int $valuesType = \Bitrix\Main\ORM\Objectify\Values::ALL, int $fieldsMask = \Bitrix\Main\ORM\Fields\FieldTypeMask::ALL, bool $recursive = false)
+     */
+    class EO_ChatScriptExecution_Collection implements \ArrayAccess, \Iterator, \Countable
+    {
+        // @var \Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptExecutionTable
+        public static $dataClass = '\Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptExecutionTable';
+    }
+}
+
+namespace Rebit\Exchange\Domain\ChatScript\Entity\Table {
+    use Bitrix\Main\ORM\Data\DataManager;
+    use Bitrix\Main\ORM\Entity;
+    use Bitrix\Main\ORM\Query\Query;
+    use Bitrix\Main\ORM\Query\Result;
+
+    /**
+     * @method static EO_ChatScriptExecution_Query                                           query()
+     * @method static EO_ChatScriptExecution_Result                                          getByPrimary($primary, array $parameters = [])
+     * @method static EO_ChatScriptExecution_Result                                          getById($id)
+     * @method static EO_ChatScriptExecution_Result                                          getList(array $parameters = [])
+     * @method static EO_ChatScriptExecution_Entity                                          getEntity()
+     * @method static \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           createObject($setDefaultValues = true)
+     * @method static \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection createCollection()
+     * @method static \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           wakeUpObject($row)
+     * @method static \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection wakeUpCollection($rows)
+     */
+    class ChatScriptExecutionTable extends DataManager {}
+    /**
+     * Common methods:
+     * ---------------
+     *
+     * @method EO_ChatScriptExecution_Result                                          exec()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           fetchObject()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection fetchCollection()
+     */
+    class EO_ChatScriptExecution_Query extends Query {}
+    /**
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           fetchObject()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection fetchCollection()
+     */
+    class EO_ChatScriptExecution_Result extends Result {}
+    /**
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           createObject($setDefaultValues = true)
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection createCollection()
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution           wakeUpObject($row)
+     * @method \Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection wakeUpCollection($rows)
+     */
+    class EO_ChatScriptExecution_Entity extends Entity {}
 }
 // ORMENTITYANNOTATION:Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptTable
 

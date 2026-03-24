@@ -36,6 +36,13 @@ RUN apt-get update && apt-get install -y \
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 # Копируем конфигурации PHP
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
+
+# Supercronic — cron-демон для Docker (поддержка секундных интервалов)
+ENV SUPERCRONIC_VERSION=v0.2.33
+RUN curl -fsSL "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-amd64" \
+        -o /usr/local/bin/supercronic \
+    && chmod +x /usr/local/bin/supercronic
+
 ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 WORKDIR /app
@@ -52,6 +59,9 @@ RUN find /app/public/local/modules -maxdepth 2 -name "routes.php" -exec sh -c ' 
         module=$(basename "$(dirname "$f")"); \
         ln -sf "$f" /app/public/local/routes/"$module".php; \
     done' _ {} +
+
+# Crontab для supercronic
+COPY docker/common/cron/crontab /etc/supercronic/crontab
 
 RUN mkdir -p /app /var/lib/php/sessions \
     && chown -R www-data:www-data /app /var/lib/php/sessions

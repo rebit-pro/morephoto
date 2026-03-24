@@ -95,6 +95,19 @@ api-migrate:
 api-migrate-status:
 	docker compose run --rm api-php-cli php /app/public/local/modules/sprint.migration/tools/migrate.php ls
 
+# --- Cron ---
+cron-up:
+	docker compose up -d api-cron
+
+cron-down:
+	docker compose stop api-cron
+
+cron-restart:
+	docker compose restart api-cron
+
+cron-logs:
+	docker compose logs -f api-cron
+
 # ==============================================================================
 # PRODUCTION
 # ==============================================================================

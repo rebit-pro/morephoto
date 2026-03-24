@@ -67,6 +67,36 @@ parameters:
 			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
 
 		-
+			message: '#^Parameter \#1 \$id of method Rebit\\Exchange\\Domain\\Trade\\Repository\\TradeRepository\:\:findById\(\) expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/TradeChat/UseCase/ProcessPendingChatScriptsUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$scriptId of method Rebit\\Exchange\\Domain\\ChatScript\\Repository\\ChatScriptStepRepository\:\:findByScriptId\(\) expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/TradeChat/UseCase/ProcessPendingChatScriptsUseCase.php
+
+		-
+			message: '#^Parameter \#1 \$userId of method Rebit\\Exchange\\Application\\TradeChat\\Port\\BybitChatGatewayInterface\:\:sendMessage\(\) expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/TradeChat/UseCase/ProcessPendingChatScriptsUseCase.php
+
+		-
+			message: '#^Parameter \$tradeId of method Rebit\\Exchange\\Domain\\TradeChat\\Repository\\TradeMessageRepository\:\:create\(\) expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/TradeChat/UseCase/ProcessPendingChatScriptsUseCase.php
+
+		-
+			message: '#^Parameter \$userId of method Rebit\\Exchange\\Domain\\TradeChat\\Repository\\TradeMessageRepository\:\:create\(\) expects int, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/TradeChat/UseCase/ProcessPendingChatScriptsUseCase.php
+
+		-
 			message: '#^Call to an undefined static method Rebit\\Exchange\\Domain\\ChatScript\\Entity\\Table\\ChatScriptTable\:\:delete\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1

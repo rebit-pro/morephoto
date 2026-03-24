@@ -6,12 +6,15 @@ use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
 use Rebit\Exchange\Application\TradeChat\UseCase\ExecuteChatScriptUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\GetChatHistoryUseCase;
+use Rebit\Exchange\Application\TradeChat\UseCase\ProcessPendingChatScriptsUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\SendMessageUseCase;
+use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
 use Rebit\Exchange\Infrastructure\Bybit\BybitChatGateway;
+use Rebit\Exchange\Presentation\Command\ExecuteChatScriptsCommand;
 use Rebit\Exchange\Presentation\Controller\TradeChatController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
@@ -64,6 +67,30 @@ return [
                 $sl->get(TradeMessageRepository::class),
                 $sl->get(BybitChatGatewayInterface::class),
                 Log::getLogger(LogChannelEnum::exchange),
+            );
+        },
+    ],
+    ChatScriptExecutionRepository::class => [
+        'className' => ChatScriptExecutionRepository::class,
+    ],
+    ProcessPendingChatScriptsUseCase::class => [
+        'constructor' => static function(): ProcessPendingChatScriptsUseCase {
+            $sl = ServiceLocator::getInstance();
+
+            return new ProcessPendingChatScriptsUseCase(
+                $sl->get(ChatScriptExecutionRepository::class),
+                $sl->get(ChatScriptStepRepository::class),
+                $sl->get(TradeRepository::class),
+                $sl->get(TradeMessageRepository::class),
+                $sl->get(BybitChatGatewayInterface::class),
+                Log::getLogger(LogChannelEnum::exchange),
+            );
+        },
+    ],
+    ExecuteChatScriptsCommand::class => [
+        'constructor' => static function(): ExecuteChatScriptsCommand {
+            return new ExecuteChatScriptsCommand(
+                ServiceLocator::getInstance()->get(ProcessPendingChatScriptsUseCase::class),
             );
         },
     ],
