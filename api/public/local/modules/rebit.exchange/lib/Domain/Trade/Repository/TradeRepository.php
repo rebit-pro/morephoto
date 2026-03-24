@@ -11,6 +11,7 @@ use Rebit\Exchange\Domain\Trade\Entity\Table\TradeTable;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Bitrix\Main\ORM\Query\Query;
 
 final class TradeRepository
 {
@@ -59,7 +60,7 @@ final class TradeRepository
                 ;
 
                 $query->where(
-                    \Bitrix\Main\ORM\Query\Query::filter()
+                    Query::filter()
                         ->logic('or')
                         ->where('UF_BUYER_USER_ID', $userId)
                         ->where('UF_SELLER_USER_ID', $userId),
@@ -92,7 +93,7 @@ final class TradeRepository
             fn(): TradeCollection => TradeTable::query()
                 ->setSelect(['*'])
                 ->where(
-                    \Bitrix\Main\ORM\Query\Query::filter()
+                    Query::filter()
                         ->logic('or')
                         ->where('UF_BUYER_USER_ID', $userId)
                         ->where('UF_SELLER_USER_ID', $userId),

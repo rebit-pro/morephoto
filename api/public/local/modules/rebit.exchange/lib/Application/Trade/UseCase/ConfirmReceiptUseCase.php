@@ -10,6 +10,7 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Bitrix\Main\Type\DateTime;
 
 /**
  * Выпуск активов (подтверждение получения оплаты). POST /v5/p2p/order/finish
@@ -43,7 +44,7 @@ final readonly class ConfirmReceiptUseCase
         );
 
         $trade->setUfStatus('completed');
-        $trade->setUfCompletedAt(new \Bitrix\Main\Type\DateTime());
+        $trade->setUfCompletedAt(new DateTime());
         $this->tradeRepository->save($trade);
 
         return ListTradesUseCase::toResultDto($trade);

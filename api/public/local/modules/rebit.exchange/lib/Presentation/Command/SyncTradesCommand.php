@@ -98,7 +98,7 @@ final class SyncTradesCommand extends RebitCommand
                     'bybitStatus' => $bybitStatus,
                     'buyerUserId' => $userId,
                     'sellerUserId' => 0,
-                    'side' => ((int)($item['side'] ?? 0) === 0) ? 'buy' : 'sell',
+                    'side' => (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell',
                     'price' => (float)($item['price'] ?? 0),
                     'quantity' => 0.0,
                     'fiatAmount' => (float)($item['amount'] ?? 0),

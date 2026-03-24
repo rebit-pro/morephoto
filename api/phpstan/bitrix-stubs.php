@@ -336,6 +336,220 @@ namespace {
     class RebitTransactionTable extends \Bitrix\Main\ORM\Data\DataManager {}
 }
 
+/**
+ * Стабы EO_ классов Exchange-модуля для PHPStan.
+ */
+namespace Rebit\Exchange\Domain\Advertisement\Entity\Table {
+    class EO_Advertisement extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfUserId(): int {}
+        public function getUfBybitAdId(): string {}
+        public function getUfCurrencyPairId(): int {}
+        public function getUfSide(): string {}
+        public function getUfPriceType(): string {}
+        public function getUfPrice(): float {}
+        public function getUfPremium(): float {}
+        public function getUfQuantity(): float {}
+        public function getUfQuantityRemaining(): float {}
+        public function getUfMinAmount(): float {}
+        public function getUfMaxAmount(): float {}
+        public function getUfPaymentMethodIds(): string {}
+        public function getUfPaymentPeriod(): int {}
+        public function getUfFeeRate(): float {}
+        public function getUfConditions(): ?string {}
+        public function getUfChatScriptId(): int {}
+        public function getUfStatus(): string {}
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfUpdatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function setUfUserId(int $v): static {}
+        public function setUfBybitAdId(string $v): static {}
+        public function setUfCurrencyPairId(int $v): static {}
+        public function setUfSide(string $v): static {}
+        public function setUfPriceType(string $v): static {}
+        public function setUfPrice(float $v): static {}
+        public function setUfPremium(float $v): static {}
+        public function setUfQuantity(float $v): static {}
+        public function setUfQuantityRemaining(float $v): static {}
+        public function setUfMinAmount(float $v): static {}
+        public function setUfMaxAmount(float $v): static {}
+        public function setUfPaymentMethodIds(string $v): static {}
+        public function setUfPaymentPeriod(int $v): static {}
+        public function setUfFeeRate(float $v): static {}
+        public function setUfConditions(string $v): static {}
+        public function setUfChatScriptId(int $v): static {}
+        public function setUfStatus(string $v): static {}
+        public function setUfCreatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfUpdatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+    }
+    class EO_Advertisement_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Exchange\Domain\Trade\Entity\Table {
+    class EO_Trade extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfBybitOrderId(): string {}
+        public function getUfBybitStatus(): int {}
+        public function getUfBuyerUserId(): int {}
+        public function getUfSellerUserId(): int {}
+        public function getUfAdvertisementId(): int {}
+        public function getUfOrderBookEntryId(): int {}
+        public function getUfCurrencyPairId(): int {}
+        public function getUfSide(): string {}
+        public function getUfPrice(): float {}
+        public function getUfQuantity(): float {}
+        public function getUfFiatAmount(): float {}
+        public function getUfFee(): float {}
+        public function getUfPaymentMethodId(): int {}
+        public function getUfPaymentDetails(): string {}
+        public function getUfComment(): string {}
+        public function getUfStatus(): string {}
+        public function getUfCounterpartyName(): string {}
+        public function getUfPaymentDeadline(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfPaidAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfConfirmedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfCompletedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfCancelledAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfCancelReason(): string {}
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfUpdatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function setUfBybitOrderId(string $v): static {}
+        public function setUfBybitStatus(int $v): static {}
+        public function setUfBuyerUserId(int $v): static {}
+        public function setUfSellerUserId(int $v): static {}
+        public function setUfAdvertisementId(int $v): static {}
+        public function setUfOrderBookEntryId(int $v): static {}
+        public function setUfCurrencyPairId(int $v): static {}
+        public function setUfSide(string $v): static {}
+        public function setUfPrice(float $v): static {}
+        public function setUfQuantity(float $v): static {}
+        public function setUfFiatAmount(float $v): static {}
+        public function setUfFee(float $v): static {}
+        public function setUfPaymentMethodId(int $v): static {}
+        public function setUfPaymentDetails(string $v): static {}
+        public function setUfComment(string $v): static {}
+        public function setUfStatus(string $v): static {}
+        public function setUfCounterpartyName(string $v): static {}
+        public function setUfPaymentDeadline(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfPaidAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfConfirmedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfCompletedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfCancelledAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfCancelReason(string $v): static {}
+        public function setUfUpdatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+    }
+    class EO_Trade_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Exchange\Domain\TradeChat\Entity\Table {
+    class EO_TradeMessage extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfTradeId(): int {}
+        public function getUfUserId(): int {}
+        public function getUfMessage(): string {}
+        public function getUfMessageType(): string {}
+        public function getUfContentType(): string {}
+        public function getUfBybitMsgUuid(): string {}
+        public function getUfFileName(): string {}
+        public function getUfScriptStepId(): int {}
+        public function getUfIsRead(): int {}
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function setUfTradeId(int $v): static {}
+        public function setUfUserId(int $v): static {}
+        public function setUfMessage(string $v): static {}
+        public function setUfMessageType(string $v): static {}
+        public function setUfContentType(string $v): static {}
+        public function setUfBybitMsgUuid(string $v): static {}
+        public function setUfFileName(string $v): static {}
+        public function setUfScriptStepId(int $v): static {}
+        public function setUfIsRead(int $v): static {}
+        public function setUfCreatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+    }
+    class EO_TradeMessage_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Exchange\Domain\Currency\Entity\Table {
+    class EO_Currency extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfCode(): string {}
+        public function getUfName(): string {}
+        public function getUfType(): string {}
+        public function getUfDecimals(): int {}
+        public function getUfIcon(): int {}
+        public function getUfIsActive(): bool {}
+        public function getUfSort(): int {}
+    }
+    class EO_CurrencyPair extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfTokenCurrencyId(): int {}
+        public function getUfFiatCurrencyId(): int {}
+        public function getUfCode(): string {}
+        public function getUfIsActive(): bool {}
+        public function getUfIsDefault(): bool {}
+        public function getUfSort(): int {}
+    }
+    class EO_Currency_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+    class EO_CurrencyPair_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Exchange\Domain\ChatScript\Entity\Table {
+    class EO_ChatScript extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfUserId(): int {}
+        public function getUfName(): string {}
+        public function getUfIsActive(): int {}
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfUpdatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function setUfUserId(int $v): static {}
+        public function setUfName(string $v): static {}
+        public function setUfIsActive(int $v): static {}
+        public function setUfCreatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfUpdatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+    }
+    class EO_ChatScriptStep extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfScriptId(): int {}
+        public function getUfSort(): int {}
+        public function getUfMessage(): string {}
+        public function getUfDelaySeconds(): int {}
+        public function setUfScriptId(int $v): static {}
+        public function setUfSort(int $v): static {}
+        public function setUfMessage(string $v): static {}
+        public function setUfDelaySeconds(int $v): static {}
+    }
+    class EO_ChatScript_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+    class EO_ChatScriptStep_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Exchange\Domain\OrderBook\Entity\Table {
+    class EO_OrderBookEntry extends \Bitrix\Main\ORM\Objectify\EntityObject {}
+    class EO_OrderBookEntry_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Exchange\Domain\PaymentMethod\Entity\Table {
+    class EO_PaymentMethod extends \Bitrix\Main\ORM\Objectify\EntityObject {}
+    class EO_PaymentMethod_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
+
+namespace Rebit\Wallet\Domain\Balance\Entity\Table {
+    class EO_Balance extends \Bitrix\Main\ORM\Objectify\EntityObject
+    {
+        public function getUfUserId(): int {}
+        public function getUfCurrencyId(): int {}
+        public function getUfAvailable(): float {}
+        public function getUfLocked(): float {}
+        public function getUfTotal(): float {}
+        public function getUfSyncedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function getUfUpdatedAt(): ?\Bitrix\Main\Type\DateTime {}
+        public function setUfUserId(int $v): static {}
+        public function setUfCurrencyId(int $v): static {}
+        public function setUfAvailable(float $v): static {}
+        public function setUfLocked(float $v): static {}
+        public function setUfTotal(float $v): static {}
+        public function setUfSyncedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+        public function setUfUpdatedAt(?\Bitrix\Main\Type\DateTime $v): static {}
+    }
+    class EO_Balance_Collection extends \Bitrix\Main\ORM\Objectify\Collection {}
+}
 
 namespace Bitrix\Main\ORM\Objectify {
     /**

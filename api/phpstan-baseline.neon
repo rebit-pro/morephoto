@@ -7,6 +7,138 @@ parameters:
 			path: public/local/modules/rebit.auth/lib/Presentation/Controller/AuthController.php
 
 		-
+			message: '#^Offset ''id'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''lastQuantity'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''maxAmount'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''minAmount'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''nickName'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''paymentPeriod'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''payments'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''price'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''recentExecuteRate'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Offset ''recentOrderNum'' on array\{id\: string, price\: string, lastQuantity\: string, minAmount\: string, maxAmount\: string, nickName\: string, recentExecuteRate\: int\|string, recentOrderNum\: int\|string, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Application/OrderBook/UseCase/SyncOrderBookUseCase.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Domain\\ChatScript\\Entity\\Table\\ChatScriptTable\:\:delete\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Domain/ChatScript/Repository/ChatScriptRepository.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Domain\\ChatScript\\Entity\\Table\\ChatScriptStepTable\:\:delete\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Domain/ChatScript/Repository/ChatScriptStepRepository.php
+
+		-
+			message: '#^Call to an undefined method Rebit\\Exchange\\Domain\\OrderBook\\Entity\\OrderBookEntry\:\:setUfBybitOrderId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Domain/OrderBook/Repository/OrderBookRepository.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Domain\\OrderBook\\Entity\\Table\\OrderBookEntryTable\:\:delete\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: public/local/modules/rebit.exchange/lib/Domain/OrderBook/Repository/OrderBookRepository.php
+
+		-
+			message: '#^Call to an undefined method Rebit\\Exchange\\Domain\\Trade\\Entity\\Trade\:\:setUfCreatedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Domain/Trade/Repository/TradeRepository.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/AdvertisementController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/ChatScriptController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/CurrencyController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/OrderBookController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/PaymentMethodController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/TradeChatController.php
+
+		-
+			message: '#^Call to an undefined static method Rebit\\Exchange\\Infrastructure\\Controller\\BaseExchangeController\:\:__construct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.exchange/lib/Presentation/Controller/TradeController.php
+
+		-
 			message: '#^Parameter \$id of class Rebit\\Identity\\Application\\ApiConnection\\Dto\\Result\\ApiConnectionResultDto constructor expects int\|null, int given\.$#'
 			identifier: argument.type
 			count: 1
@@ -236,64 +368,10 @@ parameters:
 			path: public/local/modules/rebit.share/lib/Shared/ValueObject/DateRange.php
 
 		-
-			message: '#^Parameter \$available of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
-
-		-
-			message: '#^Parameter \$currencyId of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
-
-		-
-			message: '#^Parameter \$id of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
-
-		-
-			message: '#^Parameter \$locked of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
-
-		-
-			message: '#^Parameter \$total of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects float, float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
-
-		-
-			message: '#^Parameter \$userId of class Rebit\\Wallet\\Application\\Balance\\Dto\\Result\\BalanceResultDto constructor expects int, int given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/GetBalancesUseCase.php
-
-		-
-			message: '#^Parameter \#1 \$available of method Rebit\\Wallet\\Domain\\Balance\\Service\\BalanceCalculator\:\:assertCanLock\(\) expects float, float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/LockFundsUseCase.php
-
-		-
 			message: '#^Method Rebit\\Wallet\\Application\\Balance\\UseCase\\SyncBalancesUseCase\:\:resolveCurrencyId\(\) never returns int so it can be removed from the return type\.$#'
 			identifier: return.unusedType
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/SyncBalancesUseCase.php
-
-		-
-			message: '#^Parameter \#1 \$localTotal of method Rebit\\Wallet\\Domain\\Balance\\Service\\BalanceCalculator\:\:detectDiscrepancy\(\) expects float, float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/SyncBalancesUseCase.php
-
-		-
-			message: '#^Parameter \#1 \$locked of method Rebit\\Wallet\\Domain\\Balance\\Service\\BalanceCalculator\:\:assertCanUnlock\(\) expects float, float given\.$#'
-			identifier: argument.type
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Application/Balance/UseCase/UnlockFundsUseCase.php
 
 		-
 			message: '#^Parameter \#1 \$callback of function array_map expects \(callable\(Rebit\\Wallet\\Domain\\Transaction\\Entity\\Transaction\)\: mixed\)\|null, Closure\(array\)\: Rebit\\Wallet\\Application\\Transaction\\Dto\\Result\\TransactionResultDto given\.$#'
@@ -306,18 +384,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: public/local/modules/rebit.wallet/lib/Application/Transaction/UseCase/ListTransactionsUseCase.php
-
-		-
-			message: '#^Anonymous function never returns Rebit\\Wallet\\Domain\\Balance\\Entity\\Balance so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Domain/Balance/Repository/BalanceRepository.php
-
-		-
-			message: '#^Method Rebit\\Wallet\\Domain\\Balance\\Repository\\BalanceRepository\:\:findByUserIdAndCurrencyId\(\) never returns Rebit\\Wallet\\Domain\\Balance\\Entity\\Balance so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: public/local/modules/rebit.wallet/lib/Domain/Balance/Repository/BalanceRepository.php
 
 		-
 			message: '#^Call to an undefined static method Rebit\\Wallet\\Infrastructure\\Controller\\BaseWalletController\:\:__construct\(\)\.$#'

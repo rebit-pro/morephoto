@@ -12,10 +12,12 @@ use Rebit\Exchange\Domain\Advertisement\Enum\PriceTypeEnum;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Domain\Shared\Enum\SideEnum;
+use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
 use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
 use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Exchange\Domain\Advertisement\Entity\Advertisement;
 
 /**
  * Создание P2P-объявления через Bybit API + локальное сохранение.
@@ -26,6 +28,7 @@ final readonly class CreateAdvertisementUseCase
         private AdvertisementRepository $advertisementRepository,
         private CurrencyPairRepository $currencyPairRepository,
         private BybitAdvertisementGatewayInterface $bybitGateway,
+        private BalanceQueryInterface $balanceQuery,
     ) {}
 
     /**
@@ -48,6 +51,15 @@ final readonly class CreateAdvertisementUseCase
         }
 
         [$tokenId, $currencyId] = $parts;
+
+        if (SideEnum::Sell === $side) {
+            $tokenCurrencyId = $pair->getUfTokenCurrencyId();
+            $quantity = (float)$dto->quantity;
+
+            if (!$this->balanceQuery->hasAvailableBalance($userId, $tokenCurrencyId, $quantity)) {
+                throw new ValidationHttpException('Недостаточно средств для создания объявления на продажу');
+            }
+        }
 
         $bybitAdId = $this->bybitGateway->create($userId, [
             'tokenId' => $tokenId,
@@ -87,7 +99,7 @@ final readonly class CreateAdvertisementUseCase
         return $this->toResultDto($ad);
     }
 
-    private function toResultDto(\Rebit\Exchange\Domain\Advertisement\Entity\Advertisement $ad): AdvertisementResultDto
+    private function toResultDto(Advertisement $ad): AdvertisementResultDto
     {
         $paymentIds = json_decode($ad->getUfPaymentMethodIds() ?: '[]', true);
 

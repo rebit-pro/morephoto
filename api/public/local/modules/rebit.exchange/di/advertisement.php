@@ -13,6 +13,7 @@ use Rebit\Exchange\Infrastructure\Bybit\BybitAdvertisementGateway;
 use Rebit\Exchange\Presentation\Controller\AdvertisementController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
 
 return [
     AdvertisementRepository::class => [
@@ -36,6 +37,7 @@ return [
                 $sl->get(AdvertisementRepository::class),
                 $sl->get(CurrencyPairRepository::class),
                 $sl->get(BybitAdvertisementGatewayInterface::class),
+                $sl->get(BalanceQueryInterface::class),
             );
         },
     ],
