@@ -1,17 +1,14 @@
 <?php
-
 declare(strict_types=1);
-
 namespace Rebit\Wallet\Application\Balance\UseCase;
-
 use Psr\Log\LoggerInterface;
+use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 use Rebit\Wallet\Application\Balance\Port\BybitBalanceGatewayInterface;
 use Rebit\Wallet\Application\Balance\Dto\Result\BalanceListResultDto;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
-
 /**
  * Синхронизация балансов пользователя с Bybit.
  *
@@ -23,9 +20,9 @@ final readonly class SyncBalancesUseCase
         private BalanceRepository $balanceRepository,
         private BalanceCalculator $balanceCalculator,
         private BybitBalanceGatewayInterface $balanceGateway,
+        private CurrencyQueryInterface $currencyQuery,
         private LoggerInterface $logger,
     ) {}
-
     /**
      * @throws HttpException
      * @throws RepositoryException
@@ -33,12 +30,9 @@ final readonly class SyncBalancesUseCase
     public function execute(int $userId): BalanceListResultDto
     {
         $coins = $this->balanceGateway->fetchBalances($userId);
-
         $this->syncCoins($userId, $coins);
-
         return new GetBalancesUseCase($this->balanceRepository)->execute($userId);
     }
-
     /**
      * Синхронизирует балансы по монетам с локальной базой.
      *
@@ -50,9 +44,6 @@ final readonly class SyncBalancesUseCase
      * }> $coins
      *
      * @throws RepositoryException
-     *
-     * @todo Маппинг coin → currencyId через CurrencyRepository (rebit.exchange).
-     *       Сейчас используется заглушка — currencyId не резолвится.
      */
     private function syncCoins(int $userId, array $coins): void
     {
@@ -63,26 +54,19 @@ final readonly class SyncBalancesUseCase
                 'coins' => array_column($coins, 'coin'),
             ]);
         }
-
         foreach ($coins as $coin) {
-            // @todo Получить currencyId из CurrencyRepository по коду монеты
-            $currencyId = $this->resolveCurrencyId($coin['coin']);
-
+            $currencyId = $this->currencyQuery->findIdByCode($coin['coin']);
             if (null === $currencyId) {
                 $this->logger->warning('Skipped unknown coin: currencyId not resolved', [
                     'userId' => $userId,
                     'coin' => $coin['coin'],
                     'total' => $coin['total'],
                 ]);
-
                 continue;
             }
-
             $existingBalance = $this->balanceRepository->findByUserIdAndCurrencyId($userId, $currencyId);
-
             if (null !== $existingBalance) {
                 $localTotal = $existingBalance->getUfTotal();
-
                 if ($this->balanceCalculator->detectDiscrepancy($localTotal, $coin['total'])) {
                     $this->logger->warning('BalanceDiscrepancy', [
                         'userId' => $userId,
@@ -93,7 +77,6 @@ final readonly class SyncBalancesUseCase
                     ]);
                 }
             }
-
             $this->balanceRepository->upsertFromSync(
                 $userId,
                 $currencyId,
@@ -102,15 +85,5 @@ final readonly class SyncBalancesUseCase
                 $coin['total'],
             );
         }
-    }
-
-    /**
-     * @todo Реализовать через CurrencyRepository из rebit.exchange.
-     */
-    private function resolveCurrencyId(string $coinCode): ?int
-    {
-        // Заглушка: маппинг будет реализован после создания модуля rebit.exchange
-        // и HL-блока RebitCurrency
-        return null;
     }
 }
