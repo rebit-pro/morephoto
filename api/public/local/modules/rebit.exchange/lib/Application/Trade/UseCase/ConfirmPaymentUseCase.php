@@ -10,6 +10,7 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Bitrix\Main\Type\DateTime;
 
 /**
  * Подтверждение оплаты покупателем. POST /v5/p2p/order/pay
@@ -45,7 +46,7 @@ final readonly class ConfirmPaymentUseCase
         );
 
         $trade->setUfStatus('payment_sent');
-        $trade->setUfPaidAt(new \Bitrix\Main\Type\DateTime());
+        $trade->setUfPaidAt(new DateTime());
         $this->tradeRepository->save($trade);
 
         return ListTradesUseCase::toResultDto($trade);

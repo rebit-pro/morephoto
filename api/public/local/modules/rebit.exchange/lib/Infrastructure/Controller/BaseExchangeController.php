@@ -25,6 +25,7 @@ class BaseExchangeController extends BaseJsonController implements Authenticated
 
     /**
      * @return Base[]
+     *
      * @throws NotFoundExceptionInterface
      */
     protected function getDefaultPreFilters(): array

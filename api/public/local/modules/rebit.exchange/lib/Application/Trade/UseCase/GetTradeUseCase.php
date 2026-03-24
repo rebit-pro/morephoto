@@ -10,6 +10,7 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 
 /**
  * Получение деталей конкретной сделки. При необходимости обновляет из Bybit.
@@ -47,7 +48,7 @@ final readonly class GetTradeUseCase
                 if (0 !== $bybitStatus && $bybitStatus !== $trade->getUfBybitStatus()) {
                     $trade->setUfBybitStatus($bybitStatus);
                     $trade->setUfStatus(
-                        \Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum::fromBybit($bybitStatus)->value,
+                        TradeStatusEnum::fromBybit($bybitStatus)->value,
                     );
                     $this->tradeRepository->save($trade);
                 }

@@ -19,6 +19,7 @@ final class PaymentMethodController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/payment-methods
+     *
      * @throws RepositoryException
      */
     public function listAction(): ControllerJson

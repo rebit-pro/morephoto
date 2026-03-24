@@ -9,7 +9,7 @@ use Rebit\Share\Application\Interface\RequestDtoInterface;
 final class CreateAdvertisementRequestDto implements RequestDtoInterface
 {
     /**
-     * @param array<int, string> $paymentMethodIds
+     * @param array<int, string>    $paymentMethodIds
      * @param array<string, string> $tradingPreferenceSet
      */
     public function __construct(
