@@ -357,6 +357,89 @@ if (!class_exists(EO_Currency::class)) {
         public function getUfName(): string { return ''; }
         public function getUfType(): string { return ''; }
         public function getUfDecimals(): int { return 0; }
+        public function getUfSort(): int { return 0; }
+    }
+}
+
+if (!class_exists(EO_Currency_Collection::class)) {
+    /** @implements \ArrayAccess<int, EO_Currency> */
+    class EO_Currency_Collection implements \IteratorAggregate, \ArrayAccess, \Countable
+    {
+        /** @var array<int, EO_Currency> */
+        private array $items = [];
+        public function getIterator(): \ArrayIterator { return new \ArrayIterator($this->items); }
+        public function count(): int { return count($this->items); }
+        public function offsetExists(mixed $offset): bool { return isset($this->items[$offset]); }
+        public function offsetGet(mixed $offset): mixed { return $this->items[$offset] ?? null; }
+        public function offsetSet(mixed $offset, mixed $value): void { if (null === $offset) { $this->items[] = $value; } else { $this->items[$offset] = $value; } }
+        public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
+    }
+}
+
+namespace Rebit\Exchange\Domain\OrderBook\Entity\Table;
+
+if (!class_exists(EO_OrderBookEntry::class)) {
+    class EO_OrderBookEntry
+    {
+        public function getId(): int { return 0; }
+        public function getUfBybitOrderId(): string { return ''; }
+        public function getUfCurrencyPairId(): int { return 0; }
+        public function getUfSide(): string { return ''; }
+        public function getUfPrice(): float { return 0.0; }
+        public function getUfQuantity(): float { return 0.0; }
+        public function getUfMinAmount(): float { return 0.0; }
+        public function getUfMaxAmount(): float { return 0.0; }
+        public function getUfCounterpartyName(): string { return ''; }
+        public function getUfCounterpartyRating(): float { return 0.0; }
+        public function getUfCounterpartyTrades(): int { return 0; }
+        public function getUfCounterpartyCompletionRate(): float { return 0.0; }
+        public function getUfPaymentMethodIds(): string { return ''; }
+        public function getUfPaymentTimeLimit(): int { return 0; }
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function save(): \Bitrix\Main\ORM\Data\Result { return new \Bitrix\Main\ORM\Data\Result(); }
+    }
+}
+
+if (!class_exists(EO_OrderBookEntry_Collection::class)) {
+    /** @implements \ArrayAccess<int, EO_OrderBookEntry> */
+    class EO_OrderBookEntry_Collection implements \IteratorAggregate, \ArrayAccess, \Countable
+    {
+        /** @var array<int, EO_OrderBookEntry> */
+        private array $items = [];
+        public function getIterator(): \ArrayIterator { return new \ArrayIterator($this->items); }
+        public function count(): int { return count($this->items); }
+        public function offsetExists(mixed $offset): bool { return isset($this->items[$offset]); }
+        public function offsetGet(mixed $offset): mixed { return $this->items[$offset] ?? null; }
+        public function offsetSet(mixed $offset, mixed $value): void { if (null === $offset) { $this->items[] = $value; } else { $this->items[$offset] = $value; } }
+        public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
+    }
+}
+
+namespace Rebit\Exchange\Domain\PaymentMethod\Entity\Table;
+
+if (!class_exists(EO_PaymentMethod::class)) {
+    class EO_PaymentMethod
+    {
+        public function getId(): int { return 0; }
+        public function getUfCode(): string { return ''; }
+        public function getUfName(): string { return ''; }
+        public function getUfSort(): int { return 0; }
+        public function getUfIsActive(): int { return 0; }
+    }
+}
+
+if (!class_exists(EO_PaymentMethod_Collection::class)) {
+    /** @implements \ArrayAccess<int, EO_PaymentMethod> */
+    class EO_PaymentMethod_Collection implements \IteratorAggregate, \ArrayAccess, \Countable
+    {
+        /** @var array<int, EO_PaymentMethod> */
+        private array $items = [];
+        public function getIterator(): \ArrayIterator { return new \ArrayIterator($this->items); }
+        public function count(): int { return count($this->items); }
+        public function offsetExists(mixed $offset): bool { return isset($this->items[$offset]); }
+        public function offsetGet(mixed $offset): mixed { return $this->items[$offset] ?? null; }
+        public function offsetSet(mixed $offset, mixed $value): void { if (null === $offset) { $this->items[] = $value; } else { $this->items[$offset] = $value; } }
+        public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
     }
 }
 
@@ -371,6 +454,9 @@ if (!class_exists(EO_ChatScript::class)) {
         public function getUfIsActive(): int { return 0; }
         public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
         public function getUfUpdatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function setUfName(string $value): static { return $this; }
+        public function setUfIsActive(int $value): static { return $this; }
+        public function save(): \Bitrix\Main\ORM\Data\Result { return new \Bitrix\Main\ORM\Data\Result(); }
     }
 }
 
