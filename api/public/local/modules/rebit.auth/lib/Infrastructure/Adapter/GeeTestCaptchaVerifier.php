@@ -59,7 +59,7 @@ final readonly class GeeTestCaptchaVerifier implements CaptchaVerifierInterface
                     'Accept' => 'application/json',
                 ],
             );
-        } catch (HttpClientException|ArgumentException $exception) {
+        } catch (ArgumentException|HttpClientException $exception) {
             $this->logger->error('GeeTest captcha verification request failed', [
                 'message' => $exception->getMessage(),
                 'code' => $exception->getCode(),
