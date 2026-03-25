@@ -123,9 +123,16 @@ COMPOSE_DST ?= docker-compose.yml
 APP_DEBUG ?= 0
 APP_ENV ?= production
 VITE_API_URL ?= https://api.rebit-pro.ru
+VITE_GEETEST_CAPTCHA_ID ?=
+VITE_APP_VERSION ?= dev
 KEEP_RELEASES ?= 2
 BITRIX_HOST_DIR ?= /srv/rebit-p2p/bitrix
 LOGS_HOST_DIR ?= /srv/rebit-p2p/logs
+BACKEND_ENV_CONFIG_NAME ?= rebit_backend_env_$(BUILD_NUMBER)
+REBIT_ENCRYPTION_KEY_SECRET_NAME ?= rebit_encryption_key_$(BUILD_NUMBER)
+REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME ?= rebit_geetest_captcha_key_$(BUILD_NUMBER)
+REBIT_MYSQL_PASSWORD_SECRET_NAME ?= rebit_mysql_password_$(BUILD_NUMBER)
+REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME ?= rebit_mysql_root_password_$(BUILD_NUMBER)
 
 guard-%:
 	@if [ -z '$($*)' ]; then echo 'Required variable $* is not set'; exit 1; fi
@@ -134,15 +141,13 @@ deploy-check-env: \
 	guard-HOST \
 	guard-BUILD_NUMBER \
 	guard-REGISTRY \
-	guard-IMAGE_TAG \
-	guard-MYSQL_PASSWORD \
-	guard-MYSQL_ROOT_PASSWORD \
-	guard-REBIT_ENCRYPTION_KEY
+	guard-IMAGE_TAG
 
 # --- Build ---
 # Собирает Docker-образы для production
 #
 # Требуемые переменные: REGISTRY, IMAGE_TAG, VITE_API_URL
+# Опционально: VITE_GEETEST_CAPTCHA_ID, VITE_APP_VERSION
 #
 # Пример:
 #   REGISTRY=ghcr.io/rebit-pro IMAGE_TAG=abc12345 make build
@@ -151,6 +156,8 @@ build: build-frontend build-api
 build-frontend:
 	docker --log-level=debug build --pull --load \
 		--build-arg VITE_API_URL=$(VITE_API_URL) \
+		--build-arg VITE_GEETEST_CAPTCHA_ID=$(VITE_GEETEST_CAPTCHA_ID) \
+		--build-arg VITE_APP_VERSION=$(VITE_APP_VERSION) \
 		--file=frontend/docker/production/nginx/Dockerfile \
 		--tag=$(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) frontend
 
@@ -184,18 +191,17 @@ push-api:
 # После деплоя удаляет старые релизы (оставляет KEEP_RELEASES=2) и неиспользуемые Docker-образы.
 #
 # Требуемые переменные:
-#   HOST, PORT, DEPLOY_USER, BUILD_NUMBER, REGISTRY, IMAGE_TAG,
-#   MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, REBIT_ENCRYPTION_KEY
-# Опционально:
-#   APP_DEBUG, APP_ENV
+#   HOST, PORT, DEPLOY_USER, BUILD_NUMBER, REGISTRY, IMAGE_TAG
 # Опционально (для docker login на сервере):
 #   REGISTRY_HOST, REGISTRY_USER, TOKEN_GIT_HUB
+# Опционально (если нужно переопределить versioned Swarm names):
+#   BACKEND_ENV_CONFIG_NAME, REBIT_ENCRYPTION_KEY_SECRET_NAME,
+#   REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME, REBIT_MYSQL_PASSWORD_SECRET_NAME,
+#   REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME
 #
 # Пример:
 #   HOST=1.2.3.4 PORT=22 DEPLOY_USER=deploy BUILD_NUMBER=42 \
 #   REGISTRY=ghcr.io/rebit-pro IMAGE_TAG=abc12345 \
-#   MYSQL_PASSWORD=secret MYSQL_ROOT_PASSWORD=rootsecret \
-#   APP_DEBUG=0 APP_ENV=production REBIT_ENCRYPTION_KEY=base64:secret \
 #   REGISTRY_HOST=ghcr.io REGISTRY_USER=user TOKEN_GIT_HUB=ghp_xxx \
 #   make deploy
 deploy: deploy-check-env
@@ -208,8 +214,15 @@ deploy: deploy-check-env
 		&& mv ~/bitrix-settings-extra.php $(BITRIX_HOST_DIR)/.settings_extra.php \
 		&& mkdir -p $(LOGS_HOST_DIR)/logstash \
 		&& cd $(RELEASE_DIR) \
-		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\nAPP_DEBUG=%s\nAPP_ENV=%s\nREBIT_ENCRYPTION_KEY=%s\n" \
-			"$(REGISTRY)" "$(IMAGE_TAG)" "$(MYSQL_PASSWORD)" "$(MYSQL_ROOT_PASSWORD)" "$(APP_DEBUG)" "$(APP_ENV)" "$(REBIT_ENCRYPTION_KEY)" > .env \
+		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nBACKEND_ENV_CONFIG_NAME=%s\nREBIT_ENCRYPTION_KEY_SECRET_NAME=%s\nREBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME=%s\nREBIT_MYSQL_PASSWORD_SECRET_NAME=%s\nREBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME=%s\n" \
+			"$(REGISTRY)" \
+			"$(IMAGE_TAG)" \
+			"$(BACKEND_ENV_CONFIG_NAME)" \
+			"$(REBIT_ENCRYPTION_KEY_SECRET_NAME)" \
+			"$(REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME)" \
+			"$(REBIT_MYSQL_PASSWORD_SECRET_NAME)" \
+			"$(REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME)" > .env \
+		&& env | LC_ALL=C sort | grep -E "^[A-Z0-9_]+_(CONFIG|SECRET)_NAME=" | grep -Ev "^(BACKEND_ENV_CONFIG_NAME|REBIT_ENCRYPTION_KEY_SECRET_NAME|REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME|REBIT_MYSQL_PASSWORD_SECRET_NAME|REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME)=" >> .env || true \
 		&& cd ~ && ln -sfn $(RELEASE_DIR) $(LINK_DIR) \
 		&& if [ -n "$(TOKEN_GIT_HUB)" ]; then echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin; fi \
 		&& docker pull $(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) \

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Rebit\Auth\Application\Auth\UseCase;
 
 use Bitrix\Main\Type\DateTime;
+use Rebit\Auth\Application\Auth\Contract\CaptchaVerifierInterface;
+use Rebit\Auth\Application\Auth\Contract\LoginUserRepositoryInterface;
+use Rebit\Auth\Application\Auth\Contract\TokenGeneratorInterface;
 use Rebit\Auth\Application\Auth\Dto\Request\LoginRequestDto;
 use Rebit\Auth\Application\Auth\Dto\Result\LoginResultDto;
 use Rebit\Auth\Application\Auth\Dto\Result\UserDto;
-use Rebit\Auth\Domain\User\Repository\UserRepository;
-use Rebit\Auth\Domain\User\Service\TokenGenerator;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 use Random\RandomException;
@@ -17,8 +18,9 @@ use Random\RandomException;
 final readonly class LoginUseCase
 {
     public function __construct(
-        private UserRepository $userRepository,
-        private TokenGenerator $tokenGenerator,
+        private LoginUserRepositoryInterface $userRepository,
+        private TokenGeneratorInterface $tokenGenerator,
+        private CaptchaVerifierInterface $captchaVerifier,
         private int $tokenTtlHours,
     ) {}
 
@@ -29,6 +31,8 @@ final readonly class LoginUseCase
      */
     public function execute(LoginRequestDto $dto): LoginResultDto
     {
+        $this->captchaVerifier->verify($dto->captcha);
+
         $user = $this->userRepository->findActiveByEmail($dto->email);
 
         if (null === $user) {

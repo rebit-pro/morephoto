@@ -3,17 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/include/runtime-env.php';
 
 use Bitrix\Main\Loader;
-use Symfony\Component\Dotenv\Dotenv;
-
-$envPath = __DIR__ . '/../../.env';
-if (is_file($envPath)) {
-    new Dotenv()
-        ->usePutenv(true)
-        ->loadEnv($envPath)
-    ;
-}
 
 if (file_exists(__DIR__ . '/include/dev.php')) {
     require_once __DIR__ . '/include/dev.php';
