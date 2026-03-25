@@ -233,7 +233,7 @@ deploy: deploy-check-env
 		&& docker stack deploy --with-registry-auth --prune --resolve-image=never -c $(COMPOSE_DST) $(STACK_NAME)'
 	ssh $(REMOTE) -p $(PORT) ' \
 		cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf \
-		&& docker image prune --all --force'
+		&& docker image prune --force'
 #	@echo "Waiting for services to start..."
 #	sleep 15
 #	$(MAKE) api-migrate-deploy

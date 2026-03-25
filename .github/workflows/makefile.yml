@@ -51,6 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [ frontend-checks ]
+    environment: production
     steps:
       - uses: actions/checkout@v5
       - name: "🔧 Set up Docker Buildx"
