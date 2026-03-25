@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { router } from '@/router';
-import { authApi, type AuthUser } from '@/api/auth';
+import { authApi, type AuthUser, type GeeTestCaptchaPayload } from '@/api/auth';
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('token'));
@@ -24,8 +24,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user');
   }
 
-  async function login(email: string, password: string): Promise<void> {
-    const response = await authApi.login({ email, password });
+  async function login(email: string, password: string, captcha?: GeeTestCaptchaPayload): Promise<void> {
+    const response = await authApi.login({ email, password, captcha });
     setSession(response.token, response.user);
     await router.push(returnUrl.value ?? '/dashboard');
     returnUrl.value = null;

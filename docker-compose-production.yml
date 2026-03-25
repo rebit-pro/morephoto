@@ -68,11 +68,16 @@ services:
     api-php-fpm:
         image: ${REGISTRY}/rebit-p2p-api-php-fpm:${IMAGE_TAG}
         environment:
-          APP_DEBUG: ${APP_DEBUG:-0}
-          APP_ENV: ${APP_ENV:-production}
-          REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY:?REBIT_ENCRYPTION_KEY is required}
-          BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
-          BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
+          REDIS_HOST: ${REDIS_HOST:-redis}
+          REDIS_PORT: ${REDIS_PORT:-6379}
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_geetest_captcha_key
+            target: rebit_geetest_captcha_key
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -104,14 +109,17 @@ services:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
         command: ["sh", "-lc", "exec /usr/local/bin/supercronic /etc/supercronic/crontab"]
         environment:
-          APP_DEBUG: ${APP_DEBUG:-0}
-          APP_ENV: ${APP_ENV:-production}
           REDIS_HOST: ${REDIS_HOST:-redis}
           REDIS_PORT: ${REDIS_PORT:-6379}
           SHELL: /bin/sh
-          REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY:?REBIT_ENCRYPTION_KEY is required}
-          BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
-          BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_geetest_captcha_key
+            target: rebit_geetest_captcha_key
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -144,8 +152,13 @@ services:
         environment:
             MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
             MYSQL_USER: ${MYSQL_USER:-app}
-            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+            MYSQL_PASSWORD_FILE: /run/secrets/rebit_mysql_password
+            MYSQL_ROOT_PASSWORD_FILE: /run/secrets/rebit_mysql_root_password
+        secrets:
+            - source: rebit_mysql_password
+              target: rebit_mysql_password
+            - source: rebit_mysql_root_password
+              target: rebit_mysql_root_password
         volumes:
             - api-mysql:/var/lib/mysql
         deploy:
@@ -154,6 +167,23 @@ services:
             endpoint_mode: dnsrr
 volumes:
     api-mysql:
+configs:
+    rebit_backend_env:
+        external: true
+        name: ${BACKEND_ENV_CONFIG_NAME}
+secrets:
+    rebit_encryption_key:
+        external: true
+        name: ${REBIT_ENCRYPTION_KEY_SECRET_NAME}
+    rebit_geetest_captcha_key:
+        external: true
+        name: ${REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME}
+    rebit_mysql_password:
+        external: true
+        name: ${REBIT_MYSQL_PASSWORD_SECRET_NAME}
+    rebit_mysql_root_password:
+        external: true
+        name: ${REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME}
 networks:
     traefik-public:
         external: true

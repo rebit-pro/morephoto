@@ -1,8 +1,16 @@
 import api from './http';
 
+export interface GeeTestCaptchaPayload {
+  lot_number: string;
+  captcha_output: string;
+  pass_token: string;
+  gen_time: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
+  captcha?: GeeTestCaptchaPayload;
 }
 
 export interface RegisterRequest {

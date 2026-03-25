@@ -69,7 +69,10 @@ jobs:
           push: true
           provenance: false
           tags: ${{ secrets.REGISTRY }}/rebit-p2p-frontend:${{ github.sha }}
-          build-args: VITE_API_URL=https://api.rebit-pro.ru
+          build-args: |
+            VITE_API_URL=${{ vars.VITE_API_URL || 'https://api.rebit-pro.ru' }}
+            VITE_GEETEST_CAPTCHA_ID=${{ vars.VITE_GEETEST_CAPTCHA_ID || '' }}
+            VITE_APP_VERSION=${{ github.run_number }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
@@ -134,6 +137,17 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${SSH_PORT}" "${SSH_HOST}" >> ~/.ssh/known_hosts
+      - name: "🔐 Publish Swarm runtime config/secrets"
+        env:
+          SSH_PORT: ${{ secrets.PORT || '22' }}
+          SSH_HOST: ${{ secrets.HOST }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          ssh -p "${SSH_PORT}" root@"${SSH_HOST}" \
+            "VERSION=${BUILD_NUMBER} OUTPUT_ENV_FILE=/srv/rebit-p2p/swarm/runtime-objects.env /srv/rebit-p2p/swarm/swarm-publish-runtime.sh"
+
+          ssh -p "${SSH_PORT}" root@"${SSH_HOST}" \
+            'cat /srv/rebit-p2p/swarm/runtime-objects.env' >> "$GITHUB_ENV"
       - name: "🚀 Deploy via make"
         env:
           REGISTRY: ${{ secrets.REGISTRY }}
@@ -145,9 +159,4 @@ jobs:
           REGISTRY_HOST: ${{ secrets.REGISTRY_HOST }}
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           TOKEN_GIT_HUB: ${{ secrets.TOKEN_GIT_HUB }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          APP_DEBUG: ${{ secrets.APP_DEBUG }}
-          APP_ENV: ${{ secrets.APP_ENV }}
-          REBIT_ENCRYPTION_KEY: ${{ secrets.REBIT_ENCRYPTION_KEY }}
         run: make deploy
