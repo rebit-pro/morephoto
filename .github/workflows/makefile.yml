@@ -61,6 +61,15 @@ jobs:
           registry: ${{ secrets.REGISTRY_HOST }}
           username: ${{ secrets.REGISTRY_USER }}
           password: ${{ secrets.TOKEN_GIT_HUB }}
+      - name: "🧪 Validate frontend public variables"
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://api.rebit-pro.ru' }}
+          VITE_GEETEST_CAPTCHA_ID: ${{ vars.VITE_GEETEST_CAPTCHA_ID || '' }}
+          VITE_APP_VERSION: ${{ github.run_number }}
+        run: |
+          test -n "${VITE_API_URL}" || { echo 'VITE_API_URL is empty'; exit 1; }
+          test -n "${VITE_GEETEST_CAPTCHA_ID}" || { echo 'VITE_GEETEST_CAPTCHA_ID is empty'; exit 1; }
+          test -n "${VITE_APP_VERSION}" || { echo 'VITE_APP_VERSION is empty'; exit 1; }
       - name: "🏗️ Build & push frontend"
         uses: docker/build-push-action@v6
         with:
