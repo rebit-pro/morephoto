@@ -6,7 +6,7 @@ namespace Rebit\Exchange\Application\ChatScript\Dto\Request;
 
 use Rebit\Share\Application\Interface\RequestDtoInterface;
 
-final class CreateChatScriptRequestDto implements RequestDtoInterface
+final readonly class CreateChatScriptRequestDto implements RequestDtoInterface
 {
     /**
      * @param array<int, array{
@@ -16,8 +16,8 @@ final class CreateChatScriptRequestDto implements RequestDtoInterface
      * }> $steps
      */
     public function __construct(
-        public readonly string $name,
-        public readonly bool $isActive,
-        public readonly array $steps = [],
+        public string $name,
+        public bool $isActive,
+        public array $steps = [],
     ) {}
 }

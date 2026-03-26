@@ -8,6 +8,7 @@ use Rebit\Exchange\Application\Currency\UseCase\GetCurrenciesUseCase;
 use Rebit\Exchange\Application\Currency\UseCase\GetCurrencyPairsUseCase;
 use Rebit\Exchange\Infrastructure\Controller\BaseExchangeController;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class CurrencyController extends BaseExchangeController
 {
@@ -20,6 +21,7 @@ final class CurrencyController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/currencies
+     * @throws RepositoryException
      */
     public function currenciesAction(): ControllerJson
     {
@@ -30,6 +32,7 @@ final class CurrencyController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/currency-pairs
+     * @throws RepositoryException
      */
     public function pairsAction(): ControllerJson
     {

@@ -25,6 +25,7 @@ final readonly class SyncBalancesUseCase
         private BalanceCalculator $balanceCalculator,
         private BybitBalanceGatewayInterface $balanceGateway,
         private CurrencyQueryInterface $currencyQuery,
+        private GetBalancesUseCase $getBalancesUseCase,
         private LoggerInterface $logger,
     ) {}
 
@@ -37,7 +38,7 @@ final readonly class SyncBalancesUseCase
         $coins = $this->balanceGateway->fetchBalances($userId);
         $this->syncCoins($userId, $coins);
 
-        return new GetBalancesUseCase($this->balanceRepository)->execute($userId);
+        return $this->getBalancesUseCase->execute($userId);
     }
 
     /**

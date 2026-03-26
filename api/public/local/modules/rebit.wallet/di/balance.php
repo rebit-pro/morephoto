@@ -76,6 +76,7 @@ return [
                 $sl->get(BalanceCalculator::class),
                 $sl->get(BybitBalanceGatewayInterface::class),
                 $sl->get(CurrencyQueryInterface::class),
+                $sl->get(GetBalancesUseCase::class),
                 Log::getLogger(LogChannelEnum::wallet),
             );
         },
