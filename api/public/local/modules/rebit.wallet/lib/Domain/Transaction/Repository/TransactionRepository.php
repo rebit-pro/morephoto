@@ -8,7 +8,7 @@ use Bitrix\Main\ORM\Fields\ExpressionField;
 use Bitrix\Main\Type\DateTime;
 use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
-use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Domain\Transaction\Entity\Table\TransactionTable;
 use Rebit\Wallet\Domain\Transaction\Entity\Transaction;
 use Rebit\Wallet\Domain\Transaction\Entity\TransactionCollection;
@@ -27,7 +27,7 @@ final class TransactionRepository
      *
      * @throws RepositoryException
      */
-    public function findByFilter(int $userId, TransactionFilterDto $filter): TransactionCollection
+    public function findByFilter(int $userId, TransactionFilterRequestDto $filter): TransactionCollection
     {
         return $this->query(function() use ($userId, $filter): TransactionCollection {
             $query = TransactionTable::query()
@@ -63,7 +63,7 @@ final class TransactionRepository
      *
      * @throws RepositoryException
      */
-    public function countByFilter(int $userId, TransactionFilterDto $filter): int
+    public function countByFilter(int $userId, TransactionFilterRequestDto $filter): int
     {
         return $this->query(function() use ($userId, $filter): int {
             $query = TransactionTable::query()

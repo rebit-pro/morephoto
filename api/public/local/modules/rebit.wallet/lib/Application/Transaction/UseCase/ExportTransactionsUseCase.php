@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Transaction\UseCase;
 
-use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionListResultDto;
 
 /**
@@ -22,9 +22,9 @@ final readonly class ExportTransactionsUseCase
         private ListTransactionsUseCase $listTransactionsUseCase,
     ) {}
 
-    public function execute(int $userId, TransactionFilterDto $filter): TransactionListResultDto
+    public function execute(int $userId, TransactionFilterRequestDto $filter): TransactionListResultDto
     {
-        $exportFilter = new TransactionFilterDto(
+        $exportFilter = new TransactionFilterRequestDto(
             type: $filter->type,
             currencyId: $filter->currencyId,
             dateFrom: $filter->dateFrom,

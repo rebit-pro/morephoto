@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Transaction\UseCase;
 
-use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionListResultDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionResultDto;
 use Rebit\Wallet\Domain\Transaction\Entity\Transaction;
@@ -17,7 +17,7 @@ final readonly class ListTransactionsUseCase
         private TransactionRepository $transactionRepository,
     ) {}
 
-    public function execute(int $userId, TransactionFilterDto $filter): TransactionListResultDto
+    public function execute(int $userId, TransactionFilterRequestDto $filter): TransactionListResultDto
     {
         $collection = $this->transactionRepository->findByFilter($userId, $filter);
         $total = $this->transactionRepository->countByFilter($userId, $filter);
