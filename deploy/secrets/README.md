@@ -1,0 +1,25 @@
+# Production secrets templates
+
+В этой папке лежат только шаблоны.
+
+## SMTP пароль для регистрации по e-mail
+
+1. Скопируйте шаблон:
+
+```bash
+cp deploy/secrets/rebit_smtp_password.example /srv/rebit-p2p/swarm/secrets/rebit_smtp_password
+```
+
+2. Откройте файл на production-сервере и замените содержимое на **пароль приложения Яндекса** для ящика `rebit-2017@yandex.ru`.
+3. Файл должен содержать только пароль, без комментариев и без лишних данных.
+4. После этого создайте versioned Docker Swarm secret командой `deploy/swarm-publish-runtime.sh` с тем же `VERSION`, что и `BUILD_NUMBER` деплоя.
+
+Пример:
+
+```bash
+ssh rebit-pro 'VERSION=145 OUTPUT_ENV_FILE=/srv/rebit-p2p/swarm/runtime-objects.env /srv/rebit-p2p/swarm/swarm-publish-runtime.sh 145'
+```
+
+Важно:
+- `rebit_smtp_password` — имя source-файла;
+- `rebit_smtp_password_145` — имя versioned Swarm secret для `BUILD_NUMBER=145`.

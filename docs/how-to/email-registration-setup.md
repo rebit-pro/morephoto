@@ -50,7 +50,7 @@ REBIT_SMTP_TLS_CERTCHECK=off
    - DKIM
    - желательно DMARC
 
-## Пример для Яндекс 360
+## Пример для Яндекс / Yandex 360
 
 Обычно нужны такие значения:
 
@@ -58,8 +58,8 @@ REBIT_SMTP_TLS_CERTCHECK=off
 REBIT_SMTP_HOST=smtp.yandex.ru
 REBIT_SMTP_PORT=465
 REBIT_SMTP_ENCRYPTION=ssl
-REBIT_SMTP_USERNAME=noreply@your-domain.ru
-REBIT_SMTP_FROM_EMAIL=noreply@your-domain.ru
+REBIT_SMTP_USERNAME=rebit-2017@yandex.ru
+REBIT_SMTP_FROM_EMAIL=rebit-2017@yandex.ru
 REBIT_SMTP_FROM_NAME="Rebit P2P"
 ```
 
@@ -77,8 +77,8 @@ REBIT_AUTH_MAIL_EVENT_SITE_ID=s1
 REBIT_SMTP_HOST=smtp.yandex.ru
 REBIT_SMTP_PORT=465
 REBIT_SMTP_ENCRYPTION=ssl
-REBIT_SMTP_USERNAME=noreply@your-domain.ru
-REBIT_SMTP_FROM_EMAIL=noreply@your-domain.ru
+REBIT_SMTP_USERNAME=rebit-2017@yandex.ru
+REBIT_SMTP_FROM_EMAIL=rebit-2017@yandex.ru
 REBIT_SMTP_FROM_NAME="Rebit P2P"
 REBIT_SMTP_TLS_CERTCHECK=on
 ```
@@ -95,6 +95,23 @@ REBIT_SMTP_TLS_CERTCHECK=on
 Пароль SMTP передаётся отдельным Docker secret:
 
 - `rebit_smtp_password`
+
+Важно различать:
+
+- `rebit_smtp_password` — это имя source-файла секрета на сервере, обычно `/srv/rebit-p2p/swarm/secrets/rebit_smtp_password`;
+- `rebit_smtp_password_<BUILD_NUMBER>` — это versioned Docker Swarm secret, который создаёт `deploy/swarm-publish-runtime.sh`.
+
+Если деплой падает с ошибкой вида `secret not found: rebit_smtp_password_145`, это означает, что:
+
+1. либо на сервере нет source-файла `rebit_smtp_password`;
+2. либо после добавления файла не был запущен `deploy/swarm-publish-runtime.sh` с тем же номером версии, что и `BUILD_NUMBER`.
+
+Пример для production:
+
+```bash
+ssh rebit-pro 'editor /srv/rebit-p2p/swarm/secrets/rebit_smtp_password'
+ssh rebit-pro 'VERSION=145 OUTPUT_ENV_FILE=/srv/rebit-p2p/swarm/runtime-objects.env /srv/rebit-p2p/swarm/swarm-publish-runtime.sh 145'
+```
 
 ## Что важно проверить после подключения
 

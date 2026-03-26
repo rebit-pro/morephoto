@@ -93,7 +93,8 @@ docker compose run --rm frontend-node-cli sh -lc 'cd /app && npm run build'
 
 ### Docker secrets
 
-- [ ] `rebit_smtp_password`
+- [ ] На сервере существует source-файл `/srv/rebit-p2p/swarm/secrets/rebit_smtp_password`
+- [ ] Создан versioned Swarm secret `rebit_smtp_password_<BUILD_NUMBER>`
 - [ ] `rebit_encryption_key`
 - [ ] `rebit_geetest_captcha_key`
 - [ ] `rebit_mysql_password`
@@ -112,7 +113,7 @@ docker compose run --rm frontend-node-cli sh -lc 'cd /app && npm run build'
 - SMTP host: `smtp.yandex.ru`
 - SMTP port: `465`
 - Encryption: `ssl`
-- Username: `noreply@your-domain.ru`
+- Username: `rebit-2017@yandex.ru`
 - Password: пароль приложения
 
 ## 7. Smoke после выката на production
