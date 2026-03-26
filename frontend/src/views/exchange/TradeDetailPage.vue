@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTradesStore } from '@/stores/trades';
 import { usePolling } from '@/composables/usePolling';
@@ -101,6 +101,27 @@ async function handleRelease(): Promise<void> {
 }
 
 const polling = usePolling(loadTrade, 10000);
+
+function reinitialize(): void {
+  polling.stop();
+  if (null !== countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+  trades.clearCurrentTrade();
+  timeRemaining.value = '';
+  confirmPaymentDialog.value = false;
+  releaseDialog.value = false;
+}
+
+watch(tradeId, async (newId, oldId) => {
+  if (newId === oldId) return;
+  reinitialize();
+  await loadTrade();
+  updateCountdown();
+  countdownTimer = setInterval(updateCountdown, 1000);
+  polling.start();
+});
 
 onMounted(async () => {
   await loadTrade();

@@ -61,10 +61,10 @@ final class AdvertisementController extends BaseExchangeController
      * @throws RepositoryException
      * @throws \JsonException
      */
-    public function toggleAction(int $id, ToggleAdvertisementRequestDto $dto): ControllerJson
+    public function toggleAction(ToggleAdvertisementRequestDto $dto): ControllerJson
     {
         return $this->json(
-            $this->toggleUseCase->execute($id, $this->getAuthUserId(), $dto),
+            $this->toggleUseCase->execute($dto->id, $this->getAuthUserId(), $dto),
         );
     }
 

@@ -10,6 +10,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class ToggleAdvertisementRequestDto implements RequestDtoInterface
 {
     public function __construct(
+        #[Assert\Positive(message: 'id объявления обязателен.')]
+        public int $id,
         #[Assert\NotBlank(message: 'status обязателен.')]
         #[Assert\Choice(choices: ['active', 'paused'], message: 'status должен быть active или paused.')]
         public string $status,

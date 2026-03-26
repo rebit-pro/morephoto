@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Transaction\UseCase;
 
+use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 use Rebit\Share\Shared\Exception\RepositoryException;
 use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionListResultDto;
@@ -17,6 +18,7 @@ final readonly class ListTransactionsUseCase
 {
     public function __construct(
         private TransactionRepository $transactionRepository,
+        private CurrencyQueryInterface $currencyQuery,
     ) {}
 
     /**
@@ -37,10 +39,11 @@ final readonly class ListTransactionsUseCase
         $total = $this->transactionRepository->countByFilter($userId, $domainFilter);
 
         $transactions = array_map(
-            static fn(Transaction $transaction): TransactionResultDto => new TransactionResultDto(
+            fn(Transaction $transaction): TransactionResultDto => new TransactionResultDto(
                 id: (int)$transaction->getId(),
                 userId: (int)$transaction->getUfUserId(),
                 currencyId: (int)$transaction->getUfCurrencyId(),
+                currency: $this->currencyQuery->findCodeById((int)$transaction->getUfCurrencyId()) ?? "CUR_{$transaction->getUfCurrencyId()}",
                 type: TransactionTypeEnum::from((string)$transaction->getUfType()),
                 amount: (float)$transaction->getUfAmount(),
                 balanceAfter: (float)$transaction->getUfBalanceAfter(),

@@ -3,6 +3,21 @@ import { ref, onMounted, reactive } from 'vue';
 import { useChatScriptsStore } from '@/stores/chatScripts';
 import type { ChatScriptStep, ChatScriptPayload } from '@/api/exchange';
 
+interface FormStep extends ChatScriptStep {
+  _uid: number;
+}
+
+let stepUidCounter = 0;
+
+function createFormStep(step?: Partial<ChatScriptStep>): FormStep {
+  return {
+    _uid: ++stepUidCounter,
+    sort: step?.sort ?? 1,
+    message: step?.message ?? '',
+    delaySeconds: step?.delaySeconds ?? 0,
+  };
+}
+
 const scripts = useChatScriptsStore();
 
 const formDialog = ref(false);
@@ -15,11 +30,11 @@ const previewSteps = ref<ChatScriptStep[]>([]);
 const form = reactive<{
   name: string;
   isActive: boolean;
-  steps: ChatScriptStep[];
+  steps: FormStep[];
 }>({
   name: '',
   isActive: true,
-  steps: [{ sort: 1, message: '', delaySeconds: 0 }],
+  steps: [createFormStep({ sort: 1 })],
 });
 
 const placeholders = [
@@ -39,7 +54,7 @@ function openCreate(): void {
   editingId.value = null;
   form.name = '';
   form.isActive = true;
-  form.steps = [{ sort: 1, message: '', delaySeconds: 0 }];
+  form.steps = [createFormStep({ sort: 1 })];
   formDialog.value = true;
 }
 
@@ -50,16 +65,12 @@ function openEdit(id: number): void {
   editingId.value = id;
   form.name = script.name;
   form.isActive = script.isActive;
-  form.steps = script.steps.map((s) => ({ ...s }));
+  form.steps = script.steps.map((s) => createFormStep(s));
   formDialog.value = true;
 }
 
 function addStep(): void {
-  form.steps.push({
-    sort: form.steps.length + 1,
-    message: '',
-    delaySeconds: 0,
-  });
+  form.steps.push(createFormStep({ sort: form.steps.length + 1 }));
 }
 
 function removeStep(index: number): void {
@@ -234,7 +245,7 @@ onMounted(async () => {
 
           <div class="text-subtitle-2 mb-2">Шаги скрипта</div>
 
-          <div v-for="(step, index) in form.steps" :key="index" class="mb-3 pa-3 rounded border">
+          <div v-for="(step, index) in form.steps" :key="step._uid" class="mb-3 pa-3 rounded border">
             <div class="d-flex align-center justify-space-between mb-2">
               <span class="text-caption font-weight-bold">Шаг {{ index + 1 }}</span>
               <div class="d-flex ga-1">

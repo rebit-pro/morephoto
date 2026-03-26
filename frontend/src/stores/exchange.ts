@@ -77,11 +77,7 @@ export const useExchangeStore = defineStore('exchange', () => {
     try {
       currencyPairs.value = await exchangeApi.getCurrencyPairs();
     } catch {
-      currencyPairs.value = [
-        { id: 0, token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' },
-        { id: 0, token: 'BTC', fiat: 'RUB', label: 'BTC / RUB' },
-        { id: 0, token: 'ETH', fiat: 'RUB', label: 'ETH / RUB' }
-      ];
+      currencyPairs.value = [];
     }
   }
 

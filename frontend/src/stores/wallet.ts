@@ -50,13 +50,31 @@ export const useWalletStore = defineStore('wallet', () => {
 
   async function exportTransactions(params?: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<void> {
     try {
-      const blob = await walletApi.exportTransactions(params);
+      const result = await walletApi.exportTransactions(params);
+      const rows = result.transactions;
+
+      if (0 === rows.length) {
+        error.value = 'Нет транзакций для экспорта';
+        return;
+      }
+
+      const header = 'ID;Тип;Сумма;Валюта;Дата;ID сделки';
+      const csvRows = rows.map((tx) =>
+        [tx.id, tx.type, tx.amount, tx.currency || '', tx.createdAt, tx.tradeId ?? ''].join(';'),
+      );
+      const csv = [header, ...csvRows].join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setTimeout((): void => {
+        URL.revokeObjectURL(url);
+      }, 0);
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Ошибка экспорта транзакций';
     }

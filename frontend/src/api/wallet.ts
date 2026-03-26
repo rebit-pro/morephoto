@@ -58,7 +58,7 @@ export interface CashFlowTotals {
 
 export interface CashFlowReport {
   items: CashFlowItem[];
-  totals: CashFlowTotals;
+  totals: CashFlowTotals | null;
 }
 
 export const walletApi = {
@@ -77,10 +77,13 @@ export const walletApi = {
     }));
   },
 
-  exportTransactions(params?: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<Blob> {
+  exportTransactions(params?: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<TransactionListResponse> {
     return api
-      .get('/api/v1/wallet/transactions/export', { params, responseType: 'blob' })
-      .then((r) => r.data);
+      .get('/api/v1/wallet/transactions/export', { params })
+      .then((r) => ({
+        transactions: r.data?.transactions ?? r.data ?? [],
+        total: r.data?.total ?? 0,
+      }));
   },
 
   getCashFlowReport(params?: CashFlowFilters): Promise<CashFlowReport> {
