@@ -7,8 +7,8 @@ namespace Rebit\Share\Infrastructure\HttpClient;
 use Bitrix\Main\ArgumentException;
 use Bitrix\Main\Web\HttpClient;
 use Bitrix\Main\Web\Json;
-use Rebit\Share\Infrastructure\HttpClient\Exception\HttpClientException;
 use Psr\Log\LoggerInterface;
+use Rebit\Share\Infrastructure\HttpClient\Exception\HttpClientException;
 
 final class RebitHttpClient
 {
@@ -104,6 +104,7 @@ final class RebitHttpClient
      * @return array<string, mixed>|string
      *
      * @throws ArgumentException
+     * @throws \JsonException
      */
     private function prepareBody(array $data, array $headers): array|string
     {

@@ -14,7 +14,7 @@
 | # | Модуль | Назначение | Namespace | Зависимости | Статус |
 |---|--------|------------|-----------|-------------|--------|
 | 1 | `rebit.share` | Общая инфраструктура, контракты | `Rebit\Share` | — | ✅ |
-| 2 | `rebit.auth` | Аутентификация, токены | `Rebit\Auth` | `rebit.share` | ✅ |
+| 2 | `rebit.auth` | Аутентификация, e-mail логин, регистрация с подтверждением кода, токены | `Rebit\Auth` | `rebit.share` | ✅ |
 | 3 | `rebit.bybit` | Клиент Bybit API | `Rebit\Bybit` | `rebit.share` | ✅ |
 | 4 | `rebit.identity` | Управление API-ключами Bybit | `Rebit\Identity` | `rebit.share` | ✅ |
 | 5 | `rebit.wallet` | Балансы, транзакции | `Rebit\Wallet` | `rebit.share` | ✅ |
@@ -363,7 +363,7 @@ rebit.share/
 
 ## 5. Модуль `rebit.auth`
 
-**Домен:** Auth — аутентификация пользователей, управление токенами.
+**Домен:** Auth — аутентификация пользователей, e-mail логин, двухшаговая регистрация с подтверждением кода и управление токенами.
 
 ### Структура
 
@@ -377,23 +377,36 @@ rebit.auth/
 └── lib/
     ├── Application/
     │   └── Auth/
+    │       ├── Contract/
     │       ├── UseCase/
     │       │   ├── LoginUseCase.php
-    │       │   └── LogoutUseCase.php
+    │       │   ├── LogoutUseCase.php
+    │       │   ├── RequestRegistrationCodeUseCase.php
+    │       │   └── ConfirmRegistrationUseCase.php
     │       └── Dto/
     │           ├── Request/
     │           └── Result/
     ├── Domain/
-    │   └── User/
+    │   ├── User/
+    │   │   ├── Entity/
+    │   │   │   ├── UserToken.php
+    │   │   │   ├── UserCredentials.php
+    │   │   │   └── UserRegistrationState.php
+    │   │   ├── Repository/
+    │   │   │   └── UserRepository.php
+    │   │   └── Service/
+    │   │       └── TokenGenerator.php
+    │   └── Registration/
     │       ├── Entity/
-    │       │   ├── UserToken.php
-    │       │   └── UserCredentials.php
+    │       │   └── RegistrationConfirmation.php
     │       ├── Repository/
-    │       │   └── UserRepository.php
+    │       │   └── RegistrationConfirmationRepository.php
     │       └── Service/
-    │           └── TokenGenerator.php
+    │           └── RegistrationCodeGenerator.php
     ├── Infrastructure/
     │   └── Adapter/
+    │       ├── BitrixMailEventRegistrationConfirmationMailer.php
+    │       ├── GeeTestCaptchaVerifier.php
     │       └── TokenResolver.php              # реализует TokenResolverInterface
     └── Presentation/
         └── Controller/
@@ -409,20 +422,49 @@ rebit.auth/
 ### Маршруты
 
 ```
-POST   /api/v1/auth/login     → LoginUseCase
-POST   /api/v1/auth/logout    → LogoutUseCase
+POST   /api/v1/auth/login                   → LoginUseCase
+POST   /api/v1/auth/register/request-code   → RequestRegistrationCodeUseCase
+POST   /api/v1/auth/register/confirm        → ConfirmRegistrationUseCase
+POST   /api/v1/auth/logout                  → LogoutUseCase
 ```
+
+Публичные экшены: `login`, `register/request-code`, `register/confirm`.
+
+Защищённый экшен: `logout` через `BearerTokenFilter`.
 
 ### DI (di/auth.php)
 
 ```php
 UserRepository::class
+LoginUserRepositoryInterface::class → UserRepository
 TokenGenerator::class
+TokenGeneratorInterface::class → TokenGenerator
+RegistrationConfirmationRepository::class
+RegistrationCodeGenerator::class
+RegistrationConfirmationMailerInterface::class → BitrixMailEventRegistrationConfirmationMailer
+CaptchaVerifierInterface::class → GeeTestCaptchaVerifier
 TokenResolverInterface::class → TokenResolver
 LoginUseCase::class
 LogoutUseCase::class
+RequestRegistrationCodeUseCase::class
+ConfirmRegistrationUseCase::class
 AuthController::class
 ```
+
+### Прикладные сценарии
+
+- `LoginUseCase` — вход по `email` и паролю, при необходимости с GeeTest captcha.
+- `RequestRegistrationCodeUseCase` — создаёт или обновляет неподтверждённую регистрацию, генерирует 6-значный код, сохраняет TTL и отправляет письмо через Bitrix mail event.
+- `ConfirmRegistrationUseCase` — проверяет код, лимит попыток, активирует пользователя и сразу возвращает auth-токен.
+- `LogoutUseCase` — инвалидирует текущий токен пользователя.
+
+### Почта и локальная разработка
+
+- Отправка подтверждения регистрации переведена на Bitrix mail event `REBIT_AUTH_REGISTRATION_CONFIRMATION`.
+- Локально почта уходит через `msmtp` в `Mailpit` (`http://localhost:8025`).
+- Основные env-настройки модуля: `REBIT_AUTH_MAIL_EVENT_SITE_ID`, `REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES`, `REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS`, `REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS`.
+- Подробная настройка почты: [docs/how-to/email-registration-setup.md](how-to/email-registration-setup.md).
+- Чек-лист проверки регистрации: [docs/instruction/email-registration-checklist.md](instruction/email-registration-checklist.md).
 
 ---
 
@@ -466,6 +508,11 @@ BybitClientInterface::class => [
     },
 ],
 ```
+
+### Логирование
+
+- Успешные HTTP-запросы и ответы Bybit логируются на уровне `debug`, чтобы не раздувать `logstash`-файлы при cron-запусках каждые 10 секунд.
+- В постоянные логи остаются `warning`/`error` для нештатных ситуаций: сетевые ошибки, HTTP 4xx/5xx и ошибки `retCode` Bybit API.
 
 ---
 
@@ -781,12 +828,12 @@ Authorization: Bearer <token>
 
 #### `POST /api/v1/auth/login`
 
-Вход по номеру телефона и паролю. Возвращает токен.
+Вход по `email` и паролю. Возвращает токен и краткие данные пользователя.
 
 **Body:**
 ```json
 {
-  "phone": "+79991234567",
+  "email": "user@example.com",
   "password": "secret"
 }
 ```
@@ -797,10 +844,78 @@ Authorization: Bearer <token>
   "data": {
     "token": "eyJ...",
     "expiresAt": "2026-04-01T12:00:00+00:00",
-    "userId": 42
+    "user": {
+      "id": 42,
+      "email": "user@example.com",
+      "name": "Иван"
+    }
   }
 }
 ```
+
+---
+
+#### `POST /api/v1/auth/register/request-code`
+
+Первый шаг регистрации по `email`: создаёт или обновляет неподтверждённого пользователя, генерирует 6-значный код и отправляет его через Bitrix mail event.
+
+**Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "secret123"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "email": "user@example.com",
+    "codeExpiresAt": "2026-03-26T13:15:00+03:00",
+    "resendAvailableAt": "2026-03-26T13:01:00+03:00"
+  }
+}
+```
+
+**Примечания:**
+- код подтверждения действует ограниченное время;
+- повторная отправка ограничена cooldown;
+- локально письмо можно проверить в `Mailpit`.
+
+---
+
+#### `POST /api/v1/auth/register/confirm`
+
+Второй шаг регистрации: проверяет 6-значный код, активирует пользователя и сразу авторизует его.
+
+**Body:**
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "token": "eyJ...",
+    "expiresAt": "2026-04-01T12:00:00+00:00",
+    "user": {
+      "id": 42,
+      "email": "user@example.com",
+      "name": "Иван"
+    }
+  }
+}
+```
+
+**Примечания:**
+- код должен содержать ровно 6 цифр;
+- действует лимит неудачных попыток подтверждения;
+- после успешного подтверждения повторный логин не требуется.
 
 ---
 
@@ -810,7 +925,7 @@ Authorization: Bearer <token>
 
 **Response:**
 ```json
-{ "data": { "success": true } }
+{ "data": [] }
 ```
 
 ---
@@ -1797,12 +1912,12 @@ final class FeatureController extends BaseJsonController
 | Модуль | Контроллеры | UseCases | Entities | Repositories | Enums | Events | Services | Ports |
 |--------|:-----------:|:--------:|:--------:|:------------:|:-----:|:------:|:--------:|:-----:|
 | `rebit.share` | 1 | 1 | — | — | 2 | — | — | — |
-| `rebit.auth` | 1 | 2 | 2 | 1 | — | — | 1 | — |
+| `rebit.auth` | 1 | 4 | 4 | 2 | — | — | 4 | 4 |
 | `rebit.bybit` | — | — | — | — | — | — | — | — |
 | `rebit.identity` | 1 | 4 | 1+coll | 1 | 2 | 3 | 2 | — |
 | `rebit.wallet` | 2 | 5 | 2+coll | 2 | 1 | 5 | 1 | 1 |
 | `rebit.exchange` | 7 | 19 | 7+coll | 8 | 6 | — | — | 4 |
-| **Итого** | **12** | **31** | **12** | **12** | **11** | **8** | **4** | **5** |
+| **Итого** | **12** | **33** | **14** | **13** | **11** | **8** | **7** | **9** |
 
 ### Межмодульные контракты
 
