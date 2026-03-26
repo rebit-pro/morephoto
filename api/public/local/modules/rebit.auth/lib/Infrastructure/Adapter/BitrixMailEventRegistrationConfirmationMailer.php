@@ -31,7 +31,7 @@ final readonly class BitrixMailEventRegistrationConfirmationMailer implements Re
             ],
         );
 
-        if (false === $eventId || 0 >= (int)$eventId) {
+        if (false === $eventId || 'Y' !== $eventId) {
             throw new HttpException('Не удалось отправить письмо с кодом подтверждения.', 502);
         }
     }
