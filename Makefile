@@ -36,6 +36,9 @@ docker-pull:
 docker-build:
 	docker compose build --pull
 
+docker-cache-clear:
+	docker builder prune -f
+
 # frontend
 frontend-init: frontend-npm-install
 

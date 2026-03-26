@@ -31,11 +31,17 @@ final readonly class GetConnectionStatusUseCase
             return new ApiConnectionResultDto(connected: false);
         }
 
+        $status = ConnectionStatusEnum::from($connection->getUfStatus());
+
+        if (ConnectionStatusEnum::Revoked === $status) {
+            return new ApiConnectionResultDto(connected: false);
+        }
+
         $apiKey = $this->encryptor->decrypt($connection->getUfApiKeyEncrypted());
 
         return new ApiConnectionResultDto(
             connected: true,
-            status: ConnectionStatusEnum::from($connection->getUfStatus()),
+            status: $status,
             mode: ConnectionModeEnum::from($connection->getUfMode()),
             id: $connection->getId(),
             userId: $userId,

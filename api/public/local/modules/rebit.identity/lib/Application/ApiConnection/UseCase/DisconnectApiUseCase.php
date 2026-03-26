@@ -20,10 +20,10 @@ final readonly class DisconnectApiUseCase
      */
     public function execute(int $userId): void
     {
-        $connection = $this->repository->findActiveByUserId($userId);
+        $connection = $this->repository->findNonRevokedByUserId($userId);
 
         if (null === $connection) {
-            throw new HttpException('Active API connection not found', 404);
+            throw new HttpException('API connection not found', 404);
         }
 
         $this->repository->revokeByUserId($userId);

@@ -46,7 +46,7 @@ final class VerifyApiUseCaseTest extends TestCase
         $bybitClient = $this->createStub(BybitClientInterface::class);
 
         $repository
-            ->method('findActiveByUserId')
+            ->method('findNonRevokedByUserId')
             ->with($userId)
             ->willReturn($connection)
         ;
@@ -90,7 +90,7 @@ final class VerifyApiUseCaseTest extends TestCase
         $bybitClient = $this->createStub(BybitClientInterface::class);
 
         $repository
-            ->method('findActiveByUserId')
+            ->method('findNonRevokedByUserId')
             ->willReturn($connection)
         ;
 
@@ -120,7 +120,7 @@ final class VerifyApiUseCaseTest extends TestCase
         $encryptor = $this->createStub(ApiKeyEncryptor::class);
         $bybitClient = $this->createStub(BybitClientInterface::class);
 
-        $repository->method('findActiveByUserId')->willReturn(null);
+        $repository->method('findNonRevokedByUserId')->willReturn(null);
 
         $this->expectException(HttpException::class);
         $this->expectExceptionCode(404);
