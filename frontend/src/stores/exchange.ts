@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { exchangeApi, type OrderBookEntry, type CurrencyPair, type PaymentMethod } from '@/api/exchange';
+import { exchangeApi, type OrderBookEntry, type CurrencyPair, type PaymentMethod, type Currency } from '@/api/exchange';
 
 export const useExchangeStore = defineStore('exchange', () => {
   const buyOrders = ref<OrderBookEntry[]>([]);
   const sellOrders = ref<OrderBookEntry[]>([]);
+  const currencies = ref<Currency[]>([]);
   const currencyPairs = ref<CurrencyPair[]>([]);
   const paymentMethods = ref<PaymentMethod[]>([]);
-  const selectedPair = ref<CurrencyPair>({ token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' });
+  const selectedPair = ref<CurrencyPair>({ id: 0, token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' });
   const loading = ref(false);
   const error = ref<string | null>(null);
   const hasOrderBookAccess = ref(false);
@@ -64,15 +65,22 @@ export const useExchangeStore = defineStore('exchange', () => {
     }
   }
 
+  async function fetchCurrencies(): Promise<void> {
+    try {
+      currencies.value = await exchangeApi.getCurrencies();
+    } catch {
+      currencies.value = [];
+    }
+  }
+
   async function fetchCurrencyPairs(): Promise<void> {
     try {
       currencyPairs.value = await exchangeApi.getCurrencyPairs();
     } catch {
-      // Используем дефолтный список при ошибке
       currencyPairs.value = [
-        { token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' },
-        { token: 'BTC', fiat: 'RUB', label: 'BTC / RUB' },
-        { token: 'ETH', fiat: 'RUB', label: 'ETH / RUB' }
+        { id: 0, token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' },
+        { id: 0, token: 'BTC', fiat: 'RUB', label: 'BTC / RUB' },
+        { id: 0, token: 'ETH', fiat: 'RUB', label: 'ETH / RUB' }
       ];
     }
   }
@@ -115,6 +123,7 @@ export const useExchangeStore = defineStore('exchange', () => {
   return {
     buyOrders,
     sellOrders,
+    currencies,
     currencyPairs,
     paymentMethods,
     selectedPair,
@@ -124,6 +133,7 @@ export const useExchangeStore = defineStore('exchange', () => {
     clearOrderBook,
     setOrderBookAccess,
     fetchOrderBook,
+    fetchCurrencies,
     fetchCurrencyPairs,
     fetchPaymentMethods,
     selectPair,

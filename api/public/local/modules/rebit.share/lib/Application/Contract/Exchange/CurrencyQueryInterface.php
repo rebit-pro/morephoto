@@ -18,4 +18,11 @@ interface CurrencyQueryInterface
      * @throws RepositoryException
      */
     public function findIdByCode(string $code): ?int;
+
+    /**
+     * Найти символьный код валюты по ID.
+     *
+     * @throws RepositoryException
+     */
+    public function findCodeById(int $id): ?string;
 }

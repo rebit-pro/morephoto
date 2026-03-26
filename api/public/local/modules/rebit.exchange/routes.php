@@ -23,6 +23,7 @@ return static function(RoutingConfigurator $routes) {
     // Объявления
     $routes->get('/api/v1/exchange/advertisements', [AdvertisementController::class, 'listAction']);
     $routes->post('/api/v1/exchange/advertisements', [AdvertisementController::class, 'createAction']);
+    $routes->patch('/api/v1/exchange/advertisements/{id}', [AdvertisementController::class, 'toggleAction']);
     $routes->delete('/api/v1/exchange/advertisements/{id}', [AdvertisementController::class, 'deleteAction']);
 
     // Сделки

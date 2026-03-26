@@ -7,6 +7,7 @@ use Rebit\Exchange\Application\Advertisement\Port\BybitAdvertisementGatewayInter
 use Rebit\Exchange\Application\Advertisement\UseCase\CreateAdvertisementUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\DeactivateAdvertisementUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\ListAdvertisementsUseCase;
+use Rebit\Exchange\Application\Advertisement\UseCase\ToggleAdvertisementUseCase;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Infrastructure\Bybit\BybitAdvertisementGateway;
@@ -58,6 +59,17 @@ return [
             );
         },
     ],
+    ToggleAdvertisementUseCase::class => [
+        'constructor' => static function(): ToggleAdvertisementUseCase {
+            $sl = ServiceLocator::getInstance();
+
+            return new ToggleAdvertisementUseCase(
+                $sl->get(AdvertisementRepository::class),
+                $sl->get(CurrencyPairRepository::class),
+                $sl->get(BybitAdvertisementGatewayInterface::class),
+            );
+        },
+    ],
     AdvertisementController::class => [
         'constructor' => static function(): AdvertisementController {
             $sl = ServiceLocator::getInstance();
@@ -66,6 +78,7 @@ return [
                 $sl->get(CreateAdvertisementUseCase::class),
                 $sl->get(ListAdvertisementsUseCase::class),
                 $sl->get(DeactivateAdvertisementUseCase::class),
+                $sl->get(ToggleAdvertisementUseCase::class),
             );
         },
     ],
