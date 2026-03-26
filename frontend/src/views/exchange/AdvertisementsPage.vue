@@ -58,6 +58,14 @@ async function handleDelete(): Promise<void> {
   }
 }
 
+async function handleToggle(id: number, status: 'active' | 'paused'): Promise<void> {
+  try {
+    await ads.toggleAdvertisement(id, status);
+  } catch {
+    // ошибка обрабатывается в сторе
+  }
+}
+
 onMounted(async () => {
   await loadAds();
 });
@@ -142,11 +150,29 @@ onMounted(async () => {
             <td class="text-lightText text-body-2">{{ formatDate(ad.createdAt) }}</td>
             <td class="text-right">
               <v-btn
+                v-if="'active' === ad.status"
+                icon="mdi-pause"
+                size="small"
+                variant="text"
+                color="warning"
+                :disabled="ads.actionLoading"
+                @click="handleToggle(ad.id, 'paused')"
+              />
+              <v-btn
+                v-if="'paused' === ad.status"
+                icon="mdi-play"
+                size="small"
+                variant="text"
+                color="success"
+                :disabled="ads.actionLoading"
+                @click="handleToggle(ad.id, 'active')"
+              />
+              <v-btn
                 icon="mdi-delete-outline"
                 size="small"
                 variant="text"
                 color="error"
-                :disabled="'cancelled' === ad.status"
+                :disabled="'cancelled' === ad.status || 'completed' === ad.status"
                 @click="confirmDelete(ad.id)"
               />
             </td>

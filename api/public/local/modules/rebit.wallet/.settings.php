@@ -9,6 +9,7 @@ return [
         'value' => array_merge(
             require __DIR__ . '/di/balance.php',
             require __DIR__ . '/di/transaction.php',
+            require __DIR__ . '/di/report.php',
         ),
         'readonly' => true,
     ],

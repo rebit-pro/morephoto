@@ -124,4 +124,119 @@ final class TransactionRepository
 
         return $transaction;
     }
+
+    /**
+     * Суммирует обороты по валютам за период.
+     *
+     * Возвращает массив: currencyId => ['incoming' => float, 'outgoing' => float]
+     *
+     * @return array<int, array{
+     *     incoming: float,
+     *     outgoing: float,
+     * }>
+     *
+     * @throws RepositoryException
+     */
+    public function sumTurnoverByCurrency(
+        int $userId,
+        ?string $dateFrom = null,
+        ?string $dateTo = null,
+        ?int $currencyId = null,
+    ): array {
+        return $this->query(function() use ($userId, $dateFrom, $dateTo, $currencyId): array {
+            $incomingTypes = TransactionTypeEnum::incomingValues();
+            $outgoingTypes = TransactionTypeEnum::outgoingValues();
+
+            $inList = "'" . implode("','", $incomingTypes) . "'";
+            $outList = "'" . implode("','", $outgoingTypes) . "'";
+
+            $query = TransactionTable::query()
+                ->setSelect([
+                    'UF_CURRENCY_ID',
+                    new ExpressionField(
+                        'INCOMING',
+                        "SUM(CASE WHEN %s IN ({$inList}) THEN ABS(%s) ELSE 0 END)",
+                        ['UF_TYPE', 'UF_AMOUNT'],
+                    ),
+                    new ExpressionField(
+                        'OUTGOING',
+                        "SUM(CASE WHEN %s IN ({$outList}) THEN ABS(%s) ELSE 0 END)",
+                        ['UF_TYPE', 'UF_AMOUNT'],
+                    ),
+                ])
+                ->where('UF_USER_ID', $userId)
+                ->setGroup(['UF_CURRENCY_ID'])
+            ;
+
+            if (null !== $currencyId) {
+                $query->where('UF_CURRENCY_ID', $currencyId);
+            }
+
+            if (null !== $dateFrom && '' !== $dateFrom) {
+                $query->where('UF_CREATED_AT', '>=', new DateTime($dateFrom, 'Y-m-d'));
+            }
+
+            if (null !== $dateTo && '' !== $dateTo) {
+                $query->where('UF_CREATED_AT', '<=', new DateTime($dateTo . ' 23:59:59', 'Y-m-d H:i:s'));
+            }
+
+            $result = [];
+            foreach ($query->exec()->fetchAll() as $row) {
+                $result[(int)$row['UF_CURRENCY_ID']] = [
+                    'incoming' => (float)($row['INCOMING'] ?? 0),
+                    'outgoing' => (float)($row['OUTGOING'] ?? 0),
+                ];
+            }
+
+            return $result;
+        });
+    }
+
+    /**
+     * Получает баланс (balance_after) из последней транзакции ДО указанной даты.
+     * Используется для определения «остатка на начало периода».
+     *
+     * @return array<int, float> currencyId => balanceAfter
+     *
+     * @throws RepositoryException
+     */
+    public function getBalanceBeforeDate(
+        int $userId,
+        string $date,
+        ?int $currencyId = null,
+    ): array {
+        return $this->query(function() use ($userId, $date, $currencyId): array {
+            $query = TransactionTable::query()
+                ->setSelect([
+                    'UF_CURRENCY_ID',
+                    new ExpressionField('LAST_BALANCE', 'MAX(%s)', ['ID']),
+                ])
+                ->where('UF_USER_ID', $userId)
+                ->where('UF_CREATED_AT', '<', new DateTime($date, 'Y-m-d'))
+                ->setGroup(['UF_CURRENCY_ID'])
+            ;
+
+            if (null !== $currencyId) {
+                $query->where('UF_CURRENCY_ID', $currencyId);
+            }
+
+            $result = [];
+            foreach ($query->exec()->fetchAll() as $row) {
+                $lastId = (int)$row['LAST_BALANCE'];
+
+                $tx = TransactionTable::query()
+                    ->setSelect(['UF_BALANCE_AFTER', 'UF_CURRENCY_ID'])
+                    ->where('ID', $lastId)
+                    ->exec()
+                    ->fetch()
+                ;
+
+                if (false !== $tx) {
+                    $result[(int)$row['UF_CURRENCY_ID']] = (float)$tx['UF_BALANCE_AFTER'];
+                }
+            }
+
+            return $result;
+        });
+    }
 }

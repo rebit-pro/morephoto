@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Presentation\Controller;
 
 use Rebit\Exchange\Application\Advertisement\Dto\Request\CreateAdvertisementRequestDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Request\ToggleAdvertisementRequestDto;
 use Rebit\Exchange\Application\Advertisement\UseCase\CreateAdvertisementUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\DeactivateAdvertisementUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\ListAdvertisementsUseCase;
+use Rebit\Exchange\Application\Advertisement\UseCase\ToggleAdvertisementUseCase;
 use Rebit\Exchange\Infrastructure\Controller\BaseExchangeController;
 use Bitrix\Main\HttpResponse;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
@@ -20,6 +22,7 @@ final class AdvertisementController extends BaseExchangeController
         private readonly CreateAdvertisementUseCase $createUseCase,
         private readonly ListAdvertisementsUseCase $listUseCase,
         private readonly DeactivateAdvertisementUseCase $deactivateUseCase,
+        private readonly ToggleAdvertisementUseCase $toggleUseCase,
     ) {
         parent::__construct();
     }
@@ -48,6 +51,20 @@ final class AdvertisementController extends BaseExchangeController
     {
         return $this->json(
             $this->createUseCase->execute($dto, $this->getAuthUserId()),
+        );
+    }
+
+    /**
+     * PATCH /api/v1/exchange/advertisements/{id}
+     *
+     * @throws HttpException
+     * @throws RepositoryException
+     * @throws \JsonException
+     */
+    public function toggleAction(int $id, ToggleAdvertisementRequestDto $dto): ControllerJson
+    {
+        return $this->json(
+            $this->toggleUseCase->execute($id, $this->getAuthUserId(), $dto),
         );
     }
 

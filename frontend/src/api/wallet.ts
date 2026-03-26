@@ -34,6 +34,33 @@ export interface TransactionFilters {
   offset?: number;
 }
 
+export interface CashFlowFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  currencyId?: number;
+}
+
+export interface CashFlowItem {
+  currencyId: number;
+  currency: string;
+  openingBalance: number;
+  incoming: number;
+  outgoing: number;
+  closingBalance: number;
+}
+
+export interface CashFlowTotals {
+  totalIncoming: number;
+  totalOutgoing: number;
+  totalOpeningBalance: number;
+  totalClosingBalance: number;
+}
+
+export interface CashFlowReport {
+  items: CashFlowItem[];
+  totals: CashFlowTotals;
+}
+
 export const walletApi = {
   getBalances(): Promise<Balance[]> {
     return api.get('/api/v1/wallet/balances').then((r) => r.data?.balances ?? r.data);
@@ -54,5 +81,9 @@ export const walletApi = {
     return api
       .get('/api/v1/wallet/transactions/export', { params, responseType: 'blob' })
       .then((r) => r.data);
+  },
+
+  getCashFlowReport(params?: CashFlowFilters): Promise<CashFlowReport> {
+    return api.get('/api/v1/wallet/reports/cash-flow', { params }).then((r) => r.data);
   },
 };

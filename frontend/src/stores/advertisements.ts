@@ -54,6 +54,23 @@ export const useAdvertisementsStore = defineStore('advertisements', () => {
     }
   }
 
+  async function toggleAdvertisement(id: number, status: 'active' | 'paused'): Promise<void> {
+    actionLoading.value = true;
+    error.value = null;
+    try {
+      const updated = await exchangeApi.toggleAdvertisement(id, status);
+      const index = advertisements.value.findIndex((ad) => ad.id === id);
+      if (-1 !== index) {
+        advertisements.value[index] = updated;
+      }
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'Ошибка переключения статуса';
+      throw e;
+    } finally {
+      actionLoading.value = false;
+    }
+  }
+
   return {
     advertisements,
     loading,
@@ -62,5 +79,6 @@ export const useAdvertisementsStore = defineStore('advertisements', () => {
     fetchAdvertisements,
     createAdvertisement,
     deleteAdvertisement,
+    toggleAdvertisement,
   };
 });

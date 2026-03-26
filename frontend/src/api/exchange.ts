@@ -245,6 +245,10 @@ export const exchangeApi = {
     return api.delete(`/api/v1/exchange/advertisements/${id}`);
   },
 
+  toggleAdvertisement(id: number, status: 'active' | 'paused'): Promise<Advertisement> {
+    return api.patch(`/api/v1/exchange/advertisements/${id}`, { status }).then((r) => r.data);
+  },
+
   // — Trades —
 
   getTrades(status?: TradeStatus): Promise<Trade[]> {

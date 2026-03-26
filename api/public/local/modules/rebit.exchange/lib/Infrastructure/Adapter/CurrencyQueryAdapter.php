@@ -25,4 +25,12 @@ final readonly class CurrencyQueryAdapter implements CurrencyQueryInterface
     {
         return $this->currencyRepository->findByCode($code)?->getId();
     }
+
+    /**
+     * @throws RepositoryException
+     */
+    public function findCodeById(int $id): ?string
+    {
+        return $this->currencyRepository->findById($id)?->getUfCode();
+    }
 }
