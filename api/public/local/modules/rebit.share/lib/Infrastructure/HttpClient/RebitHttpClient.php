@@ -60,6 +60,7 @@ final class RebitHttpClient
      * @return array<string, mixed>
      *
      * @throws ArgumentException|HttpClientException
+     * @throws \JsonException
      */
     private function request(string $method, string $url, array $data, array $headers): array
     {

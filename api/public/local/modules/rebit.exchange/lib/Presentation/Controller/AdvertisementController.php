@@ -9,7 +9,10 @@ use Rebit\Exchange\Application\Advertisement\UseCase\CreateAdvertisementUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\DeactivateAdvertisementUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\ListAdvertisementsUseCase;
 use Rebit\Exchange\Infrastructure\Controller\BaseExchangeController;
+use Bitrix\Main\HttpResponse;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
+use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class AdvertisementController extends BaseExchangeController
 {
@@ -23,6 +26,10 @@ final class AdvertisementController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/advertisements
+     *
+     * @throws HttpException
+     * @throws RepositoryException
+     * @throws \JsonException
      */
     public function listAction(?string $status = null): ControllerJson
     {
@@ -33,6 +40,9 @@ final class AdvertisementController extends BaseExchangeController
 
     /**
      * POST /api/v1/exchange/advertisements
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function createAction(CreateAdvertisementRequestDto $dto): ControllerJson
     {
@@ -43,11 +53,14 @@ final class AdvertisementController extends BaseExchangeController
 
     /**
      * DELETE /api/v1/exchange/advertisements/{id}
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
-    public function deleteAction(int $id): ControllerJson
+    public function deleteAction(int $id): HttpResponse
     {
         $this->deactivateUseCase->execute($id, $this->getAuthUserId());
 
-        return $this->json([]);
+        return $this->noContent();
     }
 }

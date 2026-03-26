@@ -534,3 +534,90 @@ if (!class_exists(EO_ChatScriptExecution_Collection::class)) {
         public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
     }
 }
+
+/**
+ * Стабы Wallet-модуля: EO_ классы.
+ */
+namespace Rebit\Wallet\Domain\Balance\Entity\Table;
+
+if (!class_exists(EO_Balance::class)) {
+    class EO_Balance
+    {
+        public function getId(): int { return 0; }
+        public function getUfUserId(): int { return 0; }
+        public function getUfCurrencyId(): int { return 0; }
+        public function getUfAvailable(): float { return 0.0; }
+        public function getUfLocked(): float { return 0.0; }
+        public function getUfTotal(): float { return 0.0; }
+        public function getUfSyncedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function getUfUpdatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function setUfUserId(int $value): static { return $this; }
+        public function setUfCurrencyId(int $value): static { return $this; }
+        public function setUfAvailable(float $value): static { return $this; }
+        public function setUfLocked(float $value): static { return $this; }
+        public function setUfTotal(float $value): static { return $this; }
+        public function setUfSyncedAt(?\Bitrix\Main\Type\DateTime $value): static { return $this; }
+        public function setUfUpdatedAt(?\Bitrix\Main\Type\DateTime $value): static { return $this; }
+        public function save(): \Bitrix\Main\ORM\Data\Result { return new \Bitrix\Main\ORM\Data\Result(); }
+    }
+}
+
+if (!class_exists(EO_Balance_Collection::class)) {
+    /** @implements \ArrayAccess<int, EO_Balance> */
+    class EO_Balance_Collection implements \IteratorAggregate, \ArrayAccess, \Countable
+    {
+        /** @var array<int, EO_Balance> */
+        private array $items = [];
+        public function getAll(): array { return $this->items; }
+        public function getIterator(): \ArrayIterator { return new \ArrayIterator($this->items); }
+        public function count(): int { return count($this->items); }
+        public function offsetExists(mixed $offset): bool { return isset($this->items[$offset]); }
+        public function offsetGet(mixed $offset): mixed { return $this->items[$offset] ?? null; }
+        public function offsetSet(mixed $offset, mixed $value): void { if (null === $offset) { $this->items[] = $value; } else { $this->items[$offset] = $value; } }
+        public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
+    }
+}
+
+namespace Rebit\Wallet\Domain\Transaction\Entity\Table;
+
+if (!class_exists(EO_Transaction::class)) {
+    class EO_Transaction
+    {
+        public function getId(): int { return 0; }
+        public function getUfUserId(): int { return 0; }
+        public function getUfCurrencyId(): int { return 0; }
+        public function getUfType(): string { return ''; }
+        public function getUfAmount(): float { return 0.0; }
+        public function getUfBalanceAfter(): float { return 0.0; }
+        public function getUfTradeId(): ?int { return null; }
+        public function getUfDescription(): ?string { return null; }
+        public function getUfBybitTxId(): ?string { return null; }
+        public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function setUfUserId(int $value): static { return $this; }
+        public function setUfCurrencyId(int $value): static { return $this; }
+        public function setUfType(string $value): static { return $this; }
+        public function setUfAmount(float $value): static { return $this; }
+        public function setUfBalanceAfter(float $value): static { return $this; }
+        public function setUfTradeId(?int $value): static { return $this; }
+        public function setUfDescription(?string $value): static { return $this; }
+        public function setUfBybitTxId(?string $value): static { return $this; }
+        public function setUfCreatedAt(?\Bitrix\Main\Type\DateTime $value): static { return $this; }
+        public function save(): \Bitrix\Main\ORM\Data\Result { return new \Bitrix\Main\ORM\Data\Result(); }
+    }
+}
+
+if (!class_exists(EO_Transaction_Collection::class)) {
+    /** @implements \ArrayAccess<int, EO_Transaction> */
+    class EO_Transaction_Collection implements \IteratorAggregate, \ArrayAccess, \Countable
+    {
+        /** @var array<int, EO_Transaction> */
+        private array $items = [];
+        public function getAll(): array { return $this->items; }
+        public function getIterator(): \ArrayIterator { return new \ArrayIterator($this->items); }
+        public function count(): int { return count($this->items); }
+        public function offsetExists(mixed $offset): bool { return isset($this->items[$offset]); }
+        public function offsetGet(mixed $offset): mixed { return $this->items[$offset] ?? null; }
+        public function offsetSet(mixed $offset, mixed $value): void { if (null === $offset) { $this->items[] = $value; } else { $this->items[$offset] = $value; } }
+        public function offsetUnset(mixed $offset): void { unset($this->items[$offset]); }
+    }
+}

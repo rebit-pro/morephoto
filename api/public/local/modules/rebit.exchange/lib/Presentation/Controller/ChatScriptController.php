@@ -11,7 +11,10 @@ use Rebit\Exchange\Application\ChatScript\UseCase\DeleteChatScriptUseCase;
 use Rebit\Exchange\Application\ChatScript\UseCase\ListChatScriptsUseCase;
 use Rebit\Exchange\Application\ChatScript\UseCase\UpdateChatScriptUseCase;
 use Rebit\Exchange\Infrastructure\Controller\BaseExchangeController;
+use Bitrix\Main\HttpResponse;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
+use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class ChatScriptController extends BaseExchangeController
 {
@@ -26,6 +29,9 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/chat-scripts
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function listAction(): ControllerJson
     {
@@ -36,6 +42,9 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * POST /api/v1/exchange/chat-scripts
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function createAction(CreateChatScriptRequestDto $dto): ControllerJson
     {
@@ -46,6 +55,9 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * PATCH /api/v1/exchange/chat-scripts/{id}
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function updateAction(UpdateChatScriptRequestDto $dto): ControllerJson
     {
@@ -56,11 +68,14 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * DELETE /api/v1/exchange/chat-scripts/{id}
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
-    public function deleteAction(int $id): ControllerJson
+    public function deleteAction(int $id): HttpResponse
     {
         $this->deleteUseCase->execute($id, $this->getAuthUserId());
 
-        return $this->json([]);
+        return $this->noContent();
     }
 }

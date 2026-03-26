@@ -18,7 +18,7 @@ use Rebit\Share\Infrastructure\Controller\Filters\LoggerFilter;
  *
  * Включает авторизацию по Bearer-токену и логирование для всех экшенов.
  */
-class BaseWalletController extends BaseJsonController implements AuthenticatedControllerInterface
+abstract class BaseWalletController extends BaseJsonController implements AuthenticatedControllerInterface
 {
     use AuthenticatedControllerTrait;
 

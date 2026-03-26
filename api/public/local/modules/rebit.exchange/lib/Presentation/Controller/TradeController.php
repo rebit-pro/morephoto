@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Presentation\Controller;
 
+use Rebit\Exchange\Application\Trade\Dto\Request\ConfirmPaymentRequestDto;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmPaymentUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmReceiptUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\GetTradeUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\ListTradesUseCase;
 use Rebit\Exchange\Infrastructure\Controller\BaseExchangeController;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
+use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class TradeController extends BaseExchangeController
 {
@@ -24,6 +27,9 @@ final class TradeController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/trades
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function listAction(?string $status = null): ControllerJson
     {
@@ -34,6 +40,9 @@ final class TradeController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/trades/{id}
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function detailAction(int $id): ControllerJson
     {
@@ -44,16 +53,22 @@ final class TradeController extends BaseExchangeController
 
     /**
      * POST /api/v1/exchange/trades/{id}/pay
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
-    public function payAction(int $id, string $paymentType, string $paymentId): ControllerJson
+    public function payAction(ConfirmPaymentRequestDto $dto): ControllerJson
     {
         return $this->json(
-            $this->confirmPaymentUseCase->execute($id, $this->getAuthUserId(), $paymentType, $paymentId),
+            $this->confirmPaymentUseCase->execute($dto->id, $this->getAuthUserId(), $dto->paymentType, $dto->paymentId),
         );
     }
 
     /**
      * POST /api/v1/exchange/trades/{id}/release
+     *
+     * @throws HttpException
+     * @throws RepositoryException
      */
     public function releaseAction(int $id): ControllerJson
     {

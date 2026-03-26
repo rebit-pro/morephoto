@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Monolog\Formatter\HtmlFormatter;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Formatter\LogstashFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -33,14 +32,6 @@ return [
                 ),
                 'processor' => static function(LogChannelEnum $channel, array $record): array {
                     return (new CommonLoggerProcessor($record))();
-                },
-            ],
-            'file' => [
-                'handler' => static function() {
-                    return new StreamHandler(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/debug.html', Logger::DEBUG);
-                },
-                'formatter' => static function() {
-                    return new HtmlFormatter();
                 },
             ],
         ],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Application\Trade\UseCase;
 
 use Rebit\Exchange\Application\Trade\Dto\Result\TradeResultDto;
+use Rebit\Exchange\Application\Trade\Mapper\TradeResultDtoMapper;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
@@ -57,7 +58,7 @@ final readonly class GetTradeUseCase
             }
         }
 
-        return ListTradesUseCase::toResultDto($trade);
+        return TradeResultDtoMapper::fromEntity($trade);
     }
 
     private function isActiveStatus(string $status): bool

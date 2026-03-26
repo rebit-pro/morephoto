@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Domain\Balance\Service;
 
-use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Wallet\Domain\Balance\Exception\InsufficientFundsException;
+use Rebit\Wallet\Domain\Balance\Exception\InsufficientLockedFundsException;
 
 /**
  * Доменный сервис для расчётов по балансам.
@@ -18,38 +19,24 @@ final readonly class BalanceCalculator
     /**
      * Проверяет возможность блокировки средств.
      *
-     * @throws HttpException если недостаточно средств
+     * @throws InsufficientFundsException если недостаточно средств
      */
     public function assertCanLock(float $available, float $amount): void
     {
         if ($available < $amount) {
-            throw new HttpException(
-                sprintf(
-                    'Недостаточно средств: доступно %.8f, запрошено %.8f',
-                    $available,
-                    $amount,
-                ),
-                422,
-            );
+            throw new InsufficientFundsException($available, $amount);
         }
     }
 
     /**
      * Проверяет возможность разблокировки средств.
      *
-     * @throws HttpException если заблокировано меньше, чем запрошено
+     * @throws InsufficientLockedFundsException если заблокировано меньше, чем запрошено
      */
     public function assertCanUnlock(float $locked, float $amount): void
     {
         if ($locked < $amount) {
-            throw new HttpException(
-                sprintf(
-                    'Невозможно разблокировать: заблокировано %.8f, запрошено %.8f',
-                    $locked,
-                    $amount,
-                ),
-                422,
-            );
+            throw new InsufficientLockedFundsException($locked, $amount);
         }
     }
 

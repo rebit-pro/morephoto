@@ -7,7 +7,7 @@ namespace Rebit\Wallet\Presentation\Controller;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Wallet\Application\Transaction\UseCase\ExportTransactionsUseCase;
 use Rebit\Wallet\Application\Transaction\UseCase\ListTransactionsUseCase;
-use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Infrastructure\Controller\BaseWalletController;
 
 final class TransactionController extends BaseWalletController
@@ -22,7 +22,7 @@ final class TransactionController extends BaseWalletController
     /**
      * GET /api/v1/wallet/transactions
      */
-    public function listAction(TransactionFilterDto $filter): ControllerJson
+    public function listAction(TransactionFilterRequestDto $filter): ControllerJson
     {
         return $this->json(
             $this->listTransactionsUseCase->execute($this->getAuthUserId(), $filter),
@@ -34,7 +34,7 @@ final class TransactionController extends BaseWalletController
      *
      * @todo Реализовать отдачу файла CSV/Excel вместо JSON.
      */
-    public function exportAction(TransactionFilterDto $filter): ControllerJson
+    public function exportAction(TransactionFilterRequestDto $filter): ControllerJson
     {
         return $this->json(
             $this->exportTransactionsUseCase->execute($this->getAuthUserId(), $filter),

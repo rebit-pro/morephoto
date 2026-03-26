@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Balance\UseCase;
 
-use Rebit\Wallet\Application\Balance\Dto\Request\LockFundsDto;
+use Rebit\Wallet\Application\Balance\Dto\Request\LockFundsInputDto;
+use Rebit\Wallet\Domain\Balance\Exception\InsufficientFundsException;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;
@@ -28,7 +29,7 @@ final readonly class LockFundsUseCase
      * @throws HttpException
      * @throws RepositoryException
      */
-    public function execute(LockFundsDto $dto): void
+    public function execute(LockFundsInputDto $dto): void
     {
         $balance = $this->balanceRepository->findByUserIdAndCurrencyId(
             $dto->userId,
@@ -42,7 +43,11 @@ final readonly class LockFundsUseCase
             );
         }
 
-        $this->balanceCalculator->assertCanLock($balance->getUfAvailable(), $dto->amount);
+        try {
+            $this->balanceCalculator->assertCanLock($balance->getUfAvailable(), $dto->amount);
+        } catch (InsufficientFundsException $e) {
+            throw new HttpException($e->getMessage(), 422, $e);
+        }
 
         $this->balanceRepository->lockFunds($balance, $dto->amount);
 

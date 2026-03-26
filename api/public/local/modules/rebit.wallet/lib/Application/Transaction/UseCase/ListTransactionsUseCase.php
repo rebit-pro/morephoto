@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Transaction\UseCase;
 
-use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterDto;
+use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionListResultDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionResultDto;
 use Rebit\Wallet\Domain\Transaction\Entity\Transaction;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
+use Rebit\Wallet\Domain\Transaction\ValueObject\TransactionFilter;
 
 final readonly class ListTransactionsUseCase
 {
@@ -17,10 +19,22 @@ final readonly class ListTransactionsUseCase
         private TransactionRepository $transactionRepository,
     ) {}
 
-    public function execute(int $userId, TransactionFilterDto $filter): TransactionListResultDto
+    /**
+     * @throws RepositoryException
+     */
+    public function execute(int $userId, TransactionFilterRequestDto $filter): TransactionListResultDto
     {
-        $collection = $this->transactionRepository->findByFilter($userId, $filter);
-        $total = $this->transactionRepository->countByFilter($userId, $filter);
+        $domainFilter = new TransactionFilter(
+            type: $filter->type,
+            currencyId: $filter->currencyId,
+            dateFrom: $filter->dateFrom,
+            dateTo: $filter->dateTo,
+            limit: $filter->limit,
+            offset: $filter->offset,
+        );
+
+        $collection = $this->transactionRepository->findByFilter($userId, $domainFilter);
+        $total = $this->transactionRepository->countByFilter($userId, $domainFilter);
 
         $transactions = array_map(
             static fn(Transaction $transaction): TransactionResultDto => new TransactionResultDto(
