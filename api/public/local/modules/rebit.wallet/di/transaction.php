@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
+use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 use Rebit\Wallet\Application\Transaction\UseCase\ExportTransactionsUseCase;
 use Rebit\Wallet\Application\Transaction\UseCase\ListTransactionsUseCase;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
@@ -14,8 +15,11 @@ return [
     ],
     ListTransactionsUseCase::class => [
         'constructor' => static function(): ListTransactionsUseCase {
+            $sl = ServiceLocator::getInstance();
+
             return new ListTransactionsUseCase(
-                ServiceLocator::getInstance()->get(TransactionRepository::class),
+                $sl->get(TransactionRepository::class),
+                $sl->get(CurrencyQueryInterface::class),
             );
         },
     ],

@@ -61,6 +61,25 @@ final class ApiConnectionRepository
     }
 
     /**
+     * Последнее не-отозванное подключение пользователя (Active, Invalid, PendingVerification).
+     *
+     * @throws RepositoryException
+     */
+    public function findNonRevokedByUserId(int $userId): ?ApiConnection
+    {
+        return $this->query(
+            fn(): ?ApiConnection => ApiConnectionTable::query()
+                ->setSelect(['*'])
+                ->where('UF_USER_ID', $userId)
+                ->whereNot('UF_STATUS', ConnectionStatusEnum::Revoked->value)
+                ->setOrder(['ID' => 'DESC'])
+                ->setLimit(1)
+                ->exec()
+                ->fetchObject(),
+        );
+    }
+
+    /**
      * @throws RepositoryException
      */
     public function save(ApiConnection $connection): void
@@ -103,7 +122,7 @@ final class ApiConnectionRepository
      */
     public function revokeByUserId(int $userId): void
     {
-        $connection = $this->findActiveByUserId($userId);
+        $connection = $this->findNonRevokedByUserId($userId);
 
         if (null === $connection) {
             return;

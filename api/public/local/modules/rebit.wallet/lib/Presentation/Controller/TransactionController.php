@@ -15,9 +15,7 @@ final class TransactionController extends BaseWalletController
     public function __construct(
         private readonly ListTransactionsUseCase $listTransactionsUseCase,
         private readonly ExportTransactionsUseCase $exportTransactionsUseCase,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
     /**
      * GET /api/v1/wallet/transactions

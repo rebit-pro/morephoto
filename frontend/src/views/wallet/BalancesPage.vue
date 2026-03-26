@@ -5,9 +5,13 @@ import { useWalletStore } from '@/stores/wallet';
 const wallet = useWalletStore();
 
 const lastSyncedAt = computed(() => {
-  const synced = wallet.balances.find((b) => null !== b.syncedAt);
-  if (!synced?.syncedAt) return null;
-  return new Date(synced.syncedAt).toLocaleString('ru-RU');
+  const maxDate = wallet.balances.reduce((latest: string | null, b) => {
+    if (null === b.syncedAt) return latest;
+    if (null === latest) return b.syncedAt;
+    return new Date(b.syncedAt) > new Date(latest) ? b.syncedAt : latest;
+  }, null);
+  if (null === maxDate) return null;
+  return new Date(maxDate).toLocaleString('ru-RU');
 });
 
 onMounted(async () => {

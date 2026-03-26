@@ -17,6 +17,7 @@ export const useTradesStore = defineStore('trades', () => {
   const chatLoading = ref(false);
   const actionLoading = ref(false);
   const error = ref<string | null>(null);
+  let tradeDetailRequestGeneration = 0;
 
   async function fetchTrades(status?: TradeStatus): Promise<void> {
     loading.value = true;
@@ -31,14 +32,30 @@ export const useTradesStore = defineStore('trades', () => {
   }
 
   async function fetchTradeDetail(id: number): Promise<void> {
+    tradeDetailRequestGeneration += 1;
+    const requestGeneration = tradeDetailRequestGeneration;
+
     loading.value = true;
     error.value = null;
+
     try {
-      currentTrade.value = await exchangeApi.getTradeDetail(id);
+      const trade = await exchangeApi.getTradeDetail(id);
+
+      if (requestGeneration !== tradeDetailRequestGeneration) {
+        return;
+      }
+
+      currentTrade.value = trade;
     } catch (e: unknown) {
+      if (requestGeneration !== tradeDetailRequestGeneration) {
+        return;
+      }
+
       error.value = e instanceof Error ? e.message : 'Ошибка загрузки сделки';
     } finally {
-      loading.value = false;
+      if (requestGeneration === tradeDetailRequestGeneration) {
+        loading.value = false;
+      }
     }
   }
 
@@ -90,6 +107,7 @@ export const useTradesStore = defineStore('trades', () => {
   }
 
   function clearCurrentTrade(): void {
+    tradeDetailRequestGeneration += 1;
     currentTrade.value = null;
     chatMessages.value = [];
   }

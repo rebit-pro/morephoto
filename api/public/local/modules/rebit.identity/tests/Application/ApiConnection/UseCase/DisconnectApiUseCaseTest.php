@@ -25,7 +25,7 @@ final class DisconnectApiUseCaseTest extends TestCase
 
         $repository
             ->expects($this->once())
-            ->method('findActiveByUserId')
+            ->method('findNonRevokedByUserId')
             ->with($userId)
             ->willReturn($connection)
         ;
@@ -39,28 +39,28 @@ final class DisconnectApiUseCaseTest extends TestCase
         (new DisconnectApiUseCase($repository))->execute($userId);
     }
 
-    public function testDisconnectWithNoActiveConnectionThrows404(): void
+    public function testDisconnectWithNoConnectionThrows404(): void
     {
         $repository = $this->createStub(ApiConnectionRepository::class);
 
         $repository
-            ->method('findActiveByUserId')
+            ->method('findNonRevokedByUserId')
             ->willReturn(null)
         ;
 
         $this->expectException(HttpException::class);
-        $this->expectExceptionMessage('Active API connection not found');
+        $this->expectExceptionMessage('API connection not found');
         $this->expectExceptionCode(404);
 
         (new DisconnectApiUseCase($repository))->execute(99);
     }
 
-    public function testRevokeNotCalledWhenNoActiveConnection(): void
+    public function testRevokeNotCalledWhenNoConnection(): void
     {
         $repository = $this->createMock(ApiConnectionRepository::class);
 
         $repository
-            ->method('findActiveByUserId')
+            ->method('findNonRevokedByUserId')
             ->willReturn(null)
         ;
 

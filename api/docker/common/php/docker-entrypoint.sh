@@ -76,6 +76,7 @@ fix_log_permissions() {
     log_dir="/app/logs"
 
     if [ -d "$log_dir" ]; then
+        mkdir -p "$log_dir/logstash"
         chown -R www-data:www-data "$log_dir"
         find "$log_dir" -type d -exec chmod 2775 {} +
         find "$log_dir" -type f -exec chmod 664 {} +

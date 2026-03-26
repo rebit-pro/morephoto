@@ -152,7 +152,7 @@ onMounted(async () => {
             <td class="text-right font-weight-bold">{{ fmt(item.closingBalance) }}</td>
           </tr>
         </tbody>
-        <tfoot v-if="0 < report.items.length">
+        <tfoot v-if="0 < report.items.length && null !== report.totals">
           <tr class="font-weight-bold bg-grey-lighten-4">
             <td>Итого</td>
             <td class="text-right">{{ fmt(report.totals.totalOpeningBalance) }}</td>

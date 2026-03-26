@@ -113,4 +113,21 @@ final class GetConnectionStatusUseCaseTest extends TestCase
         self::assertNull($result->verifiedAt);
         self::assertSame(ConnectionStatusEnum::Invalid, $result->status);
     }
+
+    public function testRevokedConnectionReturnsDisconnected(): void
+    {
+        $connection = $this->createStub(ApiConnection::class);
+        $connection->method('getUfStatus')->willReturn('revoked');
+
+        $repository = $this->createStub(ApiConnectionRepository::class);
+        $encryptor = $this->createStub(ApiKeyEncryptor::class);
+
+        $repository->method('findByUserId')->willReturn($connection);
+
+        $result = $this->createUseCase($repository, $encryptor)->execute(1);
+
+        self::assertFalse($result->connected);
+        self::assertNull($result->status);
+        self::assertNull($result->id);
+    }
 }

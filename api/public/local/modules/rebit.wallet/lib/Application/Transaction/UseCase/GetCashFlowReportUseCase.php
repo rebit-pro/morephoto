@@ -91,14 +91,19 @@ final readonly class GetCashFlowReportUseCase
             $totalClosing += $closing;
         }
 
-        return new CashFlowReportResultDto(
-            items: $items,
-            totals: new CashFlowTotalsResultDto(
+        // Totals имеют смысл только при фильтре по одной валюте
+        $totals = null !== $filter->currencyId
+            ? new CashFlowTotalsResultDto(
                 totalIncoming: round($totalIncoming, 8),
                 totalOutgoing: round($totalOutgoing, 8),
                 totalOpeningBalance: round($totalOpening, 8),
                 totalClosingBalance: round($totalClosing, 8),
-            ),
+            )
+            : null;
+
+        return new CashFlowReportResultDto(
+            items: $items,
+            totals: $totals,
         );
     }
 }

@@ -51,7 +51,7 @@ final class TransactionRepository
             }
 
             if (null !== $filter->dateTo && '' !== $filter->dateTo) {
-                $query->where('UF_CREATED_AT', '<=', new DateTime($filter->dateTo, 'Y-m-d'));
+                $query->where('UF_CREATED_AT', '<', $this->createDateToExclusive($filter->dateTo));
             }
 
             return $query->exec()->fetchCollection();
@@ -84,7 +84,7 @@ final class TransactionRepository
             }
 
             if (null !== $filter->dateTo && '' !== $filter->dateTo) {
-                $query->where('UF_CREATED_AT', '<=', new DateTime($filter->dateTo, 'Y-m-d'));
+                $query->where('UF_CREATED_AT', '<', $this->createDateToExclusive($filter->dateTo));
             }
 
             $row = $query->exec()->fetch();
@@ -177,7 +177,7 @@ final class TransactionRepository
             }
 
             if (null !== $dateTo && '' !== $dateTo) {
-                $query->where('UF_CREATED_AT', '<=', new DateTime($dateTo . ' 23:59:59', 'Y-m-d H:i:s'));
+                $query->where('UF_CREATED_AT', '<', $this->createDateToExclusive($dateTo));
             }
 
             $result = [];
@@ -220,23 +220,49 @@ final class TransactionRepository
                 $query->where('UF_CURRENCY_ID', $currencyId);
             }
 
+            $rows = $query->exec()->fetchAll();
+
+            if ([] === $rows) {
+                return [];
+            }
+
+            $lastIds = [];
+            foreach ($rows as $row) {
+                $lastIds[] = (int)$row['LAST_BALANCE'];
+            }
+
+            $txResult = TransactionTable::query()
+                ->setSelect(['ID', 'UF_CURRENCY_ID', 'UF_BALANCE_AFTER'])
+                ->whereIn('ID', $lastIds)
+                ->exec()
+            ;
+
+            /** @var array<int, float> */
+            $byId = [];
+            while ($tx = $txResult->fetch()) {
+                $byId[(int)$tx['ID']] = (float)$tx['UF_BALANCE_AFTER'];
+            }
+
             $result = [];
-            foreach ($query->exec()->fetchAll() as $row) {
+            foreach ($rows as $row) {
                 $lastId = (int)$row['LAST_BALANCE'];
 
-                $tx = TransactionTable::query()
-                    ->setSelect(['UF_BALANCE_AFTER', 'UF_CURRENCY_ID'])
-                    ->where('ID', $lastId)
-                    ->exec()
-                    ->fetch()
-                ;
-
-                if (false !== $tx) {
-                    $result[(int)$row['UF_CURRENCY_ID']] = (float)$tx['UF_BALANCE_AFTER'];
+                if (!isset($byId[$lastId])) {
+                    continue;
                 }
+
+                $result[(int)$row['UF_CURRENCY_ID']] = $byId[$lastId];
             }
 
             return $result;
         });
+    }
+
+    private function createDateToExclusive(string $dateTo): DateTime
+    {
+        $dateToObject = new DateTime($dateTo, 'Y-m-d');
+        $dateToObject->add('P1D');
+
+        return $dateToObject;
     }
 }

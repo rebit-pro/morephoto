@@ -72,8 +72,11 @@ async function loadTransactions(): Promise<void> {
 }
 
 function onFilterChange(): void {
-  currentPage.value = 1;
-  void loadTransactions();
+  if (1 === currentPage.value) {
+    void loadTransactions();
+  } else {
+    currentPage.value = 1;
+  }
 }
 
 async function handleExport(): Promise<void> {

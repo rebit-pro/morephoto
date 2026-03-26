@@ -30,8 +30,11 @@ return [
     ],
     GetBalancesUseCase::class => [
         'constructor' => static function(): GetBalancesUseCase {
+            $sl = ServiceLocator::getInstance();
+
             return new GetBalancesUseCase(
-                ServiceLocator::getInstance()->get(BalanceRepository::class),
+                $sl->get(BalanceRepository::class),
+                $sl->get(CurrencyQueryInterface::class),
             );
         },
     ],

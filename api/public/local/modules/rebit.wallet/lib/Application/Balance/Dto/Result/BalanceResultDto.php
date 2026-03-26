@@ -12,6 +12,7 @@ final readonly class BalanceResultDto implements ResultDtoInterface
         public int $id,
         public int $userId,
         public int $currencyId,
+        public string $currency,
         public float $available,
         public float $locked,
         public float $total,

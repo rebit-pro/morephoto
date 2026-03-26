@@ -14,9 +14,7 @@ final class ReportController extends BaseWalletController
 {
     public function __construct(
         private readonly GetCashFlowReportUseCase $getCashFlowReportUseCase,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
     /**
      * GET /api/v1/wallet/reports/cash-flow

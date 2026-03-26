@@ -13,6 +13,7 @@ final readonly class TransactionResultDto implements ResultDtoInterface
         public int $id,
         public int $userId,
         public int $currencyId,
+        public string $currency,
         public TransactionTypeEnum $type,
         public float $amount,
         public float $balanceAfter,

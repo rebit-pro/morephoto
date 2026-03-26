@@ -18,6 +18,6 @@ final readonly class CashFlowReportResultDto implements ResultDtoInterface
      */
     public function __construct(
         public array $items,
-        public CashFlowTotalsResultDto $totals,
+        public ?CashFlowTotalsResultDto $totals,
     ) {}
 }
