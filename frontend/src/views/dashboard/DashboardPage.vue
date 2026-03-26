@@ -159,7 +159,7 @@ async function loadDashboard(): Promise<void> {
 
     const tasks: Array<Promise<void>> = [
       wallet.fetchBalances(),
-      wallet.fetchTransactions({ page: 1, perPage: 4 }),
+      wallet.fetchTransactions({ limit: 4, offset: 0 }),
       exchange.fetchCurrencyPairs()
     ];
 

@@ -1,17 +1,44 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useWalletStore } from '@/stores/wallet';
 
 const wallet = useWalletStore();
 
+const lastSyncedAt = computed(() => {
+  const synced = wallet.balances.find((b) => null !== b.syncedAt);
+  if (!synced?.syncedAt) return null;
+  return new Date(synced.syncedAt).toLocaleString('ru-RU');
+});
+
 onMounted(async () => {
   await wallet.fetchBalances();
 });
+
+async function handleSync(): Promise<void> {
+  await wallet.syncBalances();
+}
 </script>
 
 <template>
   <div>
-    <h2 class="text-h4 mb-6">Балансы</h2>
+    <div class="d-flex align-center justify-space-between mb-6">
+      <h2 class="text-h4">Балансы</h2>
+      <div class="d-flex align-center ga-3">
+        <span v-if="lastSyncedAt" class="text-caption text-lightText">
+          Синхронизировано: {{ lastSyncedAt }}
+        </span>
+        <v-btn
+          color="primary"
+          variant="outlined"
+          size="small"
+          :loading="wallet.syncing"
+          prepend-icon="mdi-sync"
+          @click="handleSync"
+        >
+          Синхронизировать
+        </v-btn>
+      </div>
+    </div>
 
     <v-row v-if="wallet.loading" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />

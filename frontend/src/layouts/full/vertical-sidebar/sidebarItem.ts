@@ -34,11 +34,32 @@ const sidebarItem: menu[] = [
     icon: DashboardIcon,
     to: '/dashboard'
   },
+
+  { divider: true },
+  { header: 'Биржа' },
   {
     id: 'orderbook',
     title: 'P2P Стакан',
     icon: ArrowsExchangeIcon,
     to: '/orderbook'
+  },
+  {
+    id: 'trades',
+    title: 'Сделки',
+    icon: ArrowsExchangeIcon,
+    to: '/exchange/trades'
+  },
+  {
+    id: 'advertisements',
+    title: 'Объявления',
+    icon: ReportMoneyIcon,
+    to: '/exchange/advertisements'
+  },
+  {
+    id: 'chat-scripts',
+    title: 'Скрипты чата',
+    icon: HistoryIcon,
+    to: '/exchange/chat-scripts'
   },
 
   { divider: true },
@@ -54,6 +75,12 @@ const sidebarItem: menu[] = [
     title: 'Транзакции',
     icon: HistoryIcon,
     to: '/wallet/transactions'
+  },
+  {
+    id: 'cash-flow-report',
+    title: 'Отчёт: Обороты',
+    icon: ReportMoneyIcon,
+    to: '/wallet/reports/cash-flow'
   },
 
   { divider: true },

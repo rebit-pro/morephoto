@@ -1,0 +1,144 @@
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useTradesStore } from '@/stores/trades';
+import { usePolling } from '@/composables/usePolling';
+import type { TradeStatus } from '@/api/exchange';
+
+const router = useRouter();
+const trades = useTradesStore();
+
+const statusFilter = ref<TradeStatus | ''>('');
+
+const statusOptions: { title: string; value: TradeStatus | '' }[] = [
+  { title: 'Все', value: '' },
+  { title: 'Ожидание оплаты', value: 'pending_payment' },
+  { title: 'Оплата отправлена', value: 'payment_sent' },
+  { title: 'Оплата подтверждена', value: 'payment_confirmed' },
+  { title: 'Завершена', value: 'completed' },
+  { title: 'Отменена', value: 'cancelled' },
+  { title: 'Спор', value: 'disputed' },
+];
+
+const statusLabels: Record<string, string> = {
+  pending_payment: 'Ожидание оплаты',
+  payment_sent: 'Оплата отправлена',
+  payment_confirmed: 'Оплата подтверждена',
+  completed: 'Завершена',
+  cancelled: 'Отменена',
+  disputed: 'Спор',
+};
+
+const statusColors: Record<string, string> = {
+  pending_payment: 'warning',
+  payment_sent: 'info',
+  payment_confirmed: 'primary',
+  completed: 'success',
+  cancelled: 'error',
+  disputed: 'error',
+};
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString('ru-RU');
+}
+
+async function loadTrades(): Promise<void> {
+  const status = '' !== statusFilter.value ? statusFilter.value : undefined;
+  await trades.fetchTrades(status);
+}
+
+function openTrade(id: number): void {
+  void router.push(`/exchange/trades/${id}`);
+}
+
+const polling = usePolling(loadTrades, 10000);
+
+onMounted(async () => {
+  await loadTrades();
+  polling.start();
+});
+
+onUnmounted(() => {
+  polling.stop();
+});
+</script>
+
+<template>
+  <div>
+    <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
+      <h2 class="text-h4">Сделки</h2>
+      <v-select
+        v-model="statusFilter"
+        :items="statusOptions"
+        item-title="title"
+        item-value="value"
+        label="Статус"
+        variant="outlined"
+        density="compact"
+        hide-details
+        style="max-width: 240px"
+        @update:model-value="loadTrades"
+      />
+    </div>
+
+    <v-row v-if="trades.loading && 0 === trades.trades.length" justify="center" class="mt-8">
+      <v-progress-circular indeterminate color="primary" />
+    </v-row>
+
+    <v-alert v-if="trades.error" type="error" variant="tonal" class="mb-4">{{ trades.error }}</v-alert>
+
+    <v-card v-if="!trades.loading || 0 < trades.trades.length" rounded="md">
+      <v-table density="comfortable" hover>
+        <thead>
+          <tr>
+            <th>Контрагент</th>
+            <th>Тип</th>
+            <th class="text-right">Цена</th>
+            <th class="text-right">Сумма (фиат)</th>
+            <th>Статус</th>
+            <th>Дата</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-if="0 === trades.trades.length">
+            <td colspan="6" class="text-center text-lightText pa-6">Нет сделок</td>
+          </tr>
+          <tr
+            v-for="trade in trades.trades"
+            :key="trade.id"
+            class="cursor-pointer"
+            @click="openTrade(trade.id)"
+          >
+            <td>
+              <div class="d-flex align-center">
+                <v-avatar size="28" color="lightsecondary" class="mr-2">
+                  <span class="text-caption">{{ trade.counterpartyName.charAt(0).toUpperCase() }}</span>
+                </v-avatar>
+                <span class="text-body-2 font-weight-medium">{{ trade.counterpartyName }}</span>
+              </div>
+            </td>
+            <td>
+              <v-chip size="small" variant="tonal" :color="'buy' === trade.side ? 'success' : 'error'">
+                {{ 'buy' === trade.side ? 'Покупка' : 'Продажа' }}
+              </v-chip>
+            </td>
+            <td class="text-right font-weight-medium">{{ trade.price.toFixed(2) }} ₽</td>
+            <td class="text-right">{{ trade.fiatAmount.toFixed(2) }} ₽</td>
+            <td>
+              <v-chip size="small" variant="tonal" :color="statusColors[trade.status] ?? 'default'">
+                {{ statusLabels[trade.status] ?? trade.status }}
+              </v-chip>
+            </td>
+            <td class="text-lightText text-body-2">{{ formatDate(trade.createdAt) }}</td>
+          </tr>
+        </tbody>
+      </v-table>
+    </v-card>
+  </div>
+</template>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
