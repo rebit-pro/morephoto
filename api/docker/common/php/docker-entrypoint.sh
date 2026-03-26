@@ -69,7 +69,7 @@ tls_starttls $tls_starttls
 tls_certcheck $tls_certcheck
 EOF
 
-    chmod 600 /etc/msmtprc
+    chmod 644 /etc/msmtprc
 }
 
 load_runtime_env
