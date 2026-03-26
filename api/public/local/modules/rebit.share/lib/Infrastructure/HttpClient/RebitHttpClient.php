@@ -67,7 +67,7 @@ final class RebitHttpClient
 
         $body = $this->prepareBody($data, $headers);
 
-        $this->logger->info('HTTP Request', [
+        $this->logger->debug('HTTP Request', [
             'method' => $method,
             'url' => $url,
             'headers' => $headers,
@@ -142,7 +142,7 @@ final class RebitHttpClient
         $status = $this->httpClient->getStatus();
         $errors = $this->httpClient->getError();
 
-        $this->logger->info('HTTP Response', [
+        $this->logger->debug('HTTP Response', [
             'status' => $status,
             'url' => $url,
             'method' => $method,
