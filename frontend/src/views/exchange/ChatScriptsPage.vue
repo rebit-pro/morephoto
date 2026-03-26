@@ -72,9 +72,11 @@ function removeStep(index: number): void {
 function moveStep(index: number, direction: -1 | 1): void {
   const target = index + direction;
   if (target < 0 || target >= form.steps.length) return;
-  const temp = form.steps[index];
-  form.steps[index] = form.steps[target];
-  form.steps[target] = temp;
+  const current = form.steps[index];
+  const neighbor = form.steps[target];
+  if (undefined === current || undefined === neighbor) return;
+  form.steps[index] = neighbor;
+  form.steps[target] = current;
   form.steps.forEach((step, i) => {
     step.sort = i + 1;
   });
