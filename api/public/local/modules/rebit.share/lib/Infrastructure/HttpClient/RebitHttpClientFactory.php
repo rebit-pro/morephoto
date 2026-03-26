@@ -6,6 +6,7 @@ namespace Rebit\Share\Infrastructure\HttpClient;
 
 use Bitrix\Main\Web\HttpClient;
 use Psr\Log\LoggerInterface;
+use Rebit\Share\Infrastructure\Logger\HttpDebugLoggerFactory;
 
 final class RebitHttpClientFactory
 {
@@ -20,6 +21,6 @@ final class RebitHttpClientFactory
             'disableSslVerification' => false,
         ]);
 
-        return new RebitHttpClient($logger, $httpClient);
+        return new RebitHttpClient(HttpDebugLoggerFactory::create($logger), $httpClient);
     }
 }

@@ -35,14 +35,6 @@ return [
                     return (new CommonLoggerProcessor($record))();
                 },
             ],
-            'file' => [
-                'handler' => static function() {
-                    return new StreamHandler(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/debug.html', Logger::DEBUG);
-                },
-                'formatter' => static function() {
-                    return new HtmlFormatter();
-                },
-            ],
         ],
     ],
 ];

@@ -82,6 +82,7 @@
             "Rebit\\Bybit\\Tests\\": "public/local/modules/rebit.bybit/tests/",
             "Rebit\\Exchange\\Tests\\": "public/local/modules/rebit.exchange/tests/",
             "Rebit\\Identity\\Tests\\": "public/local/modules/rebit.identity/tests/",
+            "Rebit\\Share\\Tests\\": "public/local/modules/rebit.share/tests/",
             "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
         }
     },
