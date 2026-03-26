@@ -13,6 +13,7 @@ export const useExchangeStore = defineStore('exchange', () => {
   const hasOrderBookAccess = ref(false);
 
   let refreshTimer: ReturnType<typeof setInterval> | null = null;
+  let orderBookRequestId = 0;
 
   function clearOrderBook(): void {
     buyOrders.value = [];
@@ -37,16 +38,29 @@ export const useExchangeStore = defineStore('exchange', () => {
       return;
     }
 
+    const currentRequestId = ++orderBookRequestId;
+
     loading.value = true;
     error.value = null;
     try {
       const data = await exchangeApi.getOrderBook(selectedPair.value.token, selectedPair.value.fiat);
+
+      if (!hasOrderBookAccess.value || currentRequestId !== orderBookRequestId) {
+        return;
+      }
+
       buyOrders.value = data.buy;
       sellOrders.value = data.sell;
     } catch (e: unknown) {
+      if (!hasOrderBookAccess.value || currentRequestId !== orderBookRequestId) {
+        return;
+      }
+
       error.value = e instanceof Error ? e.message : 'Ошибка загрузки стакана';
     } finally {
-      loading.value = false;
+      if (currentRequestId === orderBookRequestId) {
+        loading.value = false;
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import { useExchangeStore } from '@/stores/exchange';
 import { useIdentityStore } from '@/stores/identity';
 import OrderBookTable from './components/OrderBookTable.vue';
@@ -13,6 +14,7 @@ type OrderBookFilters = {
 };
 
 const exchange = useExchangeStore();
+const auth = useAuthStore();
 const identity = useIdentityStore();
 const filters = ref<OrderBookFilters>({
   selectedMethods: [],
@@ -155,7 +157,7 @@ onUnmounted(() => {
 
     <OrderBookAccessState
       v-else
-      :is-authenticated="true"
+      :is-authenticated="auth.isAuthenticated"
       :connection-status="orderBookConnectionStatus"
     />
 

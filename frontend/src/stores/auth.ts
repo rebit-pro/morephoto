@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { router } from '@/router';
-import { useExchangeStore } from '@/stores/exchange';
 import {
   authApi,
   type AuthUser,
@@ -24,13 +23,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function clearSession(): void {
-    const exchange = useExchangeStore();
-
     token.value = null;
     user.value = null;
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    exchange.setOrderBookAccess(false);
   }
 
   async function login(email: string, password: string, captcha?: GeeTestCaptchaPayload): Promise<void> {

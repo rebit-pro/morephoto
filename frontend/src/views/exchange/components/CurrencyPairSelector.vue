@@ -47,7 +47,7 @@ const isActivePair = computed(
 );
 
 watch(
-  [selectedMethods, limitMin, limitMax],
+  () => [selectedMethods.value, limitMin.value, limitMax.value],
   () => {
     emit('update:filters', {
       selectedMethods: [...selectedMethods.value],
@@ -55,7 +55,7 @@ watch(
       limitMax: limitMax.value,
     });
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 );
 </script>
 

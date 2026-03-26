@@ -10,6 +10,8 @@ import type { OrderBookEntry } from '@/api/exchange';
 
 type OrderBookFilters = {
   selectedMethods: string[];
+  limitMin: string;
+  limitMax: string;
 };
 
 const exchange = useExchangeStore();
@@ -17,6 +19,8 @@ const auth = useAuthStore();
 const identity = useIdentityStore();
 const filters = ref<OrderBookFilters>({
   selectedMethods: [],
+  limitMin: '',
+  limitMax: '',
 });
 const selectedOrder = ref<OrderBookEntry | null>(null);
 const showOrderDialog = ref(false);
@@ -215,6 +219,8 @@ onUnmounted(() => {
               <OrderBookTable
                 :orders="exchange.buyOrders"
                 :filter-methods="filters.selectedMethods"
+                :limit-min="filters.limitMin"
+                :limit-max="filters.limitMax"
                 side="buy"
                 @select="onSelectOrder"
               />
@@ -231,6 +237,8 @@ onUnmounted(() => {
               <OrderBookTable
                 :orders="exchange.sellOrders"
                 :filter-methods="filters.selectedMethods"
+                :limit-min="filters.limitMin"
+                :limit-max="filters.limitMax"
                 side="sell"
                 @select="onSelectOrder"
               />
