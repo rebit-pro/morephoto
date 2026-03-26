@@ -16,10 +16,10 @@
 | 1 | `rebit.share` | Общая инфраструктура, контракты | `Rebit\Share` | — | ✅ |
 | 2 | `rebit.auth` | Аутентификация, e-mail логин, регистрация с подтверждением кода, токены | `Rebit\Auth` | `rebit.share` | ✅ |
 | 3 | `rebit.bybit` | Клиент Bybit API | `Rebit\Bybit` | `rebit.share` | ✅ |
-| 4 | `rebit.identity` | Управление API-ключами Bybit | `Rebit\Identity` | `rebit.share` | ✅ |
+| 4 | `rebit.identity` | Управление API-ключами Bybit, платёжные методы пользователя | `Rebit\Identity` | `rebit.share` | ✅ |
 | 5 | `rebit.wallet` | Балансы, транзакции | `Rebit\Wallet` | `rebit.share` | ✅ |
 | 6 | `rebit.dev` | Инструменты разработки | `Rebit\Dev` | — | ✅ |
-| 7 | `rebit.exchange` | P2P-торговля, сделки, чат | `Rebit\Exchange` | `rebit.share` | ✅ |
+| 7 | `rebit.exchange` | P2P-торговля, сделки, чат, контрагенты | `Rebit\Exchange` | `rebit.share` | ✅ |
 | 8 | `rebit.notification` | Уведомления, каналы доставки | `Rebit\Notification` | `rebit.share` | 🔜 запланирован |
 | 9 | `rebit.security` | Сессии, 2FA, аудит | `Rebit\Security` | `rebit.share` | 🔜 запланирован |
 
@@ -36,7 +36,7 @@ rebit.share
     ▲
     ├── rebit.auth           (реализует TokenResolverInterface)
     ├── rebit.bybit          (реализует BybitClientInterface)
-    ├── rebit.identity       (реализует BybitConnectionResolverInterface)
+    ├── rebit.identity       (потребляет BybitClientInterface; реализует BybitConnectionResolverInterface)
     ├── rebit.wallet         (потребляет BybitClientInterface, BybitConnectionResolverInterface, CurrencyQueryInterface; реализует BalanceQueryInterface)
     ├── rebit.exchange       (потребляет BybitClientInterface, BybitConnectionResolverInterface, BalanceQueryInterface; реализует CurrencyQueryInterface)
     ├── rebit.notification   (запланирован)
@@ -518,7 +518,7 @@ BybitClientInterface::class => [
 
 ## 7. Модуль `rebit.identity`
 
-**Домен:** Identity — управление API-ключами Bybit, статус подключения.
+**Домен:** Identity — управление API-ключами Bybit, статус подключения, платёжные методы пользователя.
 
 ### Структура
 
@@ -529,20 +529,32 @@ rebit.identity/
 ├── routes.php
 ├── orm_annotation.php
 ├── di/
-│   └── connection.php
+│   ├── connection.php
+│   └── payment-method.php
 └── lib/
     ├── Application/
-    │   └── ApiConnection/
+    │   ├── ApiConnection/
+    │   │   ├── UseCase/
+    │   │   │   ├── ConnectApiUseCase.php
+    │   │   │   ├── DisconnectApiUseCase.php
+    │   │   │   ├── VerifyApiUseCase.php
+    │   │   │   └── GetConnectionStatusUseCase.php
+    │   │   └── Dto/
+    │   │       ├── Request/
+    │   │       │   └── ConnectApiRequestDto.php
+    │   │       └── Result/
+    │   │           └── ApiConnectionResultDto.php
+    │   └── PaymentMethod/
     │       ├── UseCase/
-    │       │   ├── ConnectApiUseCase.php
-    │       │   ├── DisconnectApiUseCase.php
-    │       │   ├── VerifyApiUseCase.php
-    │       │   └── GetConnectionStatusUseCase.php
+    │       │   ├── SyncPaymentMethodsUseCase.php
+    │       │   └── GetPaymentMethodsUseCase.php
+    │       ├── Port/
+    │       │   └── Outgoing/
+    │       │       └── BybitPaymentMethodGatewayInterface.php
     │       └── Dto/
-    │           ├── Request/
-    │           │   └── ConnectApiRequestDto.php
     │           └── Result/
-    │               └── ApiConnectionResultDto.php
+    │               ├── PaymentMethodResultDto.php
+    │               └── PaymentMethodListResultDto.php
     ├── Domain/
     │   └── ApiConnection/
     │       ├── Entity/
@@ -558,18 +570,22 @@ rebit.identity/
     │       ├── Event/
     │       │   ├── ApiConnectionCreated.php
     │       │   ├── ApiConnectionRevoked.php
-    │       │   └── ApiConnectionFailed.php
+    │       │   ├── ApiConnectionFailed.php
+    │       │   └── PaymentMethodsSynced.php
     │       └── Service/
     │           ├── ApiKeyEncryptor.php
     │           └── ApiKeyMasker.php
     ├── Infrastructure/
     │   ├── Adapter/
     │   │   └── BybitConnectionResolver.php    # реализует BybitConnectionResolverInterface
+    │   ├── Bybit/
+    │   │   └── BybitPaymentMethodGateway.php  # реализует BybitPaymentMethodGatewayInterface
     │   └── Controller/
     │       └── BaseIdentityController.php
     └── Presentation/
         └── Controller/
-            └── ApiConnectionController.php
+            ├── ApiConnectionController.php
+            └── PaymentMethodController.php
 ```
 
 ### Реализуемые контракты
@@ -582,7 +598,7 @@ rebit.identity/
 
 | Контракт из `rebit.share` | Где используется |
 |----------------------------|------------------|
-| `BybitClientInterface` | `ConnectApiUseCase`, `VerifyApiUseCase` |
+| `BybitClientInterface` | `ConnectApiUseCase`, `VerifyApiUseCase`, `BybitPaymentMethodGateway` |
 
 ### Маршруты
 
@@ -591,6 +607,8 @@ POST   /api/v1/identity/connection          → ConnectApiUseCase
 DELETE /api/v1/identity/connection          → DisconnectApiUseCase
 POST   /api/v1/identity/connection/verify   → VerifyApiUseCase
 GET    /api/v1/identity/connection/status   → GetConnectionStatusUseCase
+GET    /api/v1/identity/payment-methods      → GetPaymentMethodsUseCase
+POST   /api/v1/identity/payment-methods/sync → SyncPaymentMethodsUseCase
 ```
 
 ### HL-блоки
@@ -612,6 +630,21 @@ GetConnectionStatusUseCase::class
 BybitConnectionResolverInterface::class → BybitConnectionResolver
 ApiConnectionController::class
 ```
+
+### DI (di/payment-method.php)
+
+```php
+BybitPaymentMethodGatewayInterface::class → BybitPaymentMethodGateway
+SyncPaymentMethodsUseCase::class
+GetPaymentMethodsUseCase::class
+PaymentMethodController::class
+```
+
+### Внутренние порты
+
+| Порт | Адаптер |
+|------|---------|
+| `BybitPaymentMethodGatewayInterface` | `Infrastructure/Bybit/BybitPaymentMethodGateway` |
 
 ---
 
@@ -991,6 +1024,64 @@ Authorization: Bearer <token>
 
 ---
 
+#### `GET /api/v1/identity/payment-methods` 🔒
+
+Список платёжных методов пользователя, синхронизированных с Bybit.
+
+**Response:**
+```json
+{
+  "data": {
+    "items": [
+      {
+        "id": "7110",
+        "paymentType": 14,
+        "paymentName": "Bank Transfer",
+        "realName": "Иван Иванов",
+        "bankName": "Sberbank",
+        "branchName": "",
+        "accountNo": "40817810099910004312",
+        "online": "0",
+        "visible": 1,
+        "realNameVerified": true,
+        "currencyBalance": []
+      },
+      {
+        "id": "-1",
+        "paymentType": 377,
+        "paymentName": "Balance",
+        "realName": "",
+        "bankName": "",
+        "branchName": "",
+        "accountNo": "",
+        "online": "1",
+        "visible": 0,
+        "realNameVerified": false,
+        "currencyBalance": ["EUR", "USD", "RUB"]
+      }
+    ]
+  }
+}
+```
+
+| Поле | Тип | Описание |
+|------|-----|---------|
+| `id` | string | ID метода на Bybit. `"-1"` — встроенный балансовый метод |
+| `paymentType` | int | Числовой код типа |
+| `paymentName` | string | Название метода (из `paymentConfigVo`) |
+| `online` | string | `"0"`: офлайн (банковский перевод), `"1"`: онлайн (через баланс) |
+| `currencyBalance` | string[] | Поддерживаемые валюты (только для Balance) |
+
+> Используется при создании объявления — для выбора `paymentMethodIds`.
+
+---
+
+#### `POST /api/v1/identity/payment-methods/sync` 🔒
+
+Принудительная синхронизация платёжных методов с Bybit. Тело не требуется.
+
+---
+
 ### 10.4. `rebit.wallet` — Балансы и транзакции
 
 #### `GET /api/v1/wallet/balances` 🔒
@@ -1321,6 +1412,24 @@ Authorization: Bearer <token>
         "fee": 0.20,
         "status": "pending_payment",
         "counterpartyName": "buyer_nick",
+        "counterpartyUserId": 105,
+        "counterparty": {
+          "bybitUserId": "290118",
+          "nickname": "buyer_nick",
+          "kycLevel": 2,
+          "totalTrades": 342,
+          "recentRate": "98.5",
+          "goodAppraiseRate": "97.2",
+          "goodAppraiseCount": 335,
+          "badAppraiseCount": 7,
+          "avgReleaseTime": "3.5",
+          "avgTransferTime": "5.2",
+          "accountDays": 698,
+          "vipLevel": 1,
+          "authStatus": 2,
+          "userType": "PERSONAL",
+          "isOnline": true
+        },
         "currencyPairId": 1,
         "advertisementId": 5,
         "paymentDeadline": "2026-03-24T12:15:00+00:00",
@@ -1335,6 +1444,9 @@ Authorization: Bearer <token>
   }
 }
 ```
+
+> Поле `counterparty` содержит данные из `b_user` (группа «Контрагенты»), синхронизированные через `POST /v5/p2p/user/order/personal/info`.
+> `counterpartyUserId` — ID контрагента в `b_user`.
 
 **Статусы сделки (`status`):**
 
@@ -1503,7 +1615,7 @@ Authorization: Bearer <token>
 
 **Статус: ✅ реализован**
 
-**Домен:** Exchange — стаканы ордеров, объявления, сделки, чат сделки, скрипты автосообщений.
+**Домен:** Exchange — стаканы ордеров, объявления, сделки, чат сделки, скрипты автосообщений, контрагенты.
 
 ### Структура
 
@@ -1519,6 +1631,7 @@ rebit.exchange/
 │   ├── order-book.php
 │   ├── advertisement.php
 │   ├── trade.php
+│   ├── counterparty.php
 │   ├── trade-chat.php
 │   └── chat-script.php
 └── lib/
@@ -1539,6 +1652,15 @@ rebit.exchange/
     │   │   ├── Port/
     │   │   │   └── BybitTradeGatewayInterface.php
     │   │   └── UseCase/ → ListTradesUseCase, GetTradeUseCase, ConfirmPaymentUseCase, ConfirmReceiptUseCase, SyncTradeHistoryUseCase
+    │   ├── Counterparty/
+    │   │   ├── Port/
+    │   │   │   └── Outgoing/
+    │   │   │       └── BybitCounterpartyGatewayInterface.php
+    │   │   ├── UseCase/
+    │   │   │   └── SyncCounterpartyUseCase.php
+    │   │   └── Dto/
+    │   │       └── Result/
+    │   │           └── CounterpartyResultDto.php
     │   ├── TradeChat/
     │   │   ├── Port/
     │   │   │   └── BybitChatGatewayInterface.php
@@ -1551,6 +1673,7 @@ rebit.exchange/
     │   ├── OrderBook/Entity, Repository
     │   ├── Advertisement/Entity, Repository, Enum (AdvertisementStatusEnum, PriceTypeEnum)
     │   ├── Trade/Entity, Repository, Enum (TradeStatusEnum, CancelReasonEnum)
+    │   ├── Counterparty/Repository (CounterpartyRepository — работает с b_user через Bitrix CUser API), Event (CounterpartySynced)
     │   ├── TradeChat/Entity, Repository, Enum (ContentTypeEnum, MessageTypeEnum)
     │   ├── ChatScript/Entity (ChatScript, ChatScriptStep, ChatScriptExecution + коллекции), Repository (x3), Enum (ExecutionStatusEnum)
     │   └── Shared/Enum (SideEnum: buy/sell)
@@ -1560,6 +1683,7 @@ rebit.exchange/
     │   ├── Bybit/
     │   │   ├── BybitAdvertisementGateway.php   # реализует BybitAdvertisementGatewayInterface
     │   │   ├── BybitChatGateway.php            # реализует BybitChatGatewayInterface
+    │   │   ├── BybitCounterpartyGateway.php    # реализует BybitCounterpartyGatewayInterface
     │   │   ├── BybitOrderBookGateway.php       # реализует BybitOrderBookGatewayInterface
     │   │   └── BybitTradeGateway.php           # реализует BybitTradeGatewayInterface
     │   └── Controller/
@@ -1570,7 +1694,7 @@ rebit.exchange/
         └── Command/
             ├── SyncOrderBookCommand.php        # polling стакана ордеров (каждые 10 сек)
             ├── CleanStaleOrdersCommand.php     # очистка устаревших записей стакана (каждую 1 мин)
-            ├── SyncTradesCommand.php           # polling новых/изменённых сделок (каждые 10 сек)
+            ├── SyncTradesCommand.php           # polling новых/изменённых сделок + синхронизация контрагентов в b_user (каждые 10 сек)
             ├── SyncTradeHistoryCommand.php     # дозагрузка истории сделок (каждые 10 мин)
             └── ExecuteChatScriptsCommand.php   # выполнение отложенных шагов скриптов (каждые 5 сек)
 ```
@@ -1604,6 +1728,26 @@ rebit.exchange/
 | `RebitTradeChatScriptStep` | `rebit_trade_chat_script_step` | Шаги скрипта |
 | `RebitChatScriptExecution` | `rebit_chat_script_execution` | Очередь исполнения скриптов |
 
+### Внутренние порты
+
+| Порт | Адаптер | Описание |
+|------|---------|----------|
+| `BybitOrderBookGatewayInterface` | `Infrastructure/Bybit/BybitOrderBookGateway` | Polling стакана Bybit |
+| `BybitAdvertisementGatewayInterface` | `Infrastructure/Bybit/BybitAdvertisementGateway` | CRUD объявлений через Bybit API |
+| `BybitTradeGatewayInterface` | `Infrastructure/Bybit/BybitTradeGateway` | Операции со сделками через Bybit API |
+| `BybitChatGatewayInterface` | `Infrastructure/Bybit/BybitChatGateway` | Отправка сообщений в чат Bybit |
+| `BybitCounterpartyGatewayInterface` | `Infrastructure/Bybit/BybitCounterpartyGateway` | Получение профиля контрагента через `user/order/personal/info` |
+
+### Работа с контрагентами
+
+> Подробнее: [scenario.md § 13](scenario.md#сценарий-13-сбор-и-сохранение-данных-о-контрагенте), [database.md § 1.2–1.3](database.md#12-группа-пользователей-контрагенты-b_group).
+
+- `SyncCounterpartyUseCase` вызывается из `SyncTradesCommand` при обнаружении нового ордера.
+- Данные контрагента из `POST /v5/p2p/user/order/personal/info` сохраняются в `b_user` с UF-полями `UF_BYBIT_*`.
+- Контрагенты помещаются в группу пользователей **«Контрагенты»** (`COUNTERPARTIES`), `ACTIVE` = `N`.
+- `CounterpartyRepository` работает с `b_user` через Bitrix CUser API (не Highload-блок).
+- При повторной сделке — обновление UF-полей (статистика, рейтинг, онлайн-статус).
+
 ### Ограничения Bybit P2P API
 
 | Операция | Bybit API | Решение |
@@ -1612,7 +1756,7 @@ rebit.exchange/
 | Отмена сделки | ❌ | Отмена по таймеру Bybit. Статус обновляется через polling `order/info` |
 | Арбитраж | ❌ | Редирект в UI Bybit. Статус `disputed` — через polling |
 | История чата | ❌ | Только исходящие сообщения сохраняются локально в `rebit_trade_message` |
-| Способы оплаты пользователя | ❌ | Извлекаются из `paymentTerms` в ответах `item/personal/list` и `order/info` |
+| Способы оплаты пользователя | ✅ | `POST /v5/p2p/user/payment/list` → `rebit.identity/SyncPaymentMethodsUseCase` |
 
 ---
 
@@ -1706,7 +1850,7 @@ POST   /api/v1/security/alerts/{id}/resolve
 | Синхронизация балансов | `rebit.wallet` | `Presentation/Command/SyncBalancesCommand` | Синхронизация балансов активных пользователей с Bybit | — |
 | Синхронизация стакана | `rebit.exchange` | `Presentation/Command/SyncOrderBookCommand` | Polling `POST /v5/p2p/item/online` → обновление `rebit_order_book` | 10 сек |
 | Очистка стакана | `rebit.exchange` | `Presentation/Command/CleanStaleOrdersCommand` | Удаление записей `rebit_order_book` старше 5 мин | 1 мин |
-| Синхронизация сделок | `rebit.exchange` | `Presentation/Command/SyncTradesCommand` | Polling `order/pending/simplifyList` → обнаружение новых ордеров и обновление статусов | 10 сек |
+| Синхронизация сделок | `rebit.exchange` | `Presentation/Command/SyncTradesCommand` | Polling `order/pending/simplifyList` → обнаружение новых ордеров, синхронизация контрагентов в `b_user` (группа «Контрагенты») и обновление статусов | 10 сек |
 | Синхронизация истории сделок | `rebit.exchange` | `Presentation/Command/SyncTradeHistoryCommand` | Polling `order/simplifyList` → дозагрузка завершённых ордеров в `rebit_trade` | 10 мин |
 | Выполнение шагов скриптов | `rebit.exchange` | `Presentation/Command/ExecuteChatScriptsCommand` | Отправка отложенных сообщений из `rebit_chat_script_execution` через `order/message/send` | 5 сек |
 
@@ -1714,6 +1858,7 @@ POST   /api/v1/security/alerts/{id}/resolve
 
 | Команда | Модуль | Описание | Интервал |
 |---------|--------|----------|----------|
+| Синхронизация платёжных методов | `rebit.identity` | `POST /v5/p2p/user/payment/list` → актуализация платёжных методов активных пользователей | 30 мин |
 | Мониторинг активности | `rebit.security` | Анализ паттернов подозрительной активности | 5 мин |
 
 ---
@@ -1914,10 +2059,10 @@ final class FeatureController extends BaseJsonController
 | `rebit.share` | 1 | 1 | — | — | 2 | — | — | — |
 | `rebit.auth` | 1 | 4 | 4 | 2 | — | — | 4 | 4 |
 | `rebit.bybit` | — | — | — | — | — | — | — | — |
-| `rebit.identity` | 1 | 4 | 1+coll | 1 | 2 | 3 | 2 | — |
+| `rebit.identity` | 2 | 6 | 1+coll | 1 | 2 | 4 | 2 | 1 |
 | `rebit.wallet` | 2 | 5 | 2+coll | 2 | 1 | 5 | 1 | 1 |
-| `rebit.exchange` | 7 | 19 | 7+coll | 8 | 6 | — | — | 4 |
-| **Итого** | **12** | **33** | **14** | **13** | **11** | **8** | **7** | **9** |
+| `rebit.exchange` | 7 | 20 | 7+coll | 9 | 6 | 1 | — | 5 |
+| **Итого** | **13** | **36** | **14** | **14** | **11** | **10** | **7** | **11** |
 
 ### Межмодульные контракты
 

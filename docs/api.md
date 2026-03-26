@@ -12,6 +12,7 @@
 3. [Пользователь и аккаунт](#3-пользователь-и-аккаунт)
    - 3.1. [Получить информацию об аккаунте](#31-получить-информацию-об-аккаунте)
    - 3.2. [Получить информацию о контрагенте](#32-получить-информацию-о-контрагенте)
+   - 3.3. [Получить платёжные методы пользователя](#33-получить-платёжные-методы-пользователя)
 4. [Кошелёк и балансы](#4-кошелёк-и-балансы)
    - 4.1. [Получить баланс монет](#41-получить-баланс-монет)
 5. [Стакан (объявления)](#5-стакан-объявления)
@@ -364,6 +365,227 @@ Content-Type: application/json
     }
 }
 ```
+
+---
+
+### 3.3. Получить платёжные методы пользователя
+
+Возвращает список настроенных платёжных методов текущего пользователя: банковские карты, счета, балансовые методы (Balance). Включает конфигурацию каждого метода, поддерживаемые валюты и шаблон полей для UI.
+
+**Используется в:**
+- `rebit.identity` — при подключении API-ключей: синхронизация платёжных методов пользователя в локальный справочник.
+- `rebit.exchange` — при создании объявления (`CreateAdvertisementUseCase`): получение актуальных `paymentIds` для передачи в `item/create`.
+- `rebit.exchange` — при отображении страницы сделки: показ реквизитов продавца для оплаты.
+- `rebit.exchange` — при обнаружении новой сделки (`TradeDiscovered`): получение информации о платёжных методах для сохранения в `rebit_trade.UF_PAYMENT_DETAILS`.
+
+> ℹ️ **Важно:** этот эндпоинт снимает ограничение [§ 9.4](#94-получение-платёжных-методов-пользователя), ранее считавшееся непреодолимым. Теперь платёжные методы можно получать напрямую, а не извлекать косвенно из `paymentTerms` объявлений.
+
+```
+POST /v5/p2p/user/payment/list
+```
+
+#### Параметры запроса
+
+Нет (тело запроса — пустой объект `{}`).
+
+#### Параметры ответа
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `result` | `array<object>` | Массив платёжных методов |
+| `result[].id` | `string` | ID платёжного метода. `"-1"` — встроенный балансовый метод |
+| `result[].realName` | `string` | Реальное имя владельца |
+| `result[].paymentType` | `string` | Тип платёжного метода (числовой код) |
+| `result[].bankName` | `string` | Название банка |
+| `result[].branchName` | `string` | Название отделения банка |
+| `result[].accountNo` | `string` | Номер счёта |
+| `result[].qrcode` | `string` | URL QR-кода (для методов с QR-оплатой) |
+| `result[].online` | `string` | Тип покупки. `"0"`: офлайн (перевод), `"1"`: онлайн (через баланс) |
+| `result[].visible` | `int` | Видимость метода |
+| `result[].payMessage` | `string` | Сообщение при оплате |
+| `result[].firstName` | `string` | Имя |
+| `result[].lastName` | `string` | Фамилия |
+| `result[].secondLastName` | `string` | Вторая фамилия |
+| `result[].clabe` | `string` | CLABE (межбанковский номер, Мексика) |
+| `result[].debitCardNumber` | `string` | Номер дебетовой карты |
+| `result[].concept` | `string` | Назначение платежа |
+| `result[].countNo` | `string` | Номер счёта (альтернативное поле) |
+| `result[].paymentExt1`…`paymentExt6` | `string` | Расширенные поля платёжного метода |
+| `result[].paymentTemplateVersion` | `int` | Версия шаблона платёжного метода |
+| `result[].hasPaymentTemplateChanged` | `boolean` | Изменился ли шаблон с последнего обновления |
+| `result[].paymentConfigVo` | `object` | Конфигурация платёжного метода |
+| `result[].paymentConfigVo.paymentType` | `string` | Тип платежа |
+| `result[].paymentConfigVo.checkType` | `int` | Тип проверки |
+| `result[].paymentConfigVo.sort` | `int` | Сортировка |
+| `result[].paymentConfigVo.paymentName` | `string` | Название метода оплаты |
+| `result[].paymentConfigVo.addTips` | `string` | Подсказка при добавлении метода |
+| `result[].paymentConfigVo.itemTips` | `string` | Подсказка в карточке метода |
+| `result[].paymentConfigVo.online` | `int` | Флаг онлайн-оплаты |
+| `result[].paymentConfigVo.items` | `array<object>` | Описание полей формы для UI (label, placeholder, type, required) |
+| `result[].realNameVerified` | `boolean` | Верифицировано ли реальное имя |
+| `result[].channel` | `string` | Канал: `bybit` |
+| `result[].currencyBalance` | `array<string>` | Список валют, поддерживаемых методом (только для Balance-метода) |
+
+#### Пример запроса
+
+```http
+POST /v5/p2p/user/payment/list HTTP/1.1
+Host: api-testnet.bybit.com
+X-BAPI-SIGN: XXXXX
+X-BAPI-API-KEY: xxxxxxxxxxxxxxxxxx
+X-BAPI-TIMESTAMP: 1675866354698
+X-BAPI-RECV-WINDOW: 5000
+Content-Type: application/json
+
+{}
+```
+
+#### Пример ответа
+
+```json
+{
+    "ret_code": 0,
+    "ret_msg": "SUCCESS",
+    "result": [
+        {
+            "id": "-1",
+            "realName": "",
+            "paymentType": 377,
+            "bankName": "",
+            "branchName": "",
+            "accountNo": "",
+            "qrcode": "",
+            "visible": 0,
+            "payMessage": "",
+            "firstName": "",
+            "lastName": "",
+            "secondLastName": "",
+            "clabe": "",
+            "debitCardNumber": "",
+            "mobile": "",
+            "businessName": "",
+            "concept": "",
+            "online": "1",
+            "countNo": "",
+            "paymentExt1": "",
+            "paymentExt2": "",
+            "paymentExt3": "",
+            "paymentExt4": "",
+            "paymentExt5": "",
+            "paymentExt6": "",
+            "paymentTemplateVersion": 0,
+            "hasPaymentTemplateChanged": false,
+            "paymentConfigVo": {
+                "paymentType": "377",
+                "checkType": 7,
+                "sort": 0,
+                "paymentName": "Balance",
+                "addTips": "This payment method enables transfers of assets in the Funding Account between Bybit users. Please make sure you have sufficient funds before initiating a purchase.",
+                "itemTips": "This payment method enables transfers of assets in the Funding Account between Bybit users. Please make sure you have sufficient funds before initiating a purchase.",
+                "online": 1,
+                "items": []
+            },
+            "realNameVerified": false,
+            "channel": "bybit",
+            "currencyBalance": [
+                "ARS", "EUR", "PLN", "GBP", "KZT", "USD", "BRL", "VND"
+            ]
+        },
+        {
+            "id": "7110",
+            "realName": "1111 ",
+            "paymentType": 14,
+            "bankName": "",
+            "branchName": "",
+            "accountNo": "11111",
+            "qrcode": "",
+            "visible": 0,
+            "payMessage": "",
+            "firstName": "",
+            "lastName": "",
+            "secondLastName": "",
+            "clabe": "",
+            "debitCardNumber": "",
+            "mobile": "",
+            "businessName": "",
+            "concept": "",
+            "online": "0",
+            "countNo": "",
+            "paymentExt1": "",
+            "paymentExt2": "",
+            "paymentExt3": "",
+            "paymentExt4": "",
+            "paymentExt5": "",
+            "paymentExt6": "",
+            "paymentTemplateVersion": 0,
+            "hasPaymentTemplateChanged": false,
+            "paymentConfigVo": {
+                "paymentType": "14",
+                "checkType": 0,
+                "sort": 0,
+                "paymentName": "Bank Transfer",
+                "addTips": "",
+                "itemTips": "",
+                "online": 0,
+                "items": [
+                    {
+                        "view": true,
+                        "name": "realName",
+                        "label": "Name",
+                        "placeholder": "Please Enter Name",
+                        "type": "text",
+                        "maxLength": "50",
+                        "required": true
+                    },
+                    {
+                        "view": true,
+                        "name": "accountNo",
+                        "label": "Bank Account Number",
+                        "placeholder": "Please Enter Account Number",
+                        "type": "text",
+                        "maxLength": "100",
+                        "required": true
+                    },
+                    {
+                        "view": true,
+                        "name": "branchName",
+                        "label": "Bank Branch",
+                        "placeholder": "Please Enter Bank Branch",
+                        "type": "text",
+                        "maxLength": "100",
+                        "required": false
+                    },
+                    {
+                        "view": true,
+                        "name": "bankName",
+                        "label": "Bank Name",
+                        "placeholder": "Please Enter Bank Name",
+                        "type": "text",
+                        "maxLength": "100",
+                        "required": false
+                    }
+                ]
+            },
+            "realNameVerified": true,
+            "channel": "bybit",
+            "currencyBalance": []
+        }
+    ],
+    "ext_code": "",
+    "ext_info": {},
+    "time_now": "1741762679.914540"
+}
+```
+
+#### Применение в сценариях
+
+1. **При подключении API-ключей (Сценарий 1):** после успешной верификации — вызвать `user/payment/list` и сохранить список платёжных методов пользователя в локальный справочник. Это позволяет при создании объявления предлагать пользователю выбрать из его реальных методов, а не вводить ID вручную.
+
+2. **При создании объявления (Сценарий 6):** отобразить список платёжных методов из `user/payment/list` для выбора `paymentIds`. Поле `paymentConfigVo.items` определяет, какие поля показывать в UI (реальное имя, номер счёта, отделение банка и т.д.).
+
+3. **При обнаружении новой сделки (Сценарий 4):** получить платёжные методы продавца и сохранить реквизиты в `rebit_trade.UF_PAYMENT_DETAILS` для отображения покупателю.
+
+4. **Фоновая синхронизация (Сценарий 7):** периодически обновлять кэшированные платёжные методы пользователей для актуальности данных при быстром создании объявлений.
 
 ---
 
@@ -1395,14 +1617,11 @@ Content-Type: image/png
 
 **Сценарий:** Список привязанных платёжных методов пользователя для создания объявления.
 
-**Статус:** ❌ Отдельный эндпоинт **не существует** в Bybit P2P API.
+**Статус:** ✅ Эндпоинт `POST /v5/p2p/user/payment/list` **доступен** — см. [§ 3.3](#33-получить-платёжные-методы-пользователя).
 
-**Влияние на архитектуру:**
-- Платёжные методы можно получить **косвенно** из:
-  - `POST /v5/p2p/item/personal/list` → поле `paymentTerms` в каждом объявлении
-  - `POST /v5/p2p/order/info` → поле `paymentTermList`
-  - `POST /v5/p2p/user/personal/info` → поле `paymentCount` (только количество)
-- **Решение:** при подключении аккаунта — извлечь `paymentTerms` из существующих объявлений пользователя. При создании объявления — передавать `paymentIds` (ID типов платёжных методов), которые пользователь знает из UI Bybit
+**Решение в архитектуре:**
+- Основной источник: прямой вызов `POST /v5/p2p/user/payment/list`
+- Дополнительно: `paymentTerms` из объявлений (`item/personal/list`) и ордеров (`order/info`)
 
 ### 9.5. Открытие арбитража (апелляция)
 
@@ -1432,11 +1651,11 @@ Content-Type: image/png
 | Создание сделки | ❌ | Polling новых ордеров через `order/pending/simplifyList` |
 | Отмена ордера | ❌ | Polling статуса, таймер на стороне Bybit |
 | История чата | ❌ | Локальное хранение отправленных сообщений в `rebit_trade_message` |
-| Платёжные методы пользователя | ❌ | Извлечение из `paymentTerms` существующих объявлений |
+| Платёжные методы пользователя | ✅ | `POST /v5/p2p/user/payment/list` — [§ 3.3](#33-получить-платёжные-методы-пользователя) |
 | Открытие арбитража | ❌ | Редирект в UI Bybit, polling статуса `disputed` |
 | Справочник платёжных методов | ❌ | Ручное заполнение + парсинг из ответов API |
 
-> ⚠️ **Вывод:** Bybit P2P API — **read-heavy**: предоставляет полноценные средства для чтения стаканов, ордеров, информации о пользователях, а также позволяет управлять объявлениями, отмечать оплату, выпускать активы и отправлять сообщения. Но **создание сделок, их отмена и арбитраж** остаются за пределами API.
+> ⚠️ **Вывод:** Bybit P2P API — **read-heavy**: предоставляет полноценные средства для чтения стаканов, ордеров, информации о пользователях и платёжных методах, а также позволяет управлять объявлениями, отмечать оплату, выпускать активы и отправлять сообщения. Но **создание сделок, их отмена и арбитраж** остаются за пределами API.
 
 ---
 
@@ -1449,6 +1668,7 @@ Content-Type: image/png
 | Bybit API | Rebit UseCase | Описание |
 |-----------|---------------|----------|
 | `POST /v5/p2p/user/personal/info` | `VerifyApiUseCase` | Тестовый запрос при подключении ключей |
+| `POST /v5/p2p/user/payment/list` | `SyncPaymentMethodsUseCase` | Синхронизация платёжных методов пользователя |
 
 ### Exchange — Стакан
 
@@ -1487,7 +1707,7 @@ Content-Type: image/png
 
 | Bybit API | Rebit UseCase | Описание |
 |-----------|---------------|----------|
-| `POST /v5/p2p/user/order/personal/info` | — | Информация о контрагенте |
+| `POST /v5/p2p/user/order/personal/info` | `SyncCounterpartyUseCase` | Получение и сохранение данных контрагента в b_user |
 
 ### Wallet
 

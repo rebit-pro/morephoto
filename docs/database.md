@@ -41,6 +41,62 @@
 
 ---
 
+### 1.2. Группа пользователей «Контрагенты» (b_group)
+
+Для хранения внешних контрагентов Bybit в стандартной таблице `b_user` создаётся отдельная группа пользователей.
+
+| Параметр | Значение |
+|----------|----------|
+| Название | Контрагенты |
+| Строковый ID | `COUNTERPARTIES` |
+| Описание | Внешние пользователи Bybit, с которыми совершались P2P-сделки |
+| Активна | Да |
+
+**Особенности:**
+- Пользователи группы создаются с `ACTIVE` = `N` (не могут авторизоваться)
+- `LOGIN` = `bybit_{userId}` (уникальный, на основе Bybit userId)
+- `NAME` = `nickName` из Bybit API
+- Группа позволяет фильтровать реальных пользователей Rebit от внешних контрагентов
+
+### 1.3. Пользовательские свойства контрагента (UF-поля b_user)
+
+Данные о контрагенте из `POST /v5/p2p/user/order/personal/info` сохраняются как пользовательские свойства `b_user`. Обновляются при каждой новой сделке с контрагентом.
+
+| UF-поле | Тип | Источник API | Описание |
+|---------|-----|-------------|----------|
+| `UF_BYBIT_USER_ID` | string(64) | `userId` | Уникальный ID пользователя на Bybit |
+| `UF_BYBIT_NICKNAME` | string(100) | `nickName` | Никнейм на Bybit |
+| `UF_BYBIT_REAL_NAME` | string(100) | `realName` | Реальное имя (маскированное) |
+| `UF_BYBIT_REAL_NAME_EN` | string(100) | `realNameEn` | Реальное имя на англ. |
+| `UF_BYBIT_KYC_LEVEL` | integer | `kycLevel` | Уровень KYC-верификации |
+| `UF_BYBIT_KYC_COUNTRY` | string(10) | `kycCountryCode` | Код страны KYC (ISO 3) |
+| `UF_BYBIT_IS_ONLINE` | boolean | `isOnline` | Онлайн на Bybit |
+| `UF_BYBIT_TOTAL_TRADES` | integer | `totalFinishCount` | Всего завершённых сделок |
+| `UF_BYBIT_TOTAL_BUY_TRADES` | integer | `totalFinishBuyCount` | Завершённых покупок |
+| `UF_BYBIT_TOTAL_SELL_TRADES` | integer | `totalFinishSellCount` | Завершённых продаж |
+| `UF_BYBIT_RECENT_RATE` | string(20) | `recentRate` | % завершённых за 30 дней |
+| `UF_BYBIT_RECENT_TRADES` | integer | `recentFinishCount` | Кол-во сделок за 30 дней |
+| `UF_BYBIT_AVG_RELEASE_TIME` | string(20) | `averageReleaseTime` | Среднее время выпуска (мин) |
+| `UF_BYBIT_AVG_TRANSFER_TIME` | string(20) | `averageTransferTime` | Среднее время оплаты (мин) |
+| `UF_BYBIT_ACCOUNT_DAYS` | integer | `accountCreateDays` | Дней с момента регистрации |
+| `UF_BYBIT_FIRST_TRADE_DAYS` | integer | `firstTradeDays` | Дней с первой сделки |
+| `UF_BYBIT_TRADE_AMOUNT` | string(50) | `totalTradeAmount` | Общий объём сделок USDT |
+| `UF_BYBIT_RECENT_TRADE_AMOUNT` | string(50) | `recentTradeAmount` | Объём сделок за 30 дней |
+| `UF_BYBIT_GOOD_RATE` | string(20) | `goodAppraiseRate` | Рейтинг положительных отзывов |
+| `UF_BYBIT_GOOD_COUNT` | integer | `goodAppraiseCount` | Кол-во положительных отзывов |
+| `UF_BYBIT_BAD_COUNT` | integer | `badAppraiseCount` | Кол-во отрицательных отзывов |
+| `UF_BYBIT_AUTH_STATUS` | integer | `authStatus` | VA-статус. `1`: VA, `2`: не VA |
+| `UF_BYBIT_VIP_LEVEL` | integer | `vipLevel` | VIP-уровень |
+| `UF_BYBIT_USER_TYPE` | string(20) | `userType` | Тип: `PERSONAL` / `ORG` |
+| `UF_BYBIT_BLOCKED` | string(10) | `blocked` | Статус блокировки |
+| `UF_BYBIT_REGISTER_TIME` | string(20) | `registerTime` | Время регистрации (timestamp) |
+| `UF_BYBIT_LAST_SYNCED_AT` | datetime | — | Время последней синхронизации данных |
+
+**Индексы (через `b_user` + UF):**
+- `UF_BYBIT_USER_ID` — уникальный (один контрагент = один b_user)
+
+---
+
 ## 2. Exchange Domain
 
 ### 2.1. `rebit_currency` — Валюты
@@ -459,6 +515,14 @@ b_user (Bitrix)
   ├──1:N── rebit_user_session
   ├──1:N── rebit_audit_log
   └──1:N── rebit_security_alert
+
+b_user (Контрагенты — группа COUNTERPARTIES)
+  │  UF_BYBIT_USER_ID — уникальный идентификатор Bybit
+  │  UF_BYBIT_* — профиль контрагента из API
+  └──N:M── rebit_trade (через UF_BUYER_USER_ID / UF_SELLER_USER_ID)
+
+b_group (Bitrix)
+  └── COUNTERPARTIES — группа контрагентов Bybit
 
 rebit_currency_pair
   ├── UF_TOKEN_CURRENCY_ID ──► rebit_currency
