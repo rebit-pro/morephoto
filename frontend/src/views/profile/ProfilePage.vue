@@ -9,6 +9,7 @@ const wallet = useWalletStore();
 const identity = useIdentityStore();
 
 const activeTab = ref('balances');
+const userEmail = ref('');
 
 const txLabels: Record<string, string> = {
   deposit: 'Депозит',
@@ -30,13 +31,6 @@ const txColors: Record<string, string> = {
   fee: 'error'
 };
 
-const statusLabels: Record<string, string> = {
-  active: 'Активен',
-  invalid: 'Недействителен',
-  revoked: 'Отозван',
-  pending_verification: 'Ожидает проверки'
-};
-
 function txLabel(type: string): string {
   return txLabels[type] ?? type;
 }
@@ -45,13 +39,18 @@ function txColor(type: string): string {
   return txColors[type] ?? 'default';
 }
 
-function statusLabel(status: string | null | undefined): string {
-  if (!status) return '—';
-  return statusLabels[status] ?? status;
-}
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('ru-RU');
+}
+
+function identityStatusColor(): string {
+  const status = identity.connectionStatus;
+
+  if (null === status) {
+    return 'warning';
+  }
+
+  return 'active' === status['status'] ? 'success' : 'warning';
 }
 
 async function refreshBalances(): Promise<void> {
@@ -63,6 +62,7 @@ async function refreshTransactions(): Promise<void> {
 }
 
 onMounted(async () => {
+  userEmail.value = auth.user?.['email'] ?? '';
   await Promise.all([wallet.fetchBalances(), wallet.fetchTransactions(), identity.fetchStatus()]);
 });
 </script>
@@ -70,7 +70,7 @@ onMounted(async () => {
 <template>
   <div>
     <h2 class="text-h4 mb-2">Мой профиль</h2>
-    <p class="text-lightText mb-6">{{ auth.user?.email }}</p>
+    <p class="text-lightText mb-6">{{ userEmail }}</p>
 
     <v-tabs v-model="activeTab" color="secondary" class="mb-6">
       <v-tab value="balances">Балансы</v-tab>
@@ -192,16 +192,16 @@ onMounted(async () => {
               <v-row justify="center" class="mb-4">
                 <v-col cols="auto">
                   <v-chip color="info" variant="tonal" size="default">
-                    Режим: {{ identity.connectionStatus?.mode }}
+                    Режим: {{ identity.modeLabel ?? '—' }}
                   </v-chip>
                 </v-col>
                 <v-col cols="auto">
                   <v-chip
-                    :color="'active' === identity.connectionStatus?.status ? 'success' : 'warning'"
+                    :color="identityStatusColor()"
                     variant="tonal"
                     size="default"
                   >
-                    {{ statusLabel(identity.connectionStatus?.status) }}
+                    {{ identity.statusLabel ?? '—' }}
                   </v-chip>
                 </v-col>
               </v-row>
