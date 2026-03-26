@@ -1,128 +1,43 @@
 # Rebit P2P
 
-Веб-приложение для выбора фотографий и отправки заявок с современным интерфейсом на Vue 3 и надежным бэкендом на Bitrix CMS.
+Rebit — P2P-платформа для работы с торговлей через Bybit. Проект помогает пользователю подключить API-ключи, смотреть стакан P2P-объявлений, отслеживать балансы и транзакции, а в следующих итерациях — управлять сделками и чатом сделки.
 
-## 🚀 Технологический стек
+## Состав проекта
 
-### Frontend
-- **Vue 3** - фреймворк для пользовательского интерфейса
-- **Node.js 19** (Alpine) - среда выполнения и сборка
+- `frontend/` — клиент на Vue 3 + Vuetify
+- `api/` — backend на PHP 8.4, Bitrix D7
+- `docs/` — предметная область, сценарии и архитектурные правила
+- `docker-compose.yml` — локальное окружение
 
-### Backend
-- **Bitrix CMS** - система управления контентом
-- **PHP 8.4** - серверный язык программирования
-- **PHP-DI** - контейнер зависимостей
+## Основной стек
 
-### Базы данных и кеширование
-- **Percona MySQL 8.0** - основная база данных
-- **Redis** - кеширование приложения
-- **RabbitMQ** - асинхронная обработка задач
+- Vue 3, TypeScript, Vuetify
+- PHP 8.4, Bitrix D7
+- MySQL, Redis, RabbitMQ
+- Docker / Docker Compose
 
-### Инфраструктура
-- **Nginx 1.25** - веб-сервер и шлюз
-- **Docker & Docker Compose** - контейнеризация
-- **PHP-FPM 8.4** - обработка PHP
+## Что уже есть в UI
 
-## 📁 Структура проекта
-```
-rebit-p2p/
-├── frontend/ # Vue 3 приложение
-├── api/
-│ ├── public/
-│ │ ├── bitrix/ # Ядро Bitrix CMS
-│ │ └── local/ # Кастомные модули
-├── mysql/ # Конфигурация БД
-└── docker-compose.yml # Docker окружение
-```
-## 🛠️ Быстрый старт
+- дашборд
+- P2P-стакан
+- балансы
+- транзакции
+- профиль и подключение Bybit
 
-### Предварительные требования
-- Docker
-- Docker Compose
-- Git
+## Что полезно взять из Berry
 
-### Установка и запуск
+- shared card/table wrappers
+- единый empty state
+- table pattern для списков и истории
+- layout чата для будущих деталей сделки
+- status timeline и page header patterns
 
-1. **Клонирование репозитория**
-   ```bash
-   git clone https://github.com/rebit-pro/rebit-p2p.git
-   cd rebit-p2p
+## Полезные документы
 
-2. **Инициализация проекта**
+- `docs/designer-brief.md`
+- `docs/domain.md`
+- `docs/scenario.md`
+- `docs/modules.md`
+- `docs/frontend-design-assets-and-berry-shortlist.md`
 
-   ```bash
-   make init
-
-3. Запуск окружения
-
-   ```bash
-   docker compose up -d
-   Доступ к приложению
-   ```
-Frontend: [https://rebit-p2p.loc](https://rebit-p2p.loc)
-
-Backend API: [https://api.rebit-p2p.loc](https://api.rebit-p2p.loc)
-
-База данных: localhost:3306
-
-🔧 Разработка
-Основные команды
-
-```bash
-      # Установка зависимостей
-      make api-composer-install
-   
-      # Запуск тестов
-      make test
-      
-      # Статический анализ кода
-      make analyze
-      
-      # Проверка стиля кода
-      make lint
-```
-Контейнеры разработки
-frontend - Vue 3 dev server (порт 3000)
-
-api-php-fpm - PHP обработчик
-
-mysql - База данных (порт 3306)
-
-redis - Кеш (порт 6379)
-
-rabbitmq - Очереди (порты 5672, 15672)
-
-🧪 Тестирование и качество кода
-Проект использует современные инструменты для обеспечения качества:
-
-PHPStan (уровень 6) - статический анализ
-
-PHPUnit - модульное тестирование
-
-PHP-CS-Fixer - проверка и исправление стиля кода
-
-PHPLint - проверка синтаксиса
-
-Процесс разработки
-
-🚀 Деплой
-Система использует версионирование образов Docker для zero-downtime деплоя:
-
-```bash
-# Сборка образов
-make build
-
-# Публикация в registry
-make push
-
-# Деплой на сервер
-make deploy
-```
-
-📄 Лицензия
-Этот проект является частной разработкой компании Rebit.
-
-📞 Контакты
-GitHub: <a href="https://github.com/rebit-pro" target="_blank" rel="noreferrer"><span>rebit-pro</span></a>
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/rebit-pro/rebit-p2p)
+Проект является внутренней разработкой Rebit.
