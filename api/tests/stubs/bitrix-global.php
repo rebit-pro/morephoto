@@ -8,12 +8,12 @@ namespace {
         {
             /** @var array{eventName: string, siteId: string|array, fields: array<string, mixed>}|null */
             public static ?array $lastSendImmediateCall = null;
-            public static int|false $sendImmediateResult = 1;
+            public static string|false $sendImmediateResult = 'Y';
 
             /**
              * @param array<string, mixed> $fields
              */
-            public static function SendImmediate(string $eventName, string|array $siteId, array $fields): int|false
+            public static function SendImmediate(string $eventName, string|array $siteId, array $fields): string|false
             {
                 self::$lastSendImmediateCall = [
                     'eventName' => $eventName,

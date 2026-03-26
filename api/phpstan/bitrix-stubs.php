@@ -326,7 +326,7 @@ namespace {
     class CEvent
     {
         /** @param array<string, mixed> $fields */
-        public static function SendImmediate(string $eventName, string|array $siteId, array $fields): int|false {}
+        public static function SendImmediate(string $eventName, string|array $siteId, array $fields): string|false {}
     }
     class CFile
     {

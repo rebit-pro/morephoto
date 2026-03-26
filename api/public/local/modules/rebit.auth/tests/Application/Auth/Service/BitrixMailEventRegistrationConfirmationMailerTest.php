@@ -17,7 +17,7 @@ final class BitrixMailEventRegistrationConfirmationMailerTest extends TestCase
     protected function setUp(): void
     {
         \CEvent::$lastSendImmediateCall = null;
-        \CEvent::$sendImmediateResult = 1;
+        \CEvent::$sendImmediateResult = 'Y';
     }
 
     public function testSendsBitrixMailEventWithExpectedFields(): void

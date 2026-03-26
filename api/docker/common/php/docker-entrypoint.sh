@@ -69,10 +69,21 @@ tls_starttls $tls_starttls
 tls_certcheck $tls_certcheck
 EOF
 
-    chmod 600 /etc/msmtprc
+    chmod 644 /etc/msmtprc
+}
+
+fix_log_permissions() {
+    log_dir="/app/logs"
+
+    if [ -d "$log_dir" ]; then
+        chown -R www-data:www-data "$log_dir"
+        find "$log_dir" -type d -exec chmod 2775 {} +
+        find "$log_dir" -type f -exec chmod 664 {} +
+    fi
 }
 
 load_runtime_env
 configure_msmtp
+fix_log_permissions
 
 exec "$@"
