@@ -116,8 +116,9 @@ onMounted(async () => {
   ]);
 
   // Установить дефолтную пару
-  if (0 < exchange.currencyPairs.length && null === currencyPairId.value) {
-    currencyPairId.value = exchange.currencyPairs[0].id;
+  const firstPair = exchange.currencyPairs[0];
+  if (undefined !== firstPair && null === currencyPairId.value) {
+    currencyPairId.value = firstPair.id;
   }
 });
 </script>
