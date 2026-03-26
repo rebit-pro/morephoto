@@ -51,7 +51,7 @@ final class TransactionRepository
             }
 
             if (null !== $filter->dateTo && '' !== $filter->dateTo) {
-                $query->where('UF_CREATED_AT', '<=', new DateTime($filter->dateTo, 'Y-m-d'));
+                $query->where('UF_CREATED_AT', '<', $this->createDateToExclusive($filter->dateTo));
             }
 
             return $query->exec()->fetchCollection();
@@ -84,7 +84,7 @@ final class TransactionRepository
             }
 
             if (null !== $filter->dateTo && '' !== $filter->dateTo) {
-                $query->where('UF_CREATED_AT', '<=', new DateTime($filter->dateTo, 'Y-m-d'));
+                $query->where('UF_CREATED_AT', '<', $this->createDateToExclusive($filter->dateTo));
             }
 
             $row = $query->exec()->fetch();
@@ -177,7 +177,7 @@ final class TransactionRepository
             }
 
             if (null !== $dateTo && '' !== $dateTo) {
-                $query->where('UF_CREATED_AT', '<=', new DateTime($dateTo, 'Y-m-d'));
+                $query->where('UF_CREATED_AT', '<', $this->createDateToExclusive($dateTo));
             }
 
             $result = [];
@@ -256,5 +256,13 @@ final class TransactionRepository
 
             return $result;
         });
+    }
+
+    private function createDateToExclusive(string $dateTo): DateTime
+    {
+        $dateToObject = new DateTime($dateTo, 'Y-m-d');
+        $dateToObject->add('P1D');
+
+        return $dateToObject;
     }
 }

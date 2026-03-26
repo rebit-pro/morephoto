@@ -49,6 +49,8 @@ export const useWalletStore = defineStore('wallet', () => {
   }
 
   async function exportTransactions(params?: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<void> {
+    error.value = null;
+
     try {
       const result = await walletApi.exportTransactions(params);
       const rows = result.transactions;
@@ -75,6 +77,8 @@ export const useWalletStore = defineStore('wallet', () => {
       setTimeout((): void => {
         URL.revokeObjectURL(url);
       }, 0);
+
+      error.value = null;
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Ошибка экспорта транзакций';
     }
