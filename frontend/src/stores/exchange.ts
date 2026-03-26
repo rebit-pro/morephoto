@@ -10,20 +10,57 @@ export const useExchangeStore = defineStore('exchange', () => {
   const selectedPair = ref<CurrencyPair>({ token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' });
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const hasOrderBookAccess = ref(false);
 
   let refreshTimer: ReturnType<typeof setInterval> | null = null;
+  let orderBookRequestId = 0;
+
+  function clearOrderBook(): void {
+    buyOrders.value = [];
+    sellOrders.value = [];
+    loading.value = false;
+    error.value = null;
+  }
+
+  function setOrderBookAccess(value: boolean): void {
+    hasOrderBookAccess.value = value;
+
+    if (!value) {
+      stopAutoRefresh();
+      clearOrderBook();
+    }
+  }
 
   async function fetchOrderBook(): Promise<void> {
+    if (!hasOrderBookAccess.value) {
+      clearOrderBook();
+
+      return;
+    }
+
+    const currentRequestId = ++orderBookRequestId;
+
     loading.value = true;
     error.value = null;
     try {
       const data = await exchangeApi.getOrderBook(selectedPair.value.token, selectedPair.value.fiat);
+
+      if (!hasOrderBookAccess.value || currentRequestId !== orderBookRequestId) {
+        return;
+      }
+
       buyOrders.value = data.buy;
       sellOrders.value = data.sell;
     } catch (e: unknown) {
+      if (!hasOrderBookAccess.value || currentRequestId !== orderBookRequestId) {
+        return;
+      }
+
       error.value = e instanceof Error ? e.message : 'Ошибка загрузки стакана';
     } finally {
-      loading.value = false;
+      if (currentRequestId === orderBookRequestId) {
+        loading.value = false;
+      }
     }
   }
 
@@ -50,12 +87,22 @@ export const useExchangeStore = defineStore('exchange', () => {
 
   function selectPair(pair: CurrencyPair): void {
     selectedPair.value = pair;
-    fetchOrderBook();
+
+    if (hasOrderBookAccess.value) {
+      void fetchOrderBook();
+    }
   }
 
   function startAutoRefresh(intervalMs = 10000): void {
     stopAutoRefresh();
-    refreshTimer = setInterval(fetchOrderBook, intervalMs);
+
+    if (!hasOrderBookAccess.value) {
+      return;
+    }
+
+    refreshTimer = setInterval(() => {
+      void fetchOrderBook();
+    }, intervalMs);
   }
 
   function stopAutoRefresh(): void {
@@ -73,6 +120,9 @@ export const useExchangeStore = defineStore('exchange', () => {
     selectedPair,
     loading,
     error,
+    hasOrderBookAccess,
+    clearOrderBook,
+    setOrderBookAccess,
     fetchOrderBook,
     fetchCurrencyPairs,
     fetchPaymentMethods,

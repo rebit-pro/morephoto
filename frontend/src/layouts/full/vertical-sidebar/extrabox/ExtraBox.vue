@@ -4,8 +4,10 @@ import { computed } from 'vue';
 
 const identity = useIdentityStore();
 
-const statusText = computed(() => (identity.isConnected ? 'Подключён' : 'Не подключён'));
-const statusColor = computed(() => (identity.isConnected ? 'success' : 'warning'));
+const statusText = computed(() => (
+  identity.hasActiveConnection ? 'Активный ключ' : identity.isConnected ? 'Требует проверки' : 'Не подключён'
+));
+const statusColor = computed(() => (identity.hasActiveConnection ? 'success' : identity.isConnected ? 'info' : 'warning'));
 </script>
 
 <template>
@@ -31,7 +33,7 @@ const statusColor = computed(() => (identity.isConnected ? 'success' : 'warning'
       Подключить
     </v-btn>
     <div v-else class="mt-3 text-caption text-lightText">
-      Режим: {{ identity.connectionStatus?.mode }}
+      Режим: {{ identity.modeLabel }}
     </div>
   </v-sheet>
 </template>

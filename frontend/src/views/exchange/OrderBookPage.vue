@@ -1,11 +1,53 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 import { useExchangeStore } from '@/stores/exchange';
+import { useIdentityStore } from '@/stores/identity';
 import OrderBookTable from './components/OrderBookTable.vue';
+import OrderBookAccessState from './components/OrderBookAccessState.vue';
 import CurrencyPairSelector from './components/CurrencyPairSelector.vue';
 
+type OrderBookFilters = {
+  selectedMethods: string[];
+  limitMin: string;
+  limitMax: string;
+};
+
 const exchange = useExchangeStore();
-const selectorRef = ref<InstanceType<typeof CurrencyPairSelector> | null>(null);
+const auth = useAuthStore();
+const identity = useIdentityStore();
+const filters = ref<OrderBookFilters>({
+  selectedMethods: [],
+  limitMin: '',
+  limitMax: '',
+});
+
+const hasOrderBookAccess = computed(() => identity.hasActiveConnection);
+const isResolvingOrderBookAccess = computed(
+  () => identity.loading && null === identity.connectionStatus,
+);
+const orderBookConnectionStatus = computed(() => identity.connectionStatus?.['status'] ?? null);
+
+function onFiltersUpdate(nextFilters: OrderBookFilters): void {
+  filters.value = nextFilters;
+}
+
+watch(
+  hasOrderBookAccess,
+  async (value) => {
+    exchange.setOrderBookAccess(value);
+
+    if (!value) {
+      exchange.stopAutoRefresh();
+
+      return;
+    }
+
+    await exchange.fetchOrderBook();
+    exchange.startAutoRefresh();
+  },
+  { immediate: true },
+);
 
 const bestBuyPrice = computed(() => {
   const prices = exchange.buyOrders.map((o) => parseFloat(o.price)).filter((n) => !isNaN(n));
@@ -30,10 +72,9 @@ const spreadPercent = computed(() => {
 onMounted(async () => {
   await Promise.all([
     exchange.fetchCurrencyPairs(),
-    exchange.fetchPaymentMethods()
+    exchange.fetchPaymentMethods(),
+    identity.fetchStatus()
   ]);
-  await exchange.fetchOrderBook();
-  exchange.startAutoRefresh();
 });
 
 onUnmounted(() => {
@@ -45,66 +86,80 @@ onUnmounted(() => {
   <div>
     <h2 class="text-h4 mb-6">P2P Стакан</h2>
 
-    <CurrencyPairSelector ref="selectorRef" class="mb-6" />
+    <template v-if="isResolvingOrderBookAccess">
+      <v-row justify="center" class="mt-4">
+        <v-progress-circular indeterminate color="primary" />
+      </v-row>
+    </template>
 
-    <v-row>
-      <v-col cols="12" md="6">
-        <v-card rounded="md">
-          <v-card-title class="text-success d-flex align-center">
-            <v-icon class="mr-2">mdi-arrow-down-bold</v-icon>
-            Покупка (Buy)
-          </v-card-title>
-          <v-card-text class="pa-0">
-            <OrderBookTable
-              :orders="exchange.buyOrders"
-              :filter-methods="selectorRef?.selectedMethods"
-              :limit-min="selectorRef?.limitMin"
-              :limit-max="selectorRef?.limitMax"
-              side="buy"
-            />
-          </v-card-text>
-        </v-card>
-      </v-col>
+    <template v-else-if="hasOrderBookAccess">
+      <CurrencyPairSelector class="mb-6" @update:filters="onFiltersUpdate" />
 
-      <v-col cols="12" md="6">
-        <v-card rounded="md">
-          <v-card-title class="text-error d-flex align-center">
-            <v-icon class="mr-2">mdi-arrow-up-bold</v-icon>
-            Продажа (Sell)
-          </v-card-title>
-          <v-card-text class="pa-0">
-            <OrderBookTable
-              :orders="exchange.sellOrders"
-              :filter-methods="selectorRef?.selectedMethods"
-              :limit-min="selectorRef?.limitMin"
-              :limit-max="selectorRef?.limitMax"
-              side="sell"
-            />
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-card rounded="md">
+            <v-card-title class="text-success d-flex align-center">
+              <v-icon class="mr-2">mdi-arrow-down-bold</v-icon>
+              Покупка (Buy)
+            </v-card-title>
+            <v-card-text class="pa-0">
+              <OrderBookTable
+                :orders="exchange.buyOrders"
+                :filter-methods="filters.selectedMethods"
+                :limit-min="filters.limitMin"
+                :limit-max="filters.limitMax"
+                side="buy"
+              />
+            </v-card-text>
+          </v-card>
+        </v-col>
 
-    <!-- Спрэд -->
-    <v-card v-if="null !== spread" rounded="md" variant="tonal" class="mt-4">
-      <v-card-text class="d-flex align-center justify-center flex-wrap ga-4 py-3">
-        <div class="text-center">
-          <div class="text-caption text-lightText mb-1">Лучшая покупка</div>
-          <div class="text-success font-weight-bold">{{ bestBuyPrice!.toFixed(2) }} ₽</div>
-        </div>
-        <div class="text-center">
-          <div class="text-caption text-lightText mb-1">Спрэд</div>
-          <div class="font-weight-bold">
-            {{ spread.toFixed(2) }} ₽
-            <span class="text-caption text-lightText">({{ spreadPercent!.toFixed(2) }}%)</span>
+        <v-col cols="12" md="6">
+          <v-card rounded="md">
+            <v-card-title class="text-error d-flex align-center">
+              <v-icon class="mr-2">mdi-arrow-up-bold</v-icon>
+              Продажа (Sell)
+            </v-card-title>
+            <v-card-text class="pa-0">
+              <OrderBookTable
+                :orders="exchange.sellOrders"
+                :filter-methods="filters.selectedMethods"
+                :limit-min="filters.limitMin"
+                :limit-max="filters.limitMax"
+                side="sell"
+              />
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Спрэд -->
+      <v-card v-if="null !== spread" rounded="md" variant="tonal" class="mt-4">
+        <v-card-text class="d-flex align-center justify-center flex-wrap ga-4 py-3">
+          <div class="text-center">
+            <div class="text-caption text-lightText mb-1">Лучшая покупка</div>
+            <div class="text-success font-weight-bold">{{ bestBuyPrice!.toFixed(2) }} ₽</div>
           </div>
-        </div>
-        <div class="text-center">
-          <div class="text-caption text-lightText mb-1">Лучшая продажа</div>
-          <div class="text-error font-weight-bold">{{ bestSellPrice!.toFixed(2) }} ₽</div>
-        </div>
-      </v-card-text>
-    </v-card>
+          <div class="text-center">
+            <div class="text-caption text-lightText mb-1">Спрэд</div>
+            <div class="font-weight-bold">
+              {{ spread.toFixed(2) }} ₽
+              <span class="text-caption text-lightText">({{ spreadPercent!.toFixed(2) }}%)</span>
+            </div>
+          </div>
+          <div class="text-center">
+            <div class="text-caption text-lightText mb-1">Лучшая продажа</div>
+            <div class="text-error font-weight-bold">{{ bestSellPrice!.toFixed(2) }} ₽</div>
+          </div>
+        </v-card-text>
+      </v-card>
+    </template>
+
+    <OrderBookAccessState
+      v-else
+      :is-authenticated="auth.isAuthenticated"
+      :connection-status="orderBookConnectionStatus"
+    />
 
     <v-row v-if="exchange.loading" justify="center" class="mt-4">
       <v-progress-circular indeterminate color="primary" />

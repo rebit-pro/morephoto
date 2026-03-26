@@ -4,11 +4,14 @@ import { useAuthStore } from '@/stores/auth';
 import { useWalletStore } from '@/stores/wallet';
 import { useIdentityStore } from '@/stores/identity';
 import { useExchangeStore } from '@/stores/exchange';
+import { computed } from 'vue';
 
 const auth = useAuthStore();
 const wallet = useWalletStore();
 const identity = useIdentityStore();
 const exchange = useExchangeStore();
+const userDisplayName = computed(() => auth.user?.['name'] ?? auth.user?.['email'] ?? '');
+const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['mode']);
 
 onMounted(async () => {
   await Promise.all([wallet.fetchBalances(), identity.fetchStatus(), exchange.fetchCurrencyPairs()]);
@@ -17,7 +20,7 @@ onMounted(async () => {
 
 <template>
   <div>
-    <h2 class="text-h4 mb-2">Добро пожаловать, {{ auth.user?.name ?? auth.user?.email }}</h2>
+    <h2 class="text-h4 mb-2">Добро пожаловать, {{ userDisplayName }}</h2>
     <p class="text-lightText mb-6">Панель управления Rebit P2P</p>
 
     <!-- Статус подключения Bybit -->
@@ -31,10 +34,10 @@ onMounted(async () => {
             <div>
               <p class="text-caption text-lightText mb-1">Bybit API</p>
               <p class="text-h6 font-weight-bold">
-                {{ identity.isConnected ? 'Подключён' : 'Не подключён' }}
+                {{ identity.hasActiveConnection ? 'Подключён и активен' : identity.isConnected ? 'Подключён' : 'Не подключён' }}
               </p>
-              <p v-if="identity.connectionStatus?.mode" class="text-caption text-lightText">
-                {{ identity.connectionStatus.mode }}
+              <p v-if="hasConnectionMode" class="text-caption text-lightText">
+                {{ identity.modeLabel }}
               </p>
             </div>
           </v-card-text>

@@ -1,7 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useExchangeStore } from '@/stores/exchange';
 import type { CurrencyPair } from '@/api/exchange';
+
+type OrderBookFilters = {
+  selectedMethods: string[];
+  limitMin: string;
+  limitMax: string;
+};
+
+const emit = defineEmits<{
+  (event: 'update:filters', filters: OrderBookFilters): void;
+}>();
 
 const exchange = useExchangeStore();
 const selectedMethods = ref<string[]>([]);
@@ -36,7 +46,17 @@ const isActivePair = computed(
     pair.token === exchange.selectedPair.token && pair.fiat === exchange.selectedPair.fiat
 );
 
-defineExpose({ selectedMethods, limitMin, limitMax });
+watch(
+  () => [selectedMethods.value, limitMin.value, limitMax.value],
+  () => {
+    emit('update:filters', {
+      selectedMethods: [...selectedMethods.value],
+      limitMin: limitMin.value,
+      limitMax: limitMax.value,
+    });
+  },
+  { immediate: true, deep: true },
+);
 </script>
 
 <template>
