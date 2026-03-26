@@ -1,0 +1,78 @@
+#!/bin/sh
+set -e
+
+load_runtime_env() {
+    if [ -f /app/public/.env ]; then
+        set -a
+        # shellcheck disable=SC1091
+        . /app/public/.env
+        set +a
+    fi
+
+    if [ -f /run/secrets/rebit_smtp_password ]; then
+        REBIT_SMTP_PASSWORD="$(tr -d '\r' < /run/secrets/rebit_smtp_password)"
+        export REBIT_SMTP_PASSWORD
+    fi
+}
+
+configure_msmtp() {
+    host="${REBIT_SMTP_HOST:-}"
+    port="${REBIT_SMTP_PORT:-25}"
+    encryption="${REBIT_SMTP_ENCRYPTION:-none}"
+    username="${REBIT_SMTP_USERNAME:-}"
+    password="${REBIT_SMTP_PASSWORD:-}"
+    from_email="${REBIT_SMTP_FROM_EMAIL:-noreply@localhost}"
+    tls_certcheck="${REBIT_SMTP_TLS_CERTCHECK:-off}"
+
+    if [ -z "$host" ]; then
+        return
+    fi
+
+    tls="off"
+    tls_starttls="off"
+
+    case "$encryption" in
+        tls)
+            tls="on"
+            tls_starttls="on"
+            ;;
+        ssl)
+            tls="on"
+            tls_starttls="off"
+            ;;
+        none)
+            ;;
+        *)
+            echo "[mail] Unsupported REBIT_SMTP_ENCRYPTION: $encryption" >&2
+            exit 1
+            ;;
+    esac
+
+    auth="off"
+    if [ -n "$username" ]; then
+        auth="on"
+    fi
+
+    cat > /etc/msmtprc <<EOF
+# Generated automatically by docker-entrypoint.sh
+defaults
+syslog LOG_MAIL
+account default
+host $host
+port $port
+from $from_email
+auth $auth
+user $username
+password $password
+tls $tls
+tls_starttls $tls_starttls
+tls_certcheck $tls_certcheck
+EOF
+
+    chmod 600 /etc/msmtprc
+}
+
+load_runtime_env
+configure_msmtp
+
+exec "$@"

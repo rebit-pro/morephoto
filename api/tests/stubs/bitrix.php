@@ -150,6 +150,7 @@ if (!class_exists(Configuration::class)) {
     }
 }
 
+
 namespace Bitrix\Main\ORM\Data;
 
 if (!class_exists(Result::class)) {

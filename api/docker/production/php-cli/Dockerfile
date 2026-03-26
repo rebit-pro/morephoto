@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     gnupg2 \
+    msmtp \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         gd \
@@ -36,6 +37,7 @@ RUN apt-get update && apt-get install -y \
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 # Копируем конфигурации PHP
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
+COPY docker/common/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # Supercronic — cron-демон для Docker (поддержка секундных интервалов)
 ENV SUPERCRONIC_VERSION=v0.2.33
@@ -63,5 +65,8 @@ RUN find /app/public/local/modules -maxdepth 2 -name "routes.php" -exec sh -c ' 
 # Crontab для supercronic
 COPY docker/common/cron/crontab /etc/supercronic/crontab
 
-RUN mkdir -p /app /var/lib/php/sessions \
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && mkdir -p /app /var/lib/php/sessions \
     && chown -R www-data:www-data /app /var/lib/php/sessions
+
+ENTRYPOINT ["docker-entrypoint.sh"]

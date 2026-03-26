@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     gnupg2 \
+    msmtp \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         gd \
@@ -53,7 +54,7 @@ RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 WORKDIR /app
 
-COPY ./development/php-fpm/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY ./common/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 RUN mkdir -p /var/lib/php/sessions && chown -R www-data:www-data /var/lib/php/sessions

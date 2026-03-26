@@ -316,8 +316,17 @@ namespace {
     }
     class CUser
     {
+        public string $LAST_ERROR;
+
+        /** @param array<string, mixed> $fields */
+        public function Add(array $fields): int|false {}
         /** @param array<string, mixed> $fields */
         public function Update(int $id, array $fields): bool {}
+    }
+    class CEvent
+    {
+        /** @param array<string, mixed> $fields */
+        public static function SendImmediate(string $eventName, string|array $siteId, array $fields): int|false {}
     }
     class CFile
     {

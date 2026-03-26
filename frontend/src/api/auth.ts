@@ -18,6 +18,17 @@ export interface RegisterRequest {
   password: string;
 }
 
+export interface RequestRegistrationCodeResponse {
+  email: string;
+  codeExpiresAt: string;
+  resendAvailableAt: string;
+}
+
+export interface ConfirmRegistrationRequest {
+  email: string;
+  code: string;
+}
+
 export interface AuthUser {
   id: number;
   email: string;
@@ -34,8 +45,12 @@ export const authApi = {
     return api.post('/api/v1/auth/login', data).then((r) => r.data);
   },
 
-  register(data: RegisterRequest): Promise<LoginResponse> {
-    return api.post('/api/v1/auth/register', data).then((r) => r.data);
+  requestRegistrationCode(data: RegisterRequest): Promise<RequestRegistrationCodeResponse> {
+    return api.post('/api/v1/auth/register/request-code', data).then((r) => r.data);
+  },
+
+  confirmRegistration(data: ConfirmRegistrationRequest): Promise<LoginResponse> {
+    return api.post('/api/v1/auth/register/confirm', data).then((r) => r.data);
   },
 
   logout(): Promise<void> {

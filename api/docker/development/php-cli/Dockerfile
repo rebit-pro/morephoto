@@ -17,6 +17,7 @@ RUN apt-get update \
         git \
         gnupg2 \
         libxml2-utils \
+        msmtp \
     && pecl install memcache \
     && docker-php-ext-enable memcache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -45,6 +46,7 @@ RUN mv $PHP_INI_DIR/php.ini-development $PHP_INI_DIR/php.ini
 
 COPY ./common/php/conf.d /usr/local/etc/php/conf.d
 COPY ./development/php/conf.d /usr/local/etc/php/conf.d
+COPY ./common/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 # Supercronic — cron-демон для Docker (поддержка секундных интервалов)
 ENV SUPERCRONIC_VERSION=v0.2.33
@@ -66,4 +68,7 @@ COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 WORKDIR /app
 
 # Установить владельца для /app
-RUN chown -R www-data:www-data /app
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && chown -R www-data:www-data /app
+
+ENTRYPOINT ["docker-entrypoint.sh"]

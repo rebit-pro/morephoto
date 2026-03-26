@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Rebit\Auth\Presentation\Controller;
 
+use Rebit\Auth\Application\Auth\Dto\Request\ConfirmRegistrationRequestDto;
 use Rebit\Auth\Application\Auth\Dto\Request\LoginRequestDto;
+use Rebit\Auth\Application\Auth\Dto\Request\RequestRegistrationCodeRequestDto;
+use Rebit\Auth\Application\Auth\UseCase\ConfirmRegistrationUseCase;
 use Rebit\Auth\Application\Auth\UseCase\LoginUseCase;
 use Rebit\Auth\Application\Auth\UseCase\LogoutUseCase;
+use Rebit\Auth\Application\Auth\UseCase\RequestRegistrationCodeUseCase;
 use Rebit\Share\Application\Contract\Auth\TokenResolverInterface;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Share\Infrastructure\Controller\Auth\AuthenticatedControllerInterface;
@@ -24,6 +28,8 @@ final class AuthController extends BaseJsonController implements AuthenticatedCo
     public function __construct(
         private readonly LoginUseCase $loginUseCase,
         private readonly LogoutUseCase $logoutUseCase,
+        private readonly RequestRegistrationCodeUseCase $requestRegistrationCodeUseCase,
+        private readonly ConfirmRegistrationUseCase $confirmRegistrationUseCase,
         private readonly TokenResolverInterface $tokenResolver,
     ) {
         parent::__construct();
@@ -39,6 +45,32 @@ final class AuthController extends BaseJsonController implements AuthenticatedCo
     {
         return $this->json(
             $this->loginUseCase->execute($dto),
+        );
+    }
+
+    /**
+     * POST /api/v1/auth/register/request-code
+     *
+     * @throws HttpException
+     * @throws RandomException
+     */
+    public function requestRegistrationCodeAction(RequestRegistrationCodeRequestDto $dto): ControllerJson
+    {
+        return $this->json(
+            $this->requestRegistrationCodeUseCase->execute($dto),
+        );
+    }
+
+    /**
+     * POST /api/v1/auth/register/confirm
+     *
+     * @throws HttpException
+     * @throws RandomException
+     */
+    public function confirmRegistrationAction(ConfirmRegistrationRequestDto $dto): ControllerJson
+    {
+        return $this->json(
+            $this->confirmRegistrationUseCase->execute($dto),
         );
     }
 
@@ -63,6 +95,16 @@ final class AuthController extends BaseJsonController implements AuthenticatedCo
     {
         return [
             'login' => [
+                'prefilters' => [
+                    new LoggerFilter(),
+                ],
+            ],
+            'requestRegistrationCode' => [
+                'prefilters' => [
+                    new LoggerFilter(),
+                ],
+            ],
+            'confirmRegistration' => [
                 'prefilters' => [
                     new LoggerFilter(),
                 ],

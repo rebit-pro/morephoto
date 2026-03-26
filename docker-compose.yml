@@ -75,13 +75,25 @@ services:
         volumes:
             - ./api:/app
             - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
-            - ./api/docker/development/php-fpm/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+            - ./api/docker/common/php/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
         environment:
             APP_DEBUG: ${APP_DEBUG:-1}
             APP_ENV: ${APP_ENV:-local}
             REDIS_HOST: ${REDIS_HOST:-redis}
             REDIS_PORT: ${REDIS_PORT:-6379}
             REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES: ${REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES:-15}
+            REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS: ${REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS:-60}
+            REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS: ${REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS:-5}
+            REBIT_AUTH_MAIL_EVENT_SITE_ID: ${REBIT_AUTH_MAIL_EVENT_SITE_ID:-s1}
+            REBIT_SMTP_HOST: ${REBIT_SMTP_HOST:-mailpit}
+            REBIT_SMTP_PORT: ${REBIT_SMTP_PORT:-1025}
+            REBIT_SMTP_ENCRYPTION: ${REBIT_SMTP_ENCRYPTION:-none}
+            REBIT_SMTP_USERNAME: ${REBIT_SMTP_USERNAME:-}
+            REBIT_SMTP_PASSWORD: ${REBIT_SMTP_PASSWORD:-}
+            REBIT_SMTP_FROM_EMAIL: ${REBIT_SMTP_FROM_EMAIL:-noreply@rebit-p2p.loc}
+            REBIT_SMTP_FROM_NAME: ${REBIT_SMTP_FROM_NAME:-Rebit P2P}
+            REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
             PHP_IDE_CONFIG: "serverName=API"
@@ -97,13 +109,25 @@ services:
         volumes:
             - ./api:/app
             - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
-            - ./api/docker/development/php-fpm/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
+            - ./api/docker/common/php/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
         environment:
             APP_DEBUG: ${APP_DEBUG:-1}
             APP_ENV: ${APP_ENV:-local}
             REDIS_HOST: ${REDIS_HOST:-redis}
             REDIS_PORT: ${REDIS_PORT:-6379}
             REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES: ${REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES:-15}
+            REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS: ${REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS:-60}
+            REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS: ${REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS:-5}
+            REBIT_AUTH_MAIL_EVENT_SITE_ID: ${REBIT_AUTH_MAIL_EVENT_SITE_ID:-s1}
+            REBIT_SMTP_HOST: ${REBIT_SMTP_HOST:-mailpit}
+            REBIT_SMTP_PORT: ${REBIT_SMTP_PORT:-1025}
+            REBIT_SMTP_ENCRYPTION: ${REBIT_SMTP_ENCRYPTION:-none}
+            REBIT_SMTP_USERNAME: ${REBIT_SMTP_USERNAME:-}
+            REBIT_SMTP_PASSWORD: ${REBIT_SMTP_PASSWORD:-}
+            REBIT_SMTP_FROM_EMAIL: ${REBIT_SMTP_FROM_EMAIL:-noreply@rebit-p2p.loc}
+            REBIT_SMTP_FROM_NAME: ${REBIT_SMTP_FROM_NAME:-Rebit P2P}
+            REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
             XDEBUG_MODE: off
@@ -126,6 +150,18 @@ services:
             APP_ENV: ${APP_ENV:-local}
             SHELL: /bin/sh
             REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES: ${REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES:-15}
+            REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS: ${REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS:-60}
+            REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS: ${REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS:-5}
+            REBIT_AUTH_MAIL_EVENT_SITE_ID: ${REBIT_AUTH_MAIL_EVENT_SITE_ID:-s1}
+            REBIT_SMTP_HOST: ${REBIT_SMTP_HOST:-mailpit}
+            REBIT_SMTP_PORT: ${REBIT_SMTP_PORT:-1025}
+            REBIT_SMTP_ENCRYPTION: ${REBIT_SMTP_ENCRYPTION:-none}
+            REBIT_SMTP_USERNAME: ${REBIT_SMTP_USERNAME:-}
+            REBIT_SMTP_PASSWORD: ${REBIT_SMTP_PASSWORD:-}
+            REBIT_SMTP_FROM_EMAIL: ${REBIT_SMTP_FROM_EMAIL:-noreply@rebit-p2p.loc}
+            REBIT_SMTP_FROM_NAME: ${REBIT_SMTP_FROM_NAME:-Rebit P2P}
+            REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
 
@@ -152,6 +188,13 @@ services:
             - "11212:11211"
         networks:
             - default
+
+    mailpit:
+        image: axllent/mailpit:v1.27
+        restart: unless-stopped
+        ports:
+            - "1025:1025"
+            - "8025:8025"
 
 volumes:
     api-mysql:

@@ -1,7 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { router } from '@/router';
-import { authApi, type AuthUser, type GeeTestCaptchaPayload } from '@/api/auth';
+import {
+  authApi,
+  type AuthUser,
+  type GeeTestCaptchaPayload,
+  type RequestRegistrationCodeResponse
+} from '@/api/auth';
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('token'));
@@ -31,8 +36,12 @@ export const useAuthStore = defineStore('auth', () => {
     returnUrl.value = null;
   }
 
-  async function register(email: string, password: string): Promise<void> {
-    const response = await authApi.register({ email, password });
+  async function requestRegistrationCode(email: string, password: string): Promise<RequestRegistrationCodeResponse> {
+    return authApi.requestRegistrationCode({ email, password });
+  }
+
+  async function confirmRegistration(email: string, code: string): Promise<void> {
+    const response = await authApi.confirmRegistration({ email, code });
     setSession(response.token, response.user);
     await router.push('/dashboard');
   }
@@ -55,7 +64,8 @@ export const useAuthStore = defineStore('auth', () => {
     setSession,
     clearSession,
     login,
-    register,
+    requestRegistrationCode,
+    confirmRegistration,
     logout
   };
 });

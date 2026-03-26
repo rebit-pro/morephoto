@@ -30,6 +30,10 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
+    if (error.response?.data?.error?.message !== undefined) {
+      error.response.data.message = error.response.data.error.message;
+    }
+
     if (error.response?.status === 401) {
       const auth = useAuthStore();
       auth.clearSession();
