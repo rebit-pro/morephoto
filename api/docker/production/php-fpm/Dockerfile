@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     git \
     gnupg2 \
     libfcgi-bin \
+    msmtp \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         gd \
@@ -39,6 +40,7 @@ RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 COPY docker/common/php/conf.d /usr/local/etc/php/conf.d
 COPY docker/production/php/conf.d /usr/local/etc/php/conf.d
 COPY docker/common/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY docker/common/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 # 2. Установка Composer (v2)
 ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
@@ -57,7 +59,9 @@ RUN find /app/public/local/modules -maxdepth 2 -name "routes.php" -exec sh -c ' 
         ln -sf "$f" /app/public/local/routes/"$module".php; \
     done' _ {} +
 
-RUN mkdir -p /app /var/lib/php/sessions \
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
+    && mkdir -p /app /var/lib/php/sessions \
     && chown -R www-data:www-data /app /var/lib/php/sessions
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["php-fpm"]

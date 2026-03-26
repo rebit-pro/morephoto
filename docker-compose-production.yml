@@ -78,6 +78,8 @@ services:
             target: rebit_encryption_key
           - source: rebit_geetest_captcha_key
             target: rebit_geetest_captcha_key
+          - source: rebit_smtp_password
+            target: rebit_smtp_password
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -120,6 +122,8 @@ services:
             target: rebit_encryption_key
           - source: rebit_geetest_captcha_key
             target: rebit_geetest_captcha_key
+          - source: rebit_smtp_password
+            target: rebit_smtp_password
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -184,6 +188,9 @@ secrets:
     rebit_mysql_root_password:
         external: true
         name: ${REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME}
+    rebit_smtp_password:
+        external: true
+        name: ${REBIT_SMTP_PASSWORD_SECRET_NAME}
 networks:
     traefik-public:
         external: true
