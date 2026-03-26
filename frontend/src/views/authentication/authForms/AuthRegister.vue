@@ -127,6 +127,13 @@ async function resendCode(): Promise<void> {
   }
 }
 
+function goBackToRequestCode(): void {
+  stopResendTimer();
+  resendSecondsLeft.value = 0;
+  codeExpiresAt.value = null;
+  step.value = 'request-code';
+}
+
 onUnmounted(() => {
   stopResendTimer();
 });
@@ -200,7 +207,7 @@ onUnmounted(() => {
       class="mt-1"
       variant="text"
       color="secondary"
-      @click="step = 'request-code'"
+      @click="goBackToRequestCode"
     >
       Изменить e-mail или пароль
     </v-btn>

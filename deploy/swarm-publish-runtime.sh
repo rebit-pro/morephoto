@@ -12,7 +12,8 @@ Environment overrides:
   BACKEND_ENV_FILE=/srv/rebit-p2p/swarm/backend.env
   SECRETS_DIR=/srv/rebit-p2p/swarm/secrets
   LEGACY_SECRET_DIR=/srv/rebit-p2p/swarm
-  REQUIRED_SECRET_NAMES="rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password rebit_smtp_password"
+  REQUIRED_SECRET_NAMES="rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password"
+  OPTIONAL_SECRET_NAMES="rebit_smtp_password"
   OUTPUT_ENV_FILE=/tmp/rebit-swarm-runtime.env
 
 Optional explicit object names:
@@ -97,6 +98,26 @@ resolve_required_secret_file() {
     fail "Required secret file not found: $secret_key"
 }
 
+resolve_optional_secret_file() {
+    local secret_key="$1"
+    local primary_path="$SECRETS_DIR/$secret_key"
+    local legacy_path="$LEGACY_SECRET_DIR/$secret_key"
+
+    if [[ -f "$primary_path" ]]; then
+        require_readable_file "$primary_path"
+        printf '%s' "$primary_path"
+        return
+    fi
+
+    if [[ -f "$legacy_path" ]]; then
+        require_readable_file "$legacy_path"
+        printf '%s' "$legacy_path"
+        return
+    fi
+
+    log "Optional secret file not found, skipping: $secret_key"
+}
+
 discover_secret_sources() {
     local secret_key
     local secret_path
@@ -108,6 +129,18 @@ discover_secret_sources() {
 
         secret_path="$(resolve_required_secret_file "$secret_key")"
         register_secret_source "$secret_key" "$secret_path"
+    done
+
+    for secret_key in "${OPTIONAL_SECRET_KEYS[@]}"; do
+        if [[ -z "$secret_key" ]]; then
+            continue
+        fi
+
+        secret_path="$(resolve_optional_secret_file "$secret_key")"
+
+        if [[ -n "$secret_path" ]]; then
+            register_secret_source "$secret_key" "$secret_path"
+        fi
     done
 
     if [[ ! -d "$SECRETS_DIR" ]]; then
@@ -197,12 +230,14 @@ BASE_DIR="${BASE_DIR:-/srv/rebit-p2p/swarm}"
 BACKEND_ENV_FILE="${BACKEND_ENV_FILE:-$BASE_DIR/backend.env}"
 SECRETS_DIR="${SECRETS_DIR:-$BASE_DIR/secrets}"
 LEGACY_SECRET_DIR="${LEGACY_SECRET_DIR:-$BASE_DIR}"
-REQUIRED_SECRET_NAMES="${REQUIRED_SECRET_NAMES:-rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password rebit_smtp_password}"
+REQUIRED_SECRET_NAMES="${REQUIRED_SECRET_NAMES:-rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password}"
+OPTIONAL_SECRET_NAMES="${OPTIONAL_SECRET_NAMES:-rebit_smtp_password}"
 OUTPUT_ENV_FILE="${OUTPUT_ENV_FILE:-}"
 
 BACKEND_ENV_CONFIG_NAME="${BACKEND_ENV_CONFIG_NAME:-rebit_backend_env_$VERSION}"
 
 IFS=' ' read -r -a REQUIRED_SECRET_KEYS <<< "$REQUIRED_SECRET_NAMES"
+IFS=' ' read -r -a OPTIONAL_SECRET_KEYS <<< "$OPTIONAL_SECRET_NAMES"
 
 declare -a SECRET_KEYS=()
 declare -a SECRET_SOURCE_FILES=()
