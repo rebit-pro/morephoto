@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useWalletStore } from '@/stores/wallet';
 import { useIdentityStore } from '@/stores/identity';
@@ -9,7 +9,7 @@ const wallet = useWalletStore();
 const identity = useIdentityStore();
 
 const activeTab = ref('balances');
-const userEmail = ref('');
+const userEmail = computed(() => auth.user?.['email'] ?? '');
 
 const txLabels: Record<string, string> = {
   deposit: 'Депозит',
@@ -62,7 +62,6 @@ async function refreshTransactions(): Promise<void> {
 }
 
 onMounted(async () => {
-  userEmail.value = auth.user?.['email'] ?? '';
   await Promise.all([wallet.fetchBalances(), wallet.fetchTransactions(), identity.fetchStatus()]);
 });
 </script>

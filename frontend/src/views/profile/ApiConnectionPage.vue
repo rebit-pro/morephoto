@@ -182,11 +182,26 @@ async function onVerify(): Promise<void> {
 
   try {
     await identity.verify();
+
+    if (null !== identity.error) {
+      errorMessage.value = identity.error;
+
+      return;
+    }
+
     notification.value = {
       type: 'info',
       title: 'Проверка выполнена',
       text: `Статус подключения: ${identity.statusLabel ?? '—'}. Режим: ${identity.modeLabel ?? '—'}.`,
     };
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      errorMessage.value = e.message;
+    }
+
+    if (null !== identity.error) {
+      errorMessage.value = identity.error;
+    }
   } finally {
     verifying.value = false;
   }
@@ -199,12 +214,27 @@ async function onDisconnect(): Promise<void> {
 
   try {
     await identity.disconnect();
+
+    if (null !== identity.error) {
+      errorMessage.value = identity.error;
+
+      return;
+    }
+
     resetForm(true);
     notification.value = {
       type: 'info',
       title: 'Bybit API отключён',
       text: 'Ключ и секрет отвязаны. Можно подключить новый testnet или mainnet ключ.',
     };
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      errorMessage.value = e.message;
+    }
+
+    if (null !== identity.error) {
+      errorMessage.value = identity.error;
+    }
   } finally {
     disconnecting.value = false;
   }
