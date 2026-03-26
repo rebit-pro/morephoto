@@ -7,7 +7,25 @@ export const useIdentityStore = defineStore('identity', () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
 
-  const isConnected = computed(() => true === connectionStatus.value?.connected);
+  const isConnected = computed(() => {
+    const status = connectionStatus.value as ApiConnectionStatus | null;
+
+    if (null === status) {
+      return false;
+    }
+
+    return true === status['connected'];
+  });
+
+  const hasActiveConnection = computed(() => {
+    const status = connectionStatus.value as ApiConnectionStatus | null;
+
+    if (null === status) {
+      return false;
+    }
+
+    return true === status['connected'] && 'active' === status['status'];
+  });
 
   async function fetchStatus(): Promise<void> {
     loading.value = true;
@@ -64,6 +82,7 @@ export const useIdentityStore = defineStore('identity', () => {
     loading,
     error,
     isConnected,
+    hasActiveConnection,
     fetchStatus,
     connect,
     disconnect,

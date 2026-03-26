@@ -10,10 +10,33 @@ export const useExchangeStore = defineStore('exchange', () => {
   const selectedPair = ref<CurrencyPair>({ token: 'USDT', fiat: 'RUB', label: 'USDT / RUB' });
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const hasOrderBookAccess = ref(false);
 
   let refreshTimer: ReturnType<typeof setInterval> | null = null;
 
+  function clearOrderBook(): void {
+    buyOrders.value = [];
+    sellOrders.value = [];
+    loading.value = false;
+    error.value = null;
+  }
+
+  function setOrderBookAccess(value: boolean): void {
+    hasOrderBookAccess.value = value;
+
+    if (!value) {
+      stopAutoRefresh();
+      clearOrderBook();
+    }
+  }
+
   async function fetchOrderBook(): Promise<void> {
+    if (!hasOrderBookAccess.value) {
+      clearOrderBook();
+
+      return;
+    }
+
     loading.value = true;
     error.value = null;
     try {
@@ -50,12 +73,22 @@ export const useExchangeStore = defineStore('exchange', () => {
 
   function selectPair(pair: CurrencyPair): void {
     selectedPair.value = pair;
-    fetchOrderBook();
+
+    if (hasOrderBookAccess.value) {
+      void fetchOrderBook();
+    }
   }
 
   function startAutoRefresh(intervalMs = 10000): void {
     stopAutoRefresh();
-    refreshTimer = setInterval(fetchOrderBook, intervalMs);
+
+    if (!hasOrderBookAccess.value) {
+      return;
+    }
+
+    refreshTimer = setInterval(() => {
+      void fetchOrderBook();
+    }, intervalMs);
   }
 
   function stopAutoRefresh(): void {
@@ -73,6 +106,9 @@ export const useExchangeStore = defineStore('exchange', () => {
     selectedPair,
     loading,
     error,
+    hasOrderBookAccess,
+    clearOrderBook,
+    setOrderBookAccess,
     fetchOrderBook,
     fetchCurrencyPairs,
     fetchPaymentMethods,
