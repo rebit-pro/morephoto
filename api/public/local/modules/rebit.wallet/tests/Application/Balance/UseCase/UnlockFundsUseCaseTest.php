@@ -1,6 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Wallet\Tests\Application\Balance\UseCase;
+
 use PHPUnit\Framework\TestCase;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Wallet\Application\Balance\Dto\Request\LockFundsInputDto;
@@ -10,6 +13,7 @@ use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
+
 /**
  * @internal
  */
@@ -17,6 +21,7 @@ final class UnlockFundsUseCaseTest extends TestCase
 {
     private const int USER_ID = 1;
     private const int CURRENCY_ID = 10;
+
     public function testSuccessfulUnlock(): void
     {
         $dto = new LockFundsInputDto(
@@ -33,11 +38,13 @@ final class UnlockFundsUseCaseTest extends TestCase
             ->expects(self::once())
             ->method('findByUserIdAndCurrencyId')
             ->with(self::USER_ID, self::CURRENCY_ID)
-            ->willReturn($balance);
+            ->willReturn($balance)
+        ;
         $balanceRepo
             ->expects(self::once())
             ->method('unlockFunds')
-            ->with($balance, 3.0);
+            ->with($balance, 3.0)
+        ;
         $transactionRepo = $this->createMock(TransactionRepository::class);
         $transactionRepo
             ->expects(self::once())
@@ -50,10 +57,12 @@ final class UnlockFundsUseCaseTest extends TestCase
                 balanceAfter: 8.0,
                 tradeId: 200,
                 description: 'Разблокировка средств после отмены сделки',
-            );
+            )
+        ;
         $calculator = new BalanceCalculator();
         (new UnlockFundsUseCase($balanceRepo, $transactionRepo, $calculator))->execute($dto);
     }
+
     public function testThrows404WhenBalanceNotFound(): void
     {
         $dto = new LockFundsInputDto(
@@ -69,6 +78,7 @@ final class UnlockFundsUseCaseTest extends TestCase
         $this->expectExceptionCode(404);
         (new UnlockFundsUseCase($balanceRepo, $transactionRepo, $calculator))->execute($dto);
     }
+
     public function testThrows422WhenInsufficientLocked(): void
     {
         $dto = new LockFundsInputDto(

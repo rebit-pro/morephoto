@@ -1,16 +1,19 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Wallet\Tests\Application\Balance\UseCase;
+
 use PHPUnit\Framework\TestCase;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Wallet\Application\Balance\Dto\Request\LockFundsInputDto;
 use Rebit\Wallet\Application\Balance\UseCase\LockFundsUseCase;
 use Rebit\Wallet\Domain\Balance\Entity\Balance;
-use Rebit\Wallet\Domain\Balance\Exception\InsufficientFundsException;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 use Rebit\Wallet\Domain\Transaction\Enum\TransactionTypeEnum;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
+
 /**
  * @internal
  */
@@ -18,6 +21,7 @@ final class LockFundsUseCaseTest extends TestCase
 {
     private const int USER_ID = 1;
     private const int CURRENCY_ID = 10;
+
     public function testSuccessfulLock(): void
     {
         $dto = new LockFundsInputDto(
@@ -33,11 +37,13 @@ final class LockFundsUseCaseTest extends TestCase
             ->expects(self::once())
             ->method('findByUserIdAndCurrencyId')
             ->with(self::USER_ID, self::CURRENCY_ID)
-            ->willReturn($balance);
+            ->willReturn($balance)
+        ;
         $balanceRepo
             ->expects(self::once())
             ->method('lockFunds')
-            ->with($balance, 5.0);
+            ->with($balance, 5.0)
+        ;
         $transactionRepo = $this->createMock(TransactionRepository::class);
         $transactionRepo
             ->expects(self::once())
@@ -50,10 +56,12 @@ final class LockFundsUseCaseTest extends TestCase
                 balanceAfter: 5.0,
                 tradeId: 100,
                 description: 'Блокировка средств под сделку',
-            );
+            )
+        ;
         $calculator = new BalanceCalculator();
         (new LockFundsUseCase($balanceRepo, $transactionRepo, $calculator))->execute($dto);
     }
+
     public function testThrows404WhenBalanceNotFound(): void
     {
         $dto = new LockFundsInputDto(
@@ -69,6 +77,7 @@ final class LockFundsUseCaseTest extends TestCase
         $this->expectExceptionCode(404);
         (new LockFundsUseCase($balanceRepo, $transactionRepo, $calculator))->execute($dto);
     }
+
     public function testThrows422WhenInsufficientFunds(): void
     {
         $dto = new LockFundsInputDto(

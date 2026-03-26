@@ -23,6 +23,7 @@ final class TradeChatController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/trades/{tradeId}/chat
+     *
      * @throws HttpException
      * @throws RepositoryException
      */
@@ -35,6 +36,7 @@ final class TradeChatController extends BaseExchangeController
 
     /**
      * POST /api/v1/exchange/trades/{tradeId}/chat
+     *
      * @throws HttpException
      * @throws RepositoryException
      */

@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class ConfirmPaymentRequestDto implements RequestDtoInterface
 {
     public function __construct(
+        #[Assert\Positive(message: 'id сделки обязателен.')]
+        public int $id,
         #[Assert\NotBlank(message: 'paymentType обязателен.')]
         public string $paymentType,
         #[Assert\NotBlank(message: 'paymentId обязателен.')]

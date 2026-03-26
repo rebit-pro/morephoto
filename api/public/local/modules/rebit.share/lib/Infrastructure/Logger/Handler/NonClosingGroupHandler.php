@@ -6,6 +6,7 @@ namespace Rebit\Share\Infrastructure\Logger\Handler;
 
 use Monolog\Handler\AbstractHandler;
 use Monolog\Handler\GroupHandler;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Logger;
 
 /**
@@ -31,7 +32,7 @@ final class NonClosingGroupHandler extends GroupHandler
 
     public function close(): void {}
 
-    private function handleWithDebugLevel(mixed $handler, array $record): void
+    private function handleWithDebugLevel(HandlerInterface $handler, array $record): void
     {
         if (!$handler instanceof AbstractHandler) {
             $handler->handle($record);
@@ -49,18 +50,7 @@ final class NonClosingGroupHandler extends GroupHandler
         }
     }
 
-    /**
-     * @param array<int, array{
-     *     message: string,
-     *     context: array<string, mixed>,
-     *     level: int,
-     *     level_name: string,
-     *     channel: string,
-     *     datetime: \DateTimeImmutable,
-     *     extra: array<string, mixed>,
-     * }> $records
-     */
-    private function handleBatchWithDebugLevel(mixed $handler, array $records): void
+    private function handleBatchWithDebugLevel(HandlerInterface $handler, array $records): void
     {
         if (!$handler instanceof AbstractHandler) {
             $handler->handleBatch($records);

@@ -26,6 +26,7 @@ final class AdvertisementController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/advertisements
+     *
      * @throws HttpException
      * @throws RepositoryException
      * @throws \JsonException
@@ -39,6 +40,7 @@ final class AdvertisementController extends BaseExchangeController
 
     /**
      * POST /api/v1/exchange/advertisements
+     *
      * @throws HttpException
      * @throws RepositoryException
      */
@@ -51,6 +53,7 @@ final class AdvertisementController extends BaseExchangeController
 
     /**
      * DELETE /api/v1/exchange/advertisements/{id}
+     *
      * @throws HttpException
      * @throws RepositoryException
      */

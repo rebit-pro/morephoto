@@ -1,17 +1,22 @@
 <?php
+
 declare(strict_types=1);
+
 namespace Rebit\Wallet\Tests\Application\Transaction\UseCase;
+
 use PHPUnit\Framework\TestCase;
 use Rebit\Wallet\Application\Transaction\Dto\Request\TransactionFilterRequestDto;
 use Rebit\Wallet\Application\Transaction\Dto\Result\TransactionListResultDto;
 use Rebit\Wallet\Application\Transaction\UseCase\ExportTransactionsUseCase;
 use Rebit\Wallet\Application\Transaction\UseCase\ListTransactionsUseCase;
+
 /**
  * @internal
  */
 final class ExportTransactionsUseCaseTest extends TestCase
 {
     private const int USER_ID = 1;
+
     public function testDelegatesWithLimit10000AndOffset0(): void
     {
         $filter = new TransactionFilterRequestDto(
@@ -29,7 +34,7 @@ final class ExportTransactionsUseCaseTest extends TestCase
             ->method('execute')
             ->with(
                 self::USER_ID,
-                self::callback(static function (TransactionFilterRequestDto $dto): bool {
+                self::callback(static function(TransactionFilterRequestDto $dto): bool {
                     return 10000 === $dto->limit
                         && 0 === $dto->offset
                         && 'deposit' === $dto->type
@@ -38,7 +43,8 @@ final class ExportTransactionsUseCaseTest extends TestCase
                         && '2026-03-01' === $dto->dateTo;
                 }),
             )
-            ->willReturn($expectedResult);
+            ->willReturn($expectedResult)
+        ;
         $result = (new ExportTransactionsUseCase($listUseCase))->execute(self::USER_ID, $filter);
         self::assertSame($expectedResult, $result);
     }

@@ -57,10 +57,10 @@ final class TradeController extends BaseExchangeController
      * @throws HttpException
      * @throws RepositoryException
      */
-    public function payAction(int $id, ConfirmPaymentRequestDto $dto): ControllerJson
+    public function payAction(ConfirmPaymentRequestDto $dto): ControllerJson
     {
         return $this->json(
-            $this->confirmPaymentUseCase->execute($id, $this->getAuthUserId(), $dto->paymentType, $dto->paymentId),
+            $this->confirmPaymentUseCase->execute($dto->id, $this->getAuthUserId(), $dto->paymentType, $dto->paymentId),
         );
     }
 

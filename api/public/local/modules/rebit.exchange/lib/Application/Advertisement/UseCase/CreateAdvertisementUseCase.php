@@ -33,7 +33,7 @@ final readonly class CreateAdvertisementUseCase
 
     /**
      * @throws HttpException
-     * @throws RepositoryException|\JsonException
+     * @throws \JsonException|RepositoryException
      */
     public function execute(CreateAdvertisementRequestDto $dto, int $userId): AdvertisementResultDto
     {

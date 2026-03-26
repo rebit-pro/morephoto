@@ -58,7 +58,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"vidmon83@vk.com\",\n  \"password\": \"your_password\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"your_password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
@@ -120,8 +120,8 @@
                   "query": [
                     { "key": "type", "value": "", "description": "Фильтр по типу: deposit, withdrawal, trade_buy, trade_sell, lock, unlock, fee" },
                     { "key": "currencyId", "value": "", "description": "Фильтр по ID валюты" },
-                    { "key": "dateFrom", "value": "", "description": "Дата начала (ISO 8601)" },
-                    { "key": "dateTo", "value": "", "description": "Дата окончания (ISO 8601)" },
+                    { "key": "dateFrom", "value": "", "description": "Дата начала (формат Y-m-d)" },
+                    { "key": "dateTo", "value": "", "description": "Дата окончания (формат Y-m-d)" },
                     { "key": "limit", "value": "50", "description": "Лимит записей (по умолчанию 50)" },
                     { "key": "offset", "value": "0", "description": "Смещение (по умолчанию 0)" }
                   ]
@@ -396,7 +396,7 @@
                     { "key": "tradeId", "value": "1", "description": "ID сделки" }
                   ]
                 },
-                "description": "Отправить сообщение в чат сделки.\n\nПараметры:\n- `tradeId` — ID сделки\n- `message` — текст сообщения\n- `contentType` — тип: `str` (текст), `img` (картинка)\n- `fileName` — имя файла (для картинок)"
+                "description": "Отправить сообщение в чат сделки.\n\nПараметры:\n- `tradeId` — ID сделки\n- `message` — текст сообщения\n- `contentType` — тип: `str` (текст), `pic` (картинка), `pdf` (PDF), `video` (видео)\n- `fileName` — имя файла (для pic/pdf/video)"
               }
             }
           ]

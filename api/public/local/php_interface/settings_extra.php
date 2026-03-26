@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Monolog\Formatter\HtmlFormatter;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Formatter\LogstashFormatter;
 use Monolog\Handler\RotatingFileHandler;

@@ -13,4 +13,12 @@ enum TransactionTypeEnum: string
     case Lock = 'lock';
     case Unlock = 'unlock';
     case Fee = 'fee';
+
+    /**
+     * @return array<int, string>
+     */
+    public static function values(): array
+    {
+        return array_column(self::cases(), 'value');
+    }
 }

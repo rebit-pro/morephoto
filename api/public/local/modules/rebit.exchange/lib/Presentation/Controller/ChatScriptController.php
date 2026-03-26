@@ -29,6 +29,7 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/chat-scripts
+     *
      * @throws HttpException
      * @throws RepositoryException
      */
@@ -41,6 +42,7 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * POST /api/v1/exchange/chat-scripts
+     *
      * @throws HttpException
      * @throws RepositoryException
      */
@@ -53,6 +55,7 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * PATCH /api/v1/exchange/chat-scripts/{id}
+     *
      * @throws HttpException
      * @throws RepositoryException
      */
@@ -65,6 +68,7 @@ final class ChatScriptController extends BaseExchangeController
 
     /**
      * DELETE /api/v1/exchange/chat-scripts/{id}
+     *
      * @throws HttpException
      * @throws RepositoryException
      */

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth';
 import { useWalletStore } from '@/stores/wallet';
 import { useIdentityStore } from '@/stores/identity';
 import { useExchangeStore } from '@/stores/exchange';
+import type { OrderBookEntry } from '@/api/exchange';
 
 const auth = useAuthStore();
 const wallet = useWalletStore();
@@ -31,6 +32,13 @@ const txColors: Record<string, string> = {
   fee: 'error'
 };
 
+const txIcons: Record<string, string> = {
+  trade_sell: 'mdi-arrow-top-right',
+  trade_buy: 'mdi-arrow-bottom-left',
+  lock: 'mdi-lock-outline',
+  fee: 'mdi-percent-outline'
+};
+
 const userDisplayName = computed(() => auth.user?.['name'] ?? auth.user?.['email'] ?? '');
 const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['mode']);
 const latestTransactions = computed(() => wallet.transactions.slice(0, 4));
@@ -46,7 +54,7 @@ const bestBuyOrder = computed(() => {
     }
 
     return best;
-  }, null as (typeof exchange.buyOrders.value)[number] | null);
+  }, null as OrderBookEntry | null);
 });
 const bestSellOrder = computed(() => {
   return exchange.sellOrders.reduce((best, current) => {
@@ -55,7 +63,7 @@ const bestSellOrder = computed(() => {
     }
 
     return best;
-  }, null as (typeof exchange.sellOrders.value)[number] | null);
+  }, null as OrderBookEntry | null);
 });
 const spread = computed(() => {
   if (null === bestBuyOrder.value || null === bestSellOrder.value) {
@@ -112,6 +120,10 @@ function txLabel(type: string): string {
 
 function txColor(type: string): string {
   return txColors[type] ?? 'default';
+}
+
+function txIcon(type: string): string {
+  return txIcons[type] ?? 'mdi-swap-horizontal';
 }
 
 function connectionStateText(): string {
@@ -466,7 +478,7 @@ onMounted(async () => {
                   <template #prepend>
                     <v-avatar size="40" :color="txColor(tx.type)" variant="tonal">
                       <v-icon>
-                        {{ 'trade_sell' === tx.type ? 'mdi-arrow-top-right' : 'trade_buy' === tx.type ? 'mdi-arrow-bottom-left' : 'lock' === tx.type ? 'mdi-lock-outline' : 'fee' === tx.type ? 'mdi-percent-outline' : 'mdi-swap-horizontal' }}
+                        {{ txIcon(tx.type) }}
                       </v-icon>
                     </v-avatar>
                   </template>

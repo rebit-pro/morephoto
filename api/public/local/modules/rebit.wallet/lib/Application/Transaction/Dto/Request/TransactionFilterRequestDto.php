@@ -13,17 +13,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 final readonly class TransactionFilterRequestDto implements RequestDtoInterface
 {
-    /**
-     * @return array<int, string>
-     */
-    public static function transactionTypeValues(): array
-    {
-        return array_column(TransactionTypeEnum::cases(), 'value');
-    }
-
     public function __construct(
         #[Assert\Choice(
-            callback: [self::class, 'transactionTypeValues'],
+            callback: [TransactionTypeEnum::class, 'values'],
             message: 'Некорректный тип транзакции.',
         )]
         public ?string $type = null,

@@ -21,6 +21,7 @@ final class CurrencyController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/currencies
+     *
      * @throws RepositoryException
      */
     public function currenciesAction(): ControllerJson
@@ -32,6 +33,7 @@ final class CurrencyController extends BaseExchangeController
 
     /**
      * GET /api/v1/exchange/currency-pairs
+     *
      * @throws RepositoryException
      */
     public function pairsAction(): ControllerJson
