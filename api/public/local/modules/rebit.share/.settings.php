@@ -13,6 +13,7 @@ return [
             require __DIR__ . '/di/audit.php',
             require __DIR__ . '/di/file.php',
         ),
+        'readonly' => true,
     ],
     'console' => [
         'value' => [
@@ -21,5 +22,6 @@ return [
                 TestAuditCommand::class,
             ],
         ],
+        'readonly' => true,
     ],
 ];

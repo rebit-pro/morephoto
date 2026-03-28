@@ -7,7 +7,6 @@ namespace Rebit\Exchange\Application\TradeChat\UseCase;
 use Psr\Log\LoggerInterface;
 use Rebit\Exchange\Application\TradeChat\Message\ExecuteChatScriptStepMessage;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
-use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStep;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
@@ -28,6 +27,7 @@ final readonly class StartTradeChatScriptUseCase
 
     /**
      * @throws RepositoryException
+     * @throws \Exception
      */
     public function execute(Trade $trade): void
     {
@@ -78,9 +78,7 @@ final readonly class StartTradeChatScriptUseCase
         }
 
         $steps = $this->chatScriptStepRepository->findByScriptId($script->getId());
-        /** @var array<int, ChatScriptStep> $stepList */
-        $stepList = $steps->getAll();
-        $firstStep = $stepList[0] ?? null;
+        $firstStep = $steps->getIterator()->current();
 
         if (null === $firstStep) {
             $this->logger->warning('Пропущен запуск чат-скрипта: у скрипта нет шагов', [
@@ -98,14 +96,16 @@ final readonly class StartTradeChatScriptUseCase
             firstStepDelaySeconds: $firstStep->getUfDelaySeconds(),
         );
 
-        $this->chatScriptStepPublisher->dispatch(
-            new ExecuteChatScriptStepMessage(
-                executionId: $execution->getId(),
-                tradeId: $trade->getId(),
-                stepId: $firstStep->getId(),
-                delaySeconds: $firstStep->getUfDelaySeconds(),
-            ),
-        );
+        if (0 === $firstStep->getUfDelaySeconds()) {
+            $this->chatScriptStepPublisher->dispatch(
+                new ExecuteChatScriptStepMessage(
+                    executionId: (int)$execution->getId(),
+                    tradeId: $trade->getId(),
+                    stepId: $firstStep->getId(),
+                    delaySeconds: 0,
+                ),
+            );
+        }
 
         $this->logger->info('Чат-скрипт поставлен в очередь для сделки', [
             'tradeId' => $trade->getId(),

@@ -4,16 +4,6 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Messenger;
 
-use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Transport\TransportInterface;
+use Rebit\Share\Application\Contract\Messenger\MessageConsumerRunnerInterface as ApplicationMessageConsumerRunnerInterface;
 
-interface ConsumerRunnerInterface
-{
-    public function run(
-        TransportInterface $transport,
-        string $queueName,
-        MessageBusInterface $bus,
-        int $limit,
-        int $timeLimit,
-    ): void;
-}
+interface ConsumerRunnerInterface extends ApplicationMessageConsumerRunnerInterface {}

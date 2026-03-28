@@ -15,6 +15,7 @@ use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Shared\Exception\RepositoryException;
 use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
+use Rebit\Exchange\Domain\Trade\Entity\Trade;
 
 /**
  * Handler очереди tradeEvent: обработка смены статуса сделки.
@@ -106,7 +107,7 @@ final readonly class TradeStatusChangedMessageHandler
     }
 
     private function publishStatusChangedNotification(
-        \Rebit\Exchange\Domain\Trade\Entity\Trade $trade,
+        Trade $trade,
         int $localUserId,
         string $oldStatus,
         string $newStatus,
@@ -135,7 +136,7 @@ final readonly class TradeStatusChangedMessageHandler
         }
     }
 
-    private function resolveLocalUserId(\Rebit\Exchange\Domain\Trade\Entity\Trade $trade): int
+    private function resolveLocalUserId(Trade $trade): int
     {
         return match ($trade->getUfSide()) {
             'buy' => $trade->getUfBuyerUserId(),

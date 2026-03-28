@@ -12,13 +12,13 @@ use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
 use Rebit\Exchange\Domain\ChatScript\Enum\ExecutionStatusEnum;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
-use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Enum\ContentTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Enum\MessageTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
 use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class ExecuteQueuedChatScriptStepUseCase
@@ -35,6 +35,7 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
 
     /**
      * @throws RepositoryException
+     * @throws HttpException
      */
     public function execute(ExecuteChatScriptStepMessage $message): void
     {
@@ -49,67 +50,94 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
             return;
         }
 
-        if (ExecutionStatusEnum::Pending->value !== $execution->getUfStatus()) {
+        $executionStatus = (string)$execution->getUfStatus();
+        if (ExecutionStatusEnum::Pending->value !== $executionStatus) {
             $this->logger->info('Пропущено выполнение шага чат-скрипта: execution уже не pending', [
                 'executionId' => $execution->getId(),
-                'status' => $execution->getUfStatus(),
+                'status' => $executionStatus,
             ]);
 
             return;
         }
 
-        if ($execution->getUfTradeId() !== $message->tradeId) {
+        $executionTradeId = (int)$execution->getUfTradeId();
+        if ($executionTradeId !== $message->tradeId) {
             $this->logger->warning('Пропущено выполнение шага чат-скрипта: tradeId в сообщении не совпадает с execution', [
                 'executionId' => $execution->getId(),
                 'messageTradeId' => $message->tradeId,
-                'executionTradeId' => $execution->getUfTradeId(),
+                'executionTradeId' => $executionTradeId,
             ]);
 
             return;
         }
 
-        $trade = $this->tradeRepository->findById($execution->getUfTradeId());
-        if (null === $trade || !$this->isChatActive($trade)) {
+        $trade = $this->tradeRepository->findById($executionTradeId);
+        $tradeStatus = null === $trade ? null : TradeStatusEnum::tryFrom($trade->getUfStatus());
+
+        if (null === $trade || null === $tradeStatus || !$tradeStatus->isChatActive()) {
             $execution->setUfStatus(ExecutionStatusEnum::Cancelled->value);
             $this->executionRepository->save($execution);
 
             $this->logger->info('Исполнение чат-скрипта отменено: сделка не найдена или чат уже неактивен', [
                 'executionId' => $execution->getId(),
-                'tradeId' => $execution->getUfTradeId(),
+                'tradeId' => $executionTradeId,
             ]);
 
             return;
         }
 
+        $executionScriptId = (int)$execution->getUfScriptId();
         $step = $this->stepRepository->findById($message->stepId);
-        if (null === $step || $step->getUfScriptId() !== $execution->getUfScriptId()) {
+        if (null === $step) {
             $this->logger->warning('Пропущено выполнение шага чат-скрипта: шаг не найден или не принадлежит скрипту execution', [
                 'executionId' => $execution->getId(),
                 'stepId' => $message->stepId,
-                'scriptId' => $execution->getUfScriptId(),
+                'scriptId' => $executionScriptId,
             ]);
 
             return;
         }
 
-        if ($step->getUfSort() <= $execution->getUfLastStepSort()) {
+        $stepScriptId = (int)$step->getUfScriptId();
+        if ($stepScriptId !== $executionScriptId) {
+            $this->logger->warning('Пропущено выполнение шага чат-скрипта: шаг не найден или не принадлежит скрипту execution', [
+                'executionId' => $execution->getId(),
+                'stepId' => $message->stepId,
+                'scriptId' => $executionScriptId,
+            ]);
+
+            return;
+        }
+
+        $stepSort = (int)$step->getUfSort();
+        $lastStepSort = (int)$execution->getUfLastStepSort();
+        if ($stepSort <= $lastStepSort) {
             $this->logger->info('Пропущено выполнение шага чат-скрипта: шаг уже был обработан', [
                 'executionId' => $execution->getId(),
                 'stepId' => $step->getId(),
-                'stepSort' => $step->getUfSort(),
-                'lastStepSort' => $execution->getUfLastStepSort(),
+                'stepSort' => $stepSort,
+                'lastStepSort' => $lastStepSort,
             ]);
 
             return;
         }
 
-        if (0 < $message->delaySeconds) {
-            sleep($message->delaySeconds);
+        $nextRunAt = $execution->getUfNextRunAt();
+        if ($nextRunAt->getTimestamp() > time()) {
+            $this->logger->info('Пропущено выполнение шага чат-скрипта: время шага ещё не наступило', [
+                'executionId' => $execution->getId(),
+                'stepId' => $step->getId(),
+                'nextRunAt' => $nextRunAt->format('c'),
+            ]);
+
+            return;
         }
 
         $msgUuid = Uuid::uuid4()->toString();
+        $executionUserId = (int)$execution->getUfUserId();
+
         $this->chatGateway->sendMessage(
-            $execution->getUfUserId(),
+            $executionUserId,
             $trade->getUfBybitOrderId(),
             $step->getUfMessage(),
             ContentTypeEnum::Str->value,
@@ -117,8 +145,8 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
         );
 
         $this->messageRepository->create(
-            tradeId: $execution->getUfTradeId(),
-            userId: $execution->getUfUserId(),
+            tradeId: $executionTradeId,
+            userId: $executionUserId,
             message: $step->getUfMessage(),
             messageType: MessageTypeEnum::Script,
             contentType: ContentTypeEnum::Str,
@@ -126,12 +154,12 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
             scriptStepId: $step->getId(),
         );
 
-        $execution->setUfLastStepSort($step->getUfSort());
+        $execution->setUfLastStepSort($stepSort);
 
-        $steps = $this->stepRepository->findByScriptId($execution->getUfScriptId());
+        $steps = $this->stepRepository->findByScriptId($executionScriptId);
         $nextStep = null;
         foreach ($steps as $candidateStep) {
-            if ($candidateStep->getUfSort() > $step->getUfSort()) {
+            if ($candidateStep->getUfSort() > $stepSort) {
                 $nextStep = $candidateStep;
                 break;
             }
@@ -153,28 +181,34 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
         $execution->setUfNextRunAt((new DateTime())->add('+' . $nextStep->getUfDelaySeconds() . ' seconds'));
         $this->executionRepository->save($execution);
 
-        $this->chatScriptStepPublisher->dispatch(
-            new ExecuteChatScriptStepMessage(
-                executionId: $execution->getId(),
-                tradeId: $execution->getUfTradeId(),
-                stepId: $nextStep->getId(),
-                delaySeconds: $nextStep->getUfDelaySeconds(),
-            ),
-        );
+        if (0 === $nextStep->getUfDelaySeconds()) {
+            $this->chatScriptStepPublisher->dispatch(
+                new ExecuteChatScriptStepMessage(
+                    executionId: (int)$execution->getId(),
+                    tradeId: $executionTradeId,
+                    stepId: $nextStep->getId(),
+                    delaySeconds: 0,
+                ),
+            );
 
-        $this->logger->info('Шаг чат-скрипта выполнен и следующий шаг поставлен в очередь', [
+            $this->logger->info('Шаг чат-скрипта выполнен и следующий шаг поставлен в очередь', [
+                'executionId' => $execution->getId(),
+                'tradeId' => $executionTradeId,
+                'stepId' => $step->getId(),
+                'nextStepId' => $nextStep->getId(),
+                'nextDelaySeconds' => $nextStep->getUfDelaySeconds(),
+            ]);
+
+            return;
+        }
+
+        $this->logger->info('Шаг чат-скрипта выполнен и следующий шаг запланирован', [
             'executionId' => $execution->getId(),
-            'tradeId' => $execution->getUfTradeId(),
+            'tradeId' => $executionTradeId,
             'stepId' => $step->getId(),
             'nextStepId' => $nextStep->getId(),
             'nextDelaySeconds' => $nextStep->getUfDelaySeconds(),
+            'nextRunAt' => $execution->getUfNextRunAt()->format('c'),
         ]);
-    }
-
-    private function isChatActive(Trade $trade): bool
-    {
-        $status = TradeStatusEnum::tryFrom($trade->getUfStatus());
-
-        return null !== $status && $status->isChatActive();
     }
 }

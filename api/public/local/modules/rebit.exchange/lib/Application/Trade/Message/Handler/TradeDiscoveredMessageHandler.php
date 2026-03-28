@@ -14,6 +14,7 @@ use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
 use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Exchange\Domain\Trade\Entity\Trade;
 
 /**
  * Handler очереди tradeEvent: обработка обнаружения сделки.
@@ -78,18 +79,18 @@ final readonly class TradeDiscoveredMessageHandler
             ]);
         } else {
             try {
-            $this->notificationPublisher->publish(
-                new SendNotificationDto(
-                    type: NotificationTypeEnum::TRADE_DISCOVERED->value,
-                    userId: $localUserId,
-                    payload: [
-                        'tradeId' => (string)$trade->getId(),
-                        'side' => $trade->getUfSide(),
-                        'fiatAmount' => (string)$trade->getUfFiatAmount(),
-                        'counterpartyName' => $trade->getUfCounterpartyName(),
-                    ],
-                ),
-            );
+                $this->notificationPublisher->publish(
+                    new SendNotificationDto(
+                        type: NotificationTypeEnum::TRADE_DISCOVERED->value,
+                        userId: $localUserId,
+                        payload: [
+                            'tradeId' => (string)$trade->getId(),
+                            'side' => $trade->getUfSide(),
+                            'fiatAmount' => $message->fiatAmount,
+                            'counterpartyName' => $trade->getUfCounterpartyName(),
+                        ],
+                    ),
+                );
             } catch (\Throwable $exception) {
                 $this->logger->error('Не удалось отправить уведомление по новой сделке из tradeEvent handler', [
                     'tradeId' => $trade->getId(),
@@ -115,7 +116,7 @@ final readonly class TradeDiscoveredMessageHandler
         ]);
     }
 
-    private function resolveLocalUserId(\Rebit\Exchange\Domain\Trade\Entity\Trade $trade): int
+    private function resolveLocalUserId(Trade $trade): int
     {
         return match ($trade->getUfSide()) {
             'buy' => $trade->getUfBuyerUserId(),

@@ -79,6 +79,7 @@ final readonly class SyncTradeHistoryUseCase
 
     /**
      * @param array<string, mixed> $item
+     *
      * @throws RepositoryException
      */
     private function createTrade(array $item, int $userId): void

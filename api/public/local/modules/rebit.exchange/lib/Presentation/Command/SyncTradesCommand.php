@@ -106,7 +106,8 @@ final class SyncTradesCommand extends RebitCommand
                 $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
                 $buyerUserId = 'buy' === $side ? $userId : 0;
                 $sellerUserId = 'sell' === $side ? $userId : 0;
-                $fiatAmount = (float)($item['amount'] ?? 0);
+                $fiatAmountRaw = (string)($item['amount'] ?? '0');
+                $fiatAmount = (float)$fiatAmountRaw;
                 $counterpartyName = (string)($item['targetNickName'] ?? '');
 
                 $trade = $this->tradeRepository->createFromBybit([
@@ -128,6 +129,7 @@ final class SyncTradesCommand extends RebitCommand
                         new TradeDiscoveredMessage(
                             tradeId: $trade->getId(),
                             bybitOrderId: $bybitOrderId,
+                            fiatAmount: $fiatAmountRaw,
                         ),
                     );
                 } catch (\Throwable $exception) {

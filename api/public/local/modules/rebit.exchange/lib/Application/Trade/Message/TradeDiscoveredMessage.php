@@ -14,6 +14,7 @@ final readonly class TradeDiscoveredMessage extends AbstractMessage
     public function __construct(
         public int $tradeId,
         public string $bybitOrderId,
+        public string $fiatAmount,
     ) {
         parent::__construct();
     }

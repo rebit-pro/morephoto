@@ -29,7 +29,13 @@ final readonly class AuditLogRepository
         ?string $userAgent,
         array $payload,
     ): void {
-        $this->query(function() use ($userId, $action, $entityType, $entityId, $ipAddress, $userAgent, $payload): void {
+        try {
+            $payloadJson = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        } catch (\JsonException $exception) {
+            throw new RepositoryException($exception->getMessage(), 0, $exception);
+        }
+
+        $this->query(function() use ($userId, $action, $entityType, $entityId, $ipAddress, $userAgent, $payloadJson): void {
             $connection = Application::getConnection();
             $helper = $connection->getSqlHelper();
             $now = new DateTime();
@@ -41,7 +47,6 @@ final readonly class AuditLogRepository
             $userAgentSql = null === $userAgent || '' === $userAgent
                 ? 'NULL'
                 : "'" . $helper->forSql($userAgent) . "'";
-            $payloadJson = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
             $connection->queryExecute(
                 sprintf(

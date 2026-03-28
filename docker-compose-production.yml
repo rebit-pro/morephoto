@@ -180,7 +180,7 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
             max_attempts: 5
     api-trade-event-consumer:
@@ -212,7 +212,7 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
             max_attempts: 5
     api-chat-script-consumer:
@@ -244,7 +244,7 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
             max_attempts: 5
     api-balance-sync-consumer:
@@ -276,7 +276,7 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
             max_attempts: 5
     api-identity-sync-consumer:
@@ -308,7 +308,7 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
             max_attempts: 5
     api-audit-consumer:
@@ -340,7 +340,7 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
             max_attempts: 5
     rabbitmq:

@@ -67,7 +67,7 @@ final readonly class SyncCounterpartyUseCase
             $trade->setUfBuyerUserId($counterpartyUserId);
         }
 
-        if ('' === $trade->getUfCounterpartyName() && isset($profile['nickName'])) {
+        if ('' === $trade->getUfCounterpartyName() && '' !== $profile['nickName']) {
             $trade->setUfCounterpartyName((string)$profile['nickName']);
         }
 

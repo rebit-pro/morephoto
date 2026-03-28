@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Domain\Counterparty\Repository;
 
+use Bitrix\Main\GroupTable;
 use Bitrix\Main\Type\DateTime;
+use Bitrix\Main\UserGroupTable;
 use Bitrix\Main\UserTable;
 use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
@@ -91,7 +93,17 @@ final readonly class CounterpartyRepository
     private function create(array $fields, string $bybitUserId): int
     {
         $user = new \CUser();
-        $password = bin2hex(random_bytes(16));
+
+        try {
+            $password = bin2hex(random_bytes(16));
+        } catch (\Throwable $exception) {
+            throw new RepositoryException(
+                'Не удалось сгенерировать пароль контрагента',
+                0,
+                $exception,
+            );
+        }
+
         $counterpartyGroupId = $this->getCounterpartiesGroupId();
 
         $userId = $user->Add($fields + [
@@ -118,7 +130,7 @@ final readonly class CounterpartyRepository
     private function update(int $userId, array $fields): void
     {
         $user = new \CUser();
-        $groupIds = \CUser::GetUserGroup($userId);
+        $groupIds = $this->getUserGroupIds($userId);
         $counterpartyGroupId = $this->getCounterpartiesGroupId();
 
         if (false === in_array($counterpartyGroupId, $groupIds, true)) {
@@ -176,11 +188,52 @@ final readonly class CounterpartyRepository
      */
     private function getCounterpartiesGroupId(): int
     {
-        $groupId = \CGroup::GetIDByCode(self::COUNTERPARTIES_GROUP_CODE);
-        if (false === $groupId || 0 >= (int)$groupId) {
+        $groupId = $this->query(
+            static function(): ?int {
+                $row = GroupTable::query()
+                    ->setSelect(['ID'])
+                    ->where('STRING_ID', self::COUNTERPARTIES_GROUP_CODE)
+                    ->setLimit(1)
+                    ->exec()
+                    ->fetch()
+                ;
+
+                if (false === $row) {
+                    return null;
+                }
+
+                return (int)$row['ID'];
+            },
+        );
+
+        if (null === $groupId || 0 >= $groupId) {
             throw new RepositoryException('Группа пользователей COUNTERPARTIES не найдена');
         }
 
-        return (int)$groupId;
+        return $groupId;
+    }
+
+    /**
+     * @return array<int, int>
+     *
+     * @throws RepositoryException
+     */
+    private function getUserGroupIds(int $userId): array
+    {
+        return $this->query(
+            static function() use ($userId): array {
+                $rows = UserGroupTable::query()
+                    ->setSelect(['GROUP_ID'])
+                    ->where('USER_ID', $userId)
+                    ->exec()
+                    ->fetchAll()
+                ;
+
+                return array_map(
+                    static fn(array $row): int => (int)$row['GROUP_ID'],
+                    $rows,
+                );
+            },
+        );
     }
 }

@@ -30,6 +30,7 @@ final class TestTradeEventCommand extends RebitCommand
         $this
             ->addOption('trade-id', null, InputOption::VALUE_REQUIRED, 'ID сделки', '1')
             ->addOption('bybit-order-id', null, InputOption::VALUE_REQUIRED, 'Bybit order ID', 'debug-trade-order-1')
+            ->addOption('fiat-amount', null, InputOption::VALUE_REQUIRED, 'Сумма сделки в фиате', '0')
         ;
     }
 
@@ -37,11 +38,13 @@ final class TestTradeEventCommand extends RebitCommand
     {
         $tradeId = (int)$input->getOption('trade-id');
         $bybitOrderId = (string)$input->getOption('bybit-order-id');
+        $fiatAmount = (string)$input->getOption('fiat-amount');
 
         $this->publisher->dispatch(
             new TradeDiscoveredMessage(
                 tradeId: $tradeId,
                 bybitOrderId: $bybitOrderId,
+                fiatAmount: $fiatAmount,
             ),
         );
 

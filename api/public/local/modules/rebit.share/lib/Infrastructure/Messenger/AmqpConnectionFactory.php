@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Messenger;
 
+use Rebit\Share\Application\Contract\Messenger\MessageTransportFactoryInterface;
 use Rebit\Share\Shared\Enum\MessengerQueueEnum;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpTransport;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\Connection;
@@ -14,7 +15,7 @@ use Symfony\Component\Messenger\Transport\TransportInterface;
  * Фабрика AMQP-транспортов для Symfony Messenger.
  * Создаёт транспорт из DSN с указанным именем очереди.
  */
-final readonly class AmqpConnectionFactory
+final readonly class AmqpConnectionFactory implements MessageTransportFactoryInterface
 {
     public function __construct(
         private string $dsn,
