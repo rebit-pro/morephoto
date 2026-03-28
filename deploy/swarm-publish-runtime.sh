@@ -12,7 +12,7 @@ Environment overrides:
   BACKEND_ENV_FILE=/srv/rebit-p2p/swarm/backend.env
   SECRETS_DIR=/srv/rebit-p2p/swarm/secrets
   LEGACY_SECRET_DIR=/srv/rebit-p2p/swarm
-  REQUIRED_SECRET_NAMES="rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password"
+  REQUIRED_SECRET_NAMES="rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password rebit_rabbitmq_password"
   OPTIONAL_SECRET_NAMES="rebit_smtp_password"
   OUTPUT_ENV_FILE=/tmp/rebit-swarm-runtime.env
 
@@ -230,8 +230,8 @@ BASE_DIR="${BASE_DIR:-/srv/rebit-p2p/swarm}"
 BACKEND_ENV_FILE="${BACKEND_ENV_FILE:-$BASE_DIR/backend.env}"
 SECRETS_DIR="${SECRETS_DIR:-$BASE_DIR/secrets}"
 LEGACY_SECRET_DIR="${LEGACY_SECRET_DIR:-$BASE_DIR}"
-REQUIRED_SECRET_NAMES="${REQUIRED_SECRET_NAMES:-rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password}"
-OPTIONAL_SECRET_NAMES="${OPTIONAL_SECRET_NAMES:-rebit_smtp_password rebit_rabbitmq_password}"
+REQUIRED_SECRET_NAMES="${REQUIRED_SECRET_NAMES:-rebit_encryption_key rebit_geetest_captcha_key rebit_mysql_password rebit_mysql_root_password rebit_rabbitmq_password}"
+OPTIONAL_SECRET_NAMES="${OPTIONAL_SECRET_NAMES:-rebit_smtp_password}"
 OUTPUT_ENV_FILE="${OUTPUT_ENV_FILE:-}"
 
 BACKEND_ENV_CONFIG_NAME="${BACKEND_ENV_CONFIG_NAME:-rebit_backend_env_$VERSION}"
