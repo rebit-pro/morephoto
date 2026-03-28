@@ -1,9 +1,12 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 import { router } from '@/router';
+import { mockApiAdapter } from '@/mocks/adapter';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  adapter: isMockApiEnabled ? mockApiAdapter : undefined,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json'

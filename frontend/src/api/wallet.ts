@@ -73,20 +73,18 @@ export const walletApi = {
   getTransactions(params?: TransactionFilters): Promise<TransactionListResponse> {
     return api.get('/api/v1/wallet/transactions', { params }).then((r) => ({
       transactions: r.data?.transactions ?? r.data ?? [],
-      total: r.data?.total ?? 0,
+      total: r.data?.total ?? 0
     }));
   },
 
   exportTransactions(params?: Omit<TransactionFilters, 'limit' | 'offset'>): Promise<TransactionListResponse> {
-    return api
-      .get('/api/v1/wallet/transactions/export', { params })
-      .then((r) => ({
-        transactions: r.data?.transactions ?? r.data ?? [],
-        total: r.data?.total ?? 0,
-      }));
+    return api.get('/api/v1/wallet/transactions/export', { params }).then((r) => ({
+      transactions: r.data?.transactions ?? r.data ?? [],
+      total: r.data?.total ?? 0
+    }));
   },
 
   getCashFlowReport(params?: CashFlowFilters): Promise<CashFlowReport> {
     return api.get('/api/v1/wallet/reports/cash-flow', { params }).then((r) => r.data);
-  },
+  }
 };

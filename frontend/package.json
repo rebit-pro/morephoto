@@ -11,6 +11,7 @@
     "lint": "eslint src --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-pattern .gitignore"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "@typescript-eslint/parser": "8.47.0",
     "@vue/eslint-config-prettier": "10.2.0",
     "axios": "1.13.2",

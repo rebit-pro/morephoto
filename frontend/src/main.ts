@@ -6,6 +6,9 @@ import vuetify, { i18n } from './plugins/vuetify';
 import '@/scss/style.scss';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueTablerIcons from 'vue-tabler-icons';
+import { initializeMockRuntime } from '@/mocks/runtime';
+
+initializeMockRuntime();
 
 const app = createApp(App);
 app.use(router);

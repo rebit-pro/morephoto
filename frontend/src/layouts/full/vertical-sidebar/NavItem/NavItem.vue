@@ -1,11 +1,19 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 import Icon from '../IconSet.vue';
 
 const props = defineProps({ item: Object, level: Number });
+
+function translateLabel(value) {
+  if ('string' !== typeof value || '' === value) {
+    return '';
+  }
+
+  return te(value) ? t(value) : value;
+}
 
 const relativeURL = ref('');
 
@@ -53,11 +61,11 @@ onMounted(async () => {
       <Icon :item="props.item.icon" :level="props.level" />
     </template>
     <v-list-item-title>
-      {{ t(props.item.title) }}
+      {{ translateLabel(props.item.title) }}
       <v-badge :color="props.item.chipColor" v-if="props.item.chipColor === 'success'" :aria-label="props.item.chip" inline dot></v-badge>
     </v-list-item-title>
     <v-list-item-subtitle v-if="props.item.subCaption" class="text-caption mt-n1 hide-menu">
-      {{ t(props.item.subCaption) }}
+      {{ translateLabel(props.item.subCaption) }}
     </v-list-item-subtitle>
     <template v-if="props.item.chip && props.item.chipColor !== 'success'" #append>
       <v-chip

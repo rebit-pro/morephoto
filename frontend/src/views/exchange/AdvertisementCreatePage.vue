@@ -5,6 +5,7 @@ import { useExchangeStore } from '@/stores/exchange';
 import { useAdvertisementsStore } from '@/stores/advertisements';
 import { useChatScriptsStore } from '@/stores/chatScripts';
 import type { CreateAdvertisementPayload, AdvertisementSide, PriceType } from '@/api/exchange';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const router = useRouter();
 const exchange = useExchangeStore();
@@ -27,42 +28,41 @@ const selectedPaymentMethodIds = ref<string[]>([]);
 const paymentPeriod = ref(15);
 const conditions = ref('');
 const chatScriptId = ref<number | null>(null);
+const createAsActive = ref(true);
 
 const sideOptions = [
   { title: 'Продать', value: 'sell' },
-  { title: 'Купить', value: 'buy' },
+  { title: 'Купить', value: 'buy' }
 ];
 
 const priceTypeOptions = [
   { title: 'Фиксированная', value: 'fixed' },
-  { title: 'Плавающая', value: 'floating' },
+  { title: 'Плавающая', value: 'floating' }
 ];
 
 const paymentPeriodOptions = [
   { title: '15 минут', value: 15 },
   { title: '30 минут', value: 30 },
-  { title: '60 минут', value: 60 },
+  { title: '60 минут', value: 60 }
 ];
 
 const currencyPairOptions = computed(() =>
   exchange.currencyPairs.map((pair) => ({
     title: pair.label,
-    value: pair.id,
-  })),
+    value: pair.id
+  }))
 );
 
 const paymentMethodOptions = computed(() =>
   exchange.paymentMethods.map((method) => ({
     title: method.name,
-    value: method.id,
-  })),
+    value: method.id
+  }))
 );
 
 const chatScriptOptions = computed(() => [
   { title: 'Без скрипта', value: null as number | null },
-  ...chatScripts.scripts
-    .filter((s) => s.isActive)
-    .map((s) => ({ title: s.name, value: s.id as number | null })),
+  ...chatScripts.scripts.filter((s) => s.isActive).map((s) => ({ title: s.name, value: s.id as number | null }))
 ]);
 
 const isFormValid = computed(() => {
@@ -95,11 +95,16 @@ async function handleSubmit(): Promise<void> {
     paymentPeriod: paymentPeriod.value,
     conditions: conditions.value,
     chatScriptId: chatScriptId.value,
-    tradingPreferenceSet: {},
+    tradingPreferenceSet: {}
   };
 
   try {
-    await ads.createAdvertisement(payload);
+    const advertisement = await ads.createAdvertisement(payload);
+
+    if (!createAsActive.value) {
+      await ads.toggleAdvertisement(advertisement.id, 'paused');
+    }
+
     await router.push('/exchange/advertisements');
   } catch (e: unknown) {
     formError.value = e instanceof Error ? e.message : 'Ошибка создания объявления';
@@ -109,11 +114,7 @@ async function handleSubmit(): Promise<void> {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    exchange.fetchCurrencyPairs(),
-    exchange.fetchPaymentMethods(),
-    chatScripts.fetchScripts(),
-  ]);
+  await Promise.all([exchange.fetchCurrencyPairs(), exchange.fetchPaymentMethods(), chatScripts.fetchScripts()]);
 
   // Установить дефолтную пару
   const firstPair = exchange.currencyPairs[0];
@@ -130,6 +131,11 @@ onMounted(async () => {
     </v-btn>
 
     <h2 class="text-h4 mb-6">Создать объявление</h2>
+
+    <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
+      В mock-режиме активное объявление автоматически получает новую сделку через несколько секунд. Если выбрать сценарий с QR/файлом,
+      первый шаг отправится в чат сделки автоматически.
+    </v-alert>
 
     <v-alert v-if="formError" type="error" variant="tonal" class="mb-4">{{ formError }}</v-alert>
     <v-alert v-if="ads.error" type="error" variant="tonal" class="mb-4">{{ ads.error }}</v-alert>
@@ -178,62 +184,29 @@ onMounted(async () => {
         <v-row>
           <!-- Цена -->
           <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="price"
-              label="Цена *"
-              variant="outlined"
-              density="compact"
-              type="number"
-              step="0.01"
-            />
+            <v-text-field v-model="price" label="Цена *" variant="outlined" density="compact" type="number" step="0.01" />
           </v-col>
 
           <!-- Премиум -->
           <v-col v-if="'floating' === priceType" cols="12" sm="6">
-            <v-text-field
-              v-model="premium"
-              label="Премиум (%)"
-              variant="outlined"
-              density="compact"
-              type="number"
-              step="0.01"
-            />
+            <v-text-field v-model="premium" label="Премиум (%)" variant="outlined" density="compact" type="number" step="0.01" />
           </v-col>
         </v-row>
 
         <v-row>
           <!-- Количество -->
           <v-col cols="12" sm="4">
-            <v-text-field
-              v-model="quantity"
-              label="Количество *"
-              variant="outlined"
-              density="compact"
-              type="number"
-              step="0.01"
-            />
+            <v-text-field v-model="quantity" label="Количество *" variant="outlined" density="compact" type="number" step="0.01" />
           </v-col>
 
           <!-- Мин сумма -->
           <v-col cols="12" sm="4">
-            <v-text-field
-              v-model="minAmount"
-              label="Мин. сумма (₽) *"
-              variant="outlined"
-              density="compact"
-              type="number"
-            />
+            <v-text-field v-model="minAmount" label="Мин. сумма (₽) *" variant="outlined" density="compact" type="number" />
           </v-col>
 
           <!-- Макс сумма -->
           <v-col cols="12" sm="4">
-            <v-text-field
-              v-model="maxAmount"
-              label="Макс. сумма (₽) *"
-              variant="outlined"
-              density="compact"
-              type="number"
-            />
+            <v-text-field v-model="maxAmount" label="Макс. сумма (₽) *" variant="outlined" density="compact" type="number" />
           </v-col>
         </v-row>
 
@@ -281,18 +254,15 @@ onMounted(async () => {
               density="compact"
             />
           </v-col>
+          <v-col cols="12" sm="6">
+            <v-switch v-model="createAsActive" color="success" inset label="Включить объявление сразу после создания" hide-details />
+          </v-col>
         </v-row>
 
         <v-row>
           <!-- Условия -->
           <v-col cols="12">
-            <v-textarea
-              v-model="conditions"
-              label="Условия сделки"
-              variant="outlined"
-              density="compact"
-              rows="3"
-            />
+            <v-textarea v-model="conditions" label="Условия сделки" variant="outlined" density="compact" rows="3" />
           </v-col>
         </v-row>
       </v-card-text>
@@ -302,14 +272,7 @@ onMounted(async () => {
       <v-card-actions class="pa-4">
         <v-spacer />
         <v-btn variant="text" @click="router.push('/exchange/advertisements')">Отмена</v-btn>
-        <v-btn
-          color="primary"
-          :loading="submitting"
-          :disabled="!isFormValid"
-          @click="handleSubmit"
-        >
-          Создать объявление
-        </v-btn>
+        <v-btn color="primary" :loading="submitting" :disabled="!isFormValid" @click="handleSubmit"> Создать объявление </v-btn>
       </v-card-actions>
     </v-card>
   </div>

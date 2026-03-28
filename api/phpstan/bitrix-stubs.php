@@ -67,11 +67,14 @@ namespace Bitrix\Main {
 
 namespace Bitrix\Main\Engine {
 
+    use Bitrix\Main\Request;
+
     class Controller
     {
         public const SCOPE_AJAX = 'ajax';
         /** @var \Bitrix\Main\HttpRequest */
         public $request;
+        public function __construct(?Request $request = null) {}
         public function setScope(string $scope): void {}
         public function setCurrentUser(CurrentUser $user): void {}
         public function getRequest(): \Bitrix\Main\HttpRequest {}
@@ -273,10 +276,10 @@ namespace Bitrix\Main\Web {
 namespace Bitrix\Main\Data {
     class ManagedCache
     {
-        public function read(int $ttl, string $uniqueString, string $initDir = ''): bool {}
-        public function get(string $uniqueString): mixed {}
-        public function set(string $uniqueString, mixed $value): void {}
-        public function clean(string $uniqueString, string $initDir = ''): void {}
+        public function read(int $ttl, string $uniqueId, string $tableId = ''): bool {}
+        public function get(string $uniqueId): mixed {}
+        public function set(string $uniqueId, mixed $val): void {}
+        public function clean(string $uniqueId, string $tableId = ''): void {}
     }
     class TaggedCache
     {
@@ -332,6 +335,8 @@ namespace {
     {
         /** @param array<string, mixed> $file */
         public static function SaveFile(array $file, string $module): int|false {}
+        /** @return array<string, mixed>|false */
+        public static function GetFileArray(int $fileId, bool|string $uploadDir = false): array|false {}
         public static function GetPath(int $fileId): ?string {}
     }
     function RegisterModule(string $moduleId): void {}

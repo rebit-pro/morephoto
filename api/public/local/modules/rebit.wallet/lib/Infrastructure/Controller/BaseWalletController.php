@@ -22,6 +22,11 @@ abstract class BaseWalletController extends BaseJsonController implements Authen
 {
     use AuthenticatedControllerTrait;
 
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     /**
      * @return Base[]
      */

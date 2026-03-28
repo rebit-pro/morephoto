@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { Form } from 'vee-validate';
 import type { GeeTestCaptchaPayload } from '@/api/auth';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const show1 = ref(false);
 const password = ref('');
@@ -14,7 +15,7 @@ const captchaError = ref('');
 const apiError = ref('');
 
 const authStore = useAuthStore();
-const geetestCaptchaId = import.meta.env.VITE_GEETEST_CAPTCHA_ID?.trim() ?? '';
+const geetestCaptchaId = isMockApiEnabled ? '' : (import.meta.env.VITE_GEETEST_CAPTCHA_ID?.trim() ?? '');
 const geeTestScriptSrc = 'https://static.geetest.com/v4/gt4.js';
 
 let captchaInstance: GeeTestCaptchaInstance | null = null;
@@ -27,10 +28,7 @@ const emailRules = ref([
   (v: string) => /.+@.+\..+/.test(v.trim()) || 'Некорректный email'
 ]);
 // Password validation rules
-const passwordRules = ref([
-  (v: string) => '' !== v || 'Введите пароль',
-  (v: string) => v.length >= 6 || 'Минимум 6 символов'
-]);
+const passwordRules = ref([(v: string) => '' !== v || 'Введите пароль', (v: string) => v.length >= 6 || 'Минимум 6 символов']);
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function setApiError(message: string, setErrors?: (errors: Record<string, string>) => void): void {
@@ -127,8 +125,7 @@ function initCaptcha(): void {
           captchaProcessing.value = false;
           captchaLoading.value = false;
           captchaError.value = 'GeeTest CAPTCHA временно недоступна. Попробуйте ещё раз.';
-        })
-      ;
+        });
 
       captchaInstance.onClose?.(() => {
         captchaLoading.value = false;
@@ -213,6 +210,10 @@ onUnmounted(() => {
 
 <template>
   <Form @submit="validate" class="mt-5 loginForm" v-slot="{ isSubmitting }">
+    <v-alert v-if="isMockApiEnabled" color="info" variant="tonal" class="mb-4">
+      Mock-режим активен. Для быстрого входа используйте <strong>owner@rebit.test</strong> / <strong>secret123</strong>.
+    </v-alert>
+
     <v-text-field
       v-model="email"
       :rules="emailRules"
@@ -252,9 +253,7 @@ onUnmounted(() => {
       Войти
     </v-btn>
 
-    <div v-if="captchaLoading" class="text-caption text-lightText mt-3">
-      Загружаем GeeTest CAPTCHA...
-    </div>
+    <div v-if="captchaLoading" class="text-caption text-lightText mt-3">Загружаем GeeTest CAPTCHA...</div>
 
     <v-alert v-if="captchaError" color="warning" class="mt-4" variant="tonal">
       {{ captchaError }}
@@ -268,14 +267,11 @@ onUnmounted(() => {
   <div class="mt-5 text-center">
     <v-divider class="mb-3" />
     <span class="text-lightText">Нет аккаунта?</span>
-    <router-link to="/register" class="text-primary text-decoration-none ml-1 font-weight-medium">
-      Зарегистрироваться
-    </router-link>
+    <router-link to="/register" class="text-primary text-decoration-none ml-1 font-weight-medium"> Зарегистрироваться </router-link>
   </div>
 </template>
 
 <style lang="scss">
-
 .loginForm {
   .v-text-field .v-field--active input {
     font-weight: 500;

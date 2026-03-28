@@ -51,6 +51,26 @@ final class TradeMessageRepository
     }
 
     /**
+     * Проверяет, существует ли сообщение с данным Bybit UUID в рамках сделки.
+     *
+     * @throws RepositoryException
+     */
+    public function existsByBybitMsgUuid(int $tradeId, string $bybitMsgUuid): bool
+    {
+        if ('' === $bybitMsgUuid) {
+            return false;
+        }
+
+        return $this->query(
+            fn(): bool => 0 < TradeMessageTable::query()
+                ->where('UF_TRADE_ID', $tradeId)
+                ->where('UF_BYBIT_MSG_UUID', $bybitMsgUuid)
+                ->setLimit(1)
+                ->queryCountTotal(),
+        );
+    }
+
+    /**
      * @throws RepositoryException
      */
     public function create(
@@ -62,6 +82,7 @@ final class TradeMessageRepository
         string $bybitMsgUuid,
         ?string $fileName = null,
         ?int $scriptStepId = null,
+        ?DateTime $createdAt = null,
     ): TradeMessage {
         /** @var TradeMessage $msg */
         $msg = TradeMessageTable::createObject()
@@ -74,7 +95,7 @@ final class TradeMessageRepository
             ->setUfFileName($fileName ?? '')
             ->setUfScriptStepId($scriptStepId ?? 0)
             ->setUfIsRead(0)
-            ->setUfCreatedAt(new DateTime())
+            ->setUfCreatedAt($createdAt ?? new DateTime())
         ;
 
         $this->persist($msg);

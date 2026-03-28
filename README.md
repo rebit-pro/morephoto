@@ -38,6 +38,7 @@ Rebit — P2P-платформа для работы с торговлей че�
 - `docs/domain.md`
 - `docs/scenario.md`
 - `docs/modules.md`
+- `docs/devops-requirements-p2p-chat.md`
 - `docs/frontend-design-assets-and-berry-shortlist.md`
 
 Проект является внутренней разработкой Rebit.

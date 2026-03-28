@@ -8,6 +8,7 @@ use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\TestCase;
 use Rebit\Exchange\Application\TradeChat\Dto\Result\TradeMessageListResultDto;
 use Rebit\Exchange\Application\TradeChat\UseCase\GetChatHistoryUseCase;
+use Rebit\Exchange\Application\TradeChat\UseCase\SyncChatMessagesUseCase;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Entity\TradeMessage;
@@ -15,6 +16,7 @@ use Rebit\Exchange\Domain\TradeChat\Entity\TradeMessageCollection;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
 use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 
 /**
  * @internal
@@ -36,7 +38,9 @@ final class GetChatHistoryUseCaseTest extends TestCase
         $collection = $this->createStub(TradeMessageCollection::class);
         $collection->method('getIterator')->willReturn(new \ArrayIterator([$msg]));
 
-        $msgRepo = $this->createMock(TradeMessageRepository::class);
+        /** @var class-string<TradeMessageRepository> $messageRepositoryClass */
+        $messageRepositoryClass = TradeMessageRepository::class;
+        $msgRepo = $this->createMock($messageRepositoryClass);
         $msgRepo
             ->expects($this->once())
             ->method('findByTradeId')
@@ -44,7 +48,17 @@ final class GetChatHistoryUseCaseTest extends TestCase
             ->willReturn($collection)
         ;
 
-        $result = (new GetChatHistoryUseCase($msgRepo, $tradeRepo))->execute(1, self::BUYER_ID);
+        /** @var class-string<SyncChatMessagesUseCase> $syncChatMessagesClass */
+        $syncChatMessagesClass = SyncChatMessagesUseCase::class;
+        $syncChatMessages = $this->createMock($syncChatMessagesClass);
+        $syncChatMessages
+            ->expects($this->once())
+            ->method('execute')
+            ->with($this->identicalTo($trade), self::BUYER_ID)
+            ->willReturn(1)
+        ;
+
+        $result = (new GetChatHistoryUseCase($msgRepo, $tradeRepo, $syncChatMessages))->execute(1, self::BUYER_ID);
 
         self::assertInstanceOf(TradeMessageListResultDto::class, $result);
         self::assertCount(1, $result->items);
@@ -61,24 +75,46 @@ final class GetChatHistoryUseCaseTest extends TestCase
         $collection = $this->createStub(TradeMessageCollection::class);
         $collection->method('getIterator')->willReturn(new \ArrayIterator([]));
 
-        $msgRepo = $this->createStub(TradeMessageRepository::class);
+        /** @var class-string<TradeMessageRepository> $messageRepositoryClass */
+        $messageRepositoryClass = TradeMessageRepository::class;
+        $msgRepo = $this->createStub($messageRepositoryClass);
         $msgRepo->method('findByTradeId')->willReturn($collection);
 
-        $result = (new GetChatHistoryUseCase($msgRepo, $tradeRepo))->execute(1, self::SELLER_ID);
+        /** @var class-string<SyncChatMessagesUseCase> $syncChatMessagesClass */
+        $syncChatMessagesClass = SyncChatMessagesUseCase::class;
+        $syncChatMessages = $this->createMock($syncChatMessagesClass);
+        $syncChatMessages
+            ->expects($this->once())
+            ->method('execute')
+            ->with($this->identicalTo($trade), self::SELLER_ID)
+            ->willReturn(0)
+        ;
+
+        $result = (new GetChatHistoryUseCase($msgRepo, $tradeRepo, $syncChatMessages))->execute(1, self::SELLER_ID);
 
         self::assertSame([], $result->items);
     }
 
+    /**
+     * @throws HttpException
+     * @throws RepositoryException
+     */
     public function testTradeNotFoundThrows404(): void
     {
         $tradeRepo = $this->createStub(TradeRepository::class);
         $tradeRepo->method('findById')->willReturn(null);
 
-        $msgRepo = $this->createStub(TradeMessageRepository::class);
+        /** @var class-string<TradeMessageRepository> $messageRepositoryClass */
+        $messageRepositoryClass = TradeMessageRepository::class;
+        $msgRepo = $this->createStub($messageRepositoryClass);
+
+        /** @var class-string<SyncChatMessagesUseCase> $syncChatMessagesClass */
+        $syncChatMessagesClass = SyncChatMessagesUseCase::class;
+        $syncChatMessages = $this->createStub($syncChatMessagesClass);
 
         $this->expectException(EntityNotFoundException::class);
 
-        (new GetChatHistoryUseCase($msgRepo, $tradeRepo))->execute(1, self::BUYER_ID);
+        new GetChatHistoryUseCase($msgRepo, $tradeRepo, $syncChatMessages)->execute(1, self::BUYER_ID);
     }
 
     public function testAccessDeniedForNonParticipantThrows403(): void
@@ -88,12 +124,18 @@ final class GetChatHistoryUseCaseTest extends TestCase
         $tradeRepo = $this->createStub(TradeRepository::class);
         $tradeRepo->method('findById')->willReturn($trade);
 
-        $msgRepo = $this->createStub(TradeMessageRepository::class);
+        /** @var class-string<TradeMessageRepository> $messageRepositoryClass */
+        $messageRepositoryClass = TradeMessageRepository::class;
+        $msgRepo = $this->createStub($messageRepositoryClass);
+
+        /** @var class-string<SyncChatMessagesUseCase> $syncChatMessagesClass */
+        $syncChatMessagesClass = SyncChatMessagesUseCase::class;
+        $syncChatMessages = $this->createStub($syncChatMessagesClass);
 
         $this->expectException(HttpException::class);
         $this->expectExceptionCode(403);
 
-        (new GetChatHistoryUseCase($msgRepo, $tradeRepo))->execute(1, 999);
+        (new GetChatHistoryUseCase($msgRepo, $tradeRepo, $syncChatMessages))->execute(1, 999);
     }
 
     private function createTradeStub(): Trade

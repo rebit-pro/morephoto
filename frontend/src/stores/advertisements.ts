@@ -1,11 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import {
-  exchangeApi,
-  type Advertisement,
-  type AdvertisementStatus,
-  type CreateAdvertisementPayload,
-} from '@/api/exchange';
+import { exchangeApi, type Advertisement, type AdvertisementStatus, type CreateAdvertisementPayload } from '@/api/exchange';
 
 export const useAdvertisementsStore = defineStore('advertisements', () => {
   const advertisements = ref<Advertisement[]>([]);
@@ -79,6 +74,6 @@ export const useAdvertisementsStore = defineStore('advertisements', () => {
     fetchAdvertisements,
     createAdvertisement,
     deleteAdvertisement,
-    toggleAdvertisement,
+    toggleAdvertisement
   };
 });

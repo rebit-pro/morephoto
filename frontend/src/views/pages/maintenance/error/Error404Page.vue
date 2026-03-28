@@ -11,9 +11,7 @@
           Запрашиваемая страница была перемещена, удалена<br />
           или никогда не существовала.
         </p>
-        <v-btn variant="flat" color="primary" size="large" to="/" prepend-icon="$home">
-          На главную
-        </v-btn>
+        <v-btn variant="flat" color="primary" size="large" to="/" prepend-icon="$home"> На главную </v-btn>
       </div>
     </v-col>
   </v-row>

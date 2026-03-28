@@ -20,15 +20,13 @@ const identity = useIdentityStore();
 const filters = ref<OrderBookFilters>({
   selectedMethods: [],
   limitMin: '',
-  limitMax: '',
+  limitMax: ''
 });
 const selectedOrder = ref<OrderBookEntry | null>(null);
 const showOrderDialog = ref(false);
 
 const hasOrderBookAccess = computed(() => auth.isAuthenticated && identity.hasActiveConnection);
-const isResolvingOrderBookAccess = computed(
-  () => auth.isAuthenticated && identity.loading && null === identity.connectionStatus,
-);
+const isResolvingOrderBookAccess = computed(() => auth.isAuthenticated && identity.loading && null === identity.connectionStatus);
 const orderBookConnectionStatus = computed(() => identity.connectionStatus?.['status'] ?? null);
 const activeOrder = computed(() => {
   const order = selectedOrder.value;
@@ -38,7 +36,7 @@ const activeOrder = computed(() => {
   }
 
   return {
-    ...order,
+    ...order
   };
 });
 const activeOrderUsername = computed(() => {
@@ -156,7 +154,7 @@ watch(
     await exchange.fetchOrderBook();
     exchange.startAutoRefresh();
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 function onSelectOrder(order: OrderBookEntry): void {
@@ -184,12 +182,8 @@ onUnmounted(() => {
       <v-col cols="12" md="8" class="text-center">
         <h1 class="text-h3 font-weight-bold mb-3">Rebit P2P</h1>
         <p class="text-h6 text-lightText mb-6">Удобная торговля криптовалютой P2P через Bybit</p>
-        <v-btn v-if="!auth.isAuthenticated" color="secondary" size="large" rounded="lg" to="/login">
-          Начать торговлю
-        </v-btn>
-        <v-btn v-else color="secondary" size="large" rounded="lg" to="/dashboard">
-          Перейти в кабинет
-        </v-btn>
+        <v-btn v-if="!auth.isAuthenticated" color="secondary" size="large" rounded="lg" to="/login"> Начать торговлю </v-btn>
+        <v-btn v-else color="secondary" size="large" rounded="lg" to="/dashboard"> Перейти в кабинет </v-btn>
       </v-col>
     </v-row>
 
@@ -250,10 +244,7 @@ onUnmounted(() => {
 
     <v-row v-else>
       <v-col cols="12">
-        <OrderBookAccessState
-          :is-authenticated="auth.isAuthenticated"
-          :connection-status="orderBookConnectionStatus"
-        />
+        <OrderBookAccessState :is-authenticated="auth.isAuthenticated" :connection-status="orderBookConnectionStatus" />
       </v-col>
     </v-row>
 
@@ -297,14 +288,7 @@ onUnmounted(() => {
             <v-list-item>
               <template #prepend><span class="text-lightText mr-3">Оплата:</span></template>
               <v-list-item-title>
-                <v-chip
-                  v-for="m in activeOrderPaymentMethods"
-                  :key="m"
-                  size="x-small"
-                  variant="tonal"
-                  color="primary"
-                  class="mr-1"
-                >
+                <v-chip v-for="m in activeOrderPaymentMethods" :key="m" size="x-small" variant="tonal" color="primary" class="mr-1">
                   {{ m }}
                 </v-chip>
               </v-list-item-title>
@@ -314,11 +298,7 @@ onUnmounted(() => {
         <v-card-actions class="pa-4 pt-0">
           <v-spacer />
           <v-btn variant="text" @click="showOrderDialog = false">Закрыть</v-btn>
-          <v-btn
-            :color="'buy' === activeOrderSide ? 'success' : 'error'"
-            variant="flat"
-            disabled
-          >
+          <v-btn :color="'buy' === activeOrderSide ? 'success' : 'error'" variant="flat" disabled>
             {{ 'buy' === activeOrderSide ? 'Купить' : 'Продать' }} (скоро)
           </v-btn>
         </v-card-actions>

@@ -1,5 +1,6 @@
 import { createVuetify } from 'vuetify';
-import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
+import '@mdi/font/css/materialdesignicons.css';
+import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { icons } from './mdi-icon';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
@@ -17,7 +18,15 @@ import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
 import { createI18n, useI18n } from 'vue-i18n';
 import { messages } from '@/utils/locales/messages';
 
-export const i18n = createI18n({
+export const i18n = createI18n<
+  false,
+  {
+    legacy: false;
+    locale: string;
+    fallbackLocale: string;
+    messages: Record<string, unknown>;
+  }
+>({
   legacy: false,
   locale: 'ru',
   fallbackLocale: 'ru',

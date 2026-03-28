@@ -61,9 +61,7 @@ export const useWalletStore = defineStore('wallet', () => {
       }
 
       const header = 'ID;Тип;Сумма;Валюта;Дата;ID сделки';
-      const csvRows = rows.map((tx) =>
-        [tx.id, tx.type, tx.amount, tx.currency || '', tx.createdAt, tx.tradeId ?? ''].join(';'),
-      );
+      const csvRows = rows.map((tx) => [tx.id, tx.type, tx.amount, tx.currency || '', tx.createdAt, tx.tradeId ?? ''].join(';'));
       const csv = [header, ...csvRows].join('\n');
       const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
 
@@ -94,6 +92,6 @@ export const useWalletStore = defineStore('wallet', () => {
     fetchBalances,
     syncBalances,
     fetchTransactions,
-    exportTransactions,
+    exportTransactions
   };
 });

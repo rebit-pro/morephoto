@@ -1,11 +1,4 @@
-import {
-  DashboardIcon,
-  ArrowsExchangeIcon,
-  WalletIcon,
-  UserCircleIcon,
-  HistoryIcon,
-  PlugConnectedIcon
-} from 'vue-tabler-icons';
+import { DashboardIcon, ArrowsExchangeIcon, WalletIcon, UserCircleIcon, HistoryIcon, PlugConnectedIcon } from 'vue-tabler-icons';
 
 export interface menu {
   header?: string;

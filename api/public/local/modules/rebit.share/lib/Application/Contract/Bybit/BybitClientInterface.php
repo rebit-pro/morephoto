@@ -33,4 +33,22 @@ interface BybitClientInterface
         BybitEnvironmentEnum $environment,
         array $body = [],
     ): BybitResponseDto;
+
+    /**
+     * @param array<string, string> $fields
+     * @param array<string, array{
+     *     path: string,
+     *     name: string,
+     *     mimeType: string,
+     * }> $files
+     *
+     * @throws BybitApiException
+     */
+    public function postMultipart(
+        string $endpoint,
+        BybitCredentials $credentials,
+        BybitEnvironmentEnum $environment,
+        array $fields = [],
+        array $files = [],
+    ): BybitResponseDto;
 }

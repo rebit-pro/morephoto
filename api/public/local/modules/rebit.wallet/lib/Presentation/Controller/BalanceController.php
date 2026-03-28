@@ -15,7 +15,9 @@ final class BalanceController extends BaseWalletController
     public function __construct(
         private readonly GetBalancesUseCase $getBalancesUseCase,
         private readonly SyncBalancesUseCase $syncBalancesUseCase,
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     /**
      * GET /api/v1/wallet/balances

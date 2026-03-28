@@ -33,6 +33,7 @@ final class RebitHttpClient
      *
      * @throws HttpClientException
      * @throws ArgumentException
+     * @throws \JsonException
      */
     public function get(string $url, array $headers = []): array
     {
@@ -47,10 +48,41 @@ final class RebitHttpClient
      *
      * @throws HttpClientException
      * @throws ArgumentException
+     * @throws \JsonException
      */
     public function post(string $url, array $data = [], array $headers = []): array
     {
         return $this->request('POST', $url, $data, $headers);
+    }
+
+    /**
+     * @param array<string, string> $data
+     * @param array<string, array{
+     *     path: string,
+     *     name: string,
+     *     mimeType: string,
+     * }> $files
+     * @param array<string, string> $headers
+     *
+     * @return array<string, mixed>
+     *
+     * @throws HttpClientException
+     * @throws ArgumentException
+     * @throws \JsonException
+     */
+    public function postMultipart(string $url, array $data = [], array $files = [], array $headers = []): array
+    {
+        $multipartBody = $data;
+
+        foreach ($files as $fieldName => $file) {
+            $multipartBody[$fieldName] = new \CURLFile(
+                $file['path'],
+                $file['mimeType'],
+                $file['name'],
+            );
+        }
+
+        return $this->request('POST', $url, $multipartBody, $headers);
     }
 
     /**
@@ -125,13 +157,7 @@ final class RebitHttpClient
      */
     private function isJsonContentType(array $headers): bool
     {
-        foreach ($headers as $name => $value) {
-            if ('content-type' === strtolower($name) && str_contains(strtolower($value), 'application/json')) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($headers, fn($value, $name) => 'content-type' === strtolower($name) && str_contains(strtolower($value), 'application/json'));
     }
 
     /**

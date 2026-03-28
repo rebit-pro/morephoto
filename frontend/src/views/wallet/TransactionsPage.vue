@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { DownloadIcon, HistoryIcon } from 'vue-tabler-icons';
 import { useWalletStore } from '@/stores/wallet';
 import type { TransactionFilters } from '@/api/wallet';
+import AppEmptyState from '@/components/shared/AppEmptyState.vue';
 
 const wallet = useWalletStore();
 
@@ -19,7 +21,7 @@ const typeOptions = [
   { title: 'Продажа', value: 'trade_sell' },
   { title: 'Блокировка', value: 'lock' },
   { title: 'Разблокировка', value: 'unlock' },
-  { title: 'Комиссия', value: 'fee' },
+  { title: 'Комиссия', value: 'fee' }
 ];
 
 const txLabels: Record<string, string> = {
@@ -29,7 +31,7 @@ const txLabels: Record<string, string> = {
   trade_sell: 'Продажа',
   lock: 'Блокировка',
   unlock: 'Разблокировка',
-  fee: 'Комиссия',
+  fee: 'Комиссия'
 };
 
 const txColors: Record<string, string> = {
@@ -39,7 +41,7 @@ const txColors: Record<string, string> = {
   trade_sell: 'warning',
   lock: 'grey',
   unlock: 'grey',
-  fee: 'error',
+  fee: 'error'
 };
 
 function txLabel(type: string): string {
@@ -59,7 +61,7 @@ const totalPages = computed(() => Math.max(1, Math.ceil(wallet.transactionsTotal
 function buildParams(): TransactionFilters {
   const params: TransactionFilters = {
     limit: itemsPerPage,
-    offset: (currentPage.value - 1) * itemsPerPage,
+    offset: (currentPage.value - 1) * itemsPerPage
   };
   if (typeFilter.value) params.type = typeFilter.value;
   if ('' !== dateFrom.value) params.dateFrom = dateFrom.value;
@@ -100,7 +102,10 @@ onMounted(async () => {
   <div>
     <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
       <h2 class="text-h4">Транзакции</h2>
-      <v-btn color="primary" variant="outlined" size="small" prepend-icon="mdi-download" @click="handleExport">
+      <v-btn color="primary" variant="outlined" size="small" @click="handleExport">
+        <template #prepend>
+          <DownloadIcon :size="18" stroke-width="1.75" />
+        </template>
         Экспорт
       </v-btn>
     </div>
@@ -145,7 +150,16 @@ onMounted(async () => {
             />
           </v-col>
           <v-col cols="12" sm="3" class="d-flex align-center">
-            <v-btn variant="text" size="small" @click="typeFilter = undefined; dateFrom = ''; dateTo = ''; onFilterChange();">
+            <v-btn
+              variant="text"
+              size="small"
+              @click="
+                typeFilter = undefined;
+                dateFrom = '';
+                dateTo = '';
+                onFilterChange();
+              "
+            >
               Сбросить
             </v-btn>
           </v-col>
@@ -159,7 +173,15 @@ onMounted(async () => {
 
     <v-alert v-if="wallet.error" type="error" variant="tonal" class="mb-4">{{ wallet.error }}</v-alert>
 
-    <v-card v-if="!wallet.loading" rounded="md">
+    <AppEmptyState
+      v-if="!wallet.loading && 0 === wallet.transactions.length"
+      :icon="HistoryIcon"
+      tone="info"
+      title="Нет транзакций"
+      description="История операций пока пуста. Когда появятся депозиты, выводы или торговые движения, они отобразятся здесь и будут доступны для экспорта."
+    />
+
+    <v-card v-else-if="!wallet.loading" rounded="md">
       <v-table density="comfortable" hover>
         <thead>
           <tr>
@@ -171,9 +193,6 @@ onMounted(async () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-if="0 === wallet.transactions.length">
-            <td colspan="5" class="text-center text-lightText pa-6">Нет транзакций</td>
-          </tr>
           <tr v-for="tx in wallet.transactions" :key="tx.id">
             <td>
               <v-chip size="small" variant="tonal" :color="txColor(tx.type)">{{ txLabel(tx.type) }}</v-chip>

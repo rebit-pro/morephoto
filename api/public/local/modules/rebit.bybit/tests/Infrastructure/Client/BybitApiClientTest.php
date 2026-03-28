@@ -256,4 +256,41 @@ final class BybitApiClientTest extends TestCase
             ->post('/v5/p2p/order/pending/simplifyList', $credentials, BybitEnvironmentEnum::Mainnet)
         ;
     }
+
+    public function testPostMultipartReturnsResponseDtoOnSuccess(): void
+    {
+        $httpClient = $this->createMock(RebitHttpClient::class);
+        $httpClient
+            ->expects($this->once())
+            ->method('postMultipart')
+            ->willReturn([
+                'ret_code' => 0,
+                'ret_msg' => 'SUCCESS',
+                'result' => [
+                    'type' => 'IMAGE',
+                    'url' => '/fiat/p2p/oss/showObj/test.png',
+                ],
+                'ext_info' => [],
+                'time_now' => '1677131201.177999',
+            ])
+        ;
+
+        $credentials = new BybitCredentials('api-key', 'api-secret');
+        $result = $this->createClient($httpClient)->postMultipart(
+            '/v5/p2p/oss/upload_file',
+            $credentials,
+            BybitEnvironmentEnum::Testnet,
+            [],
+            [
+                'upload_file' => [
+                    'path' => '/tmp/file.png',
+                    'name' => 'file.png',
+                    'mimeType' => 'image/png',
+                ],
+            ],
+        );
+
+        self::assertSame(0, $result->retCode);
+        self::assertSame('IMAGE', $result->result['type']);
+    }
 }

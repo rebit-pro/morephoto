@@ -34,6 +34,7 @@ return static function(RoutingConfigurator $routes) {
 
     // Чат сделки
     $routes->get('/api/v1/exchange/trades/{tradeId}/chat', [TradeChatController::class, 'historyAction']);
+    $routes->post('/api/v1/exchange/trades/{tradeId}/chat/upload', [TradeChatController::class, 'uploadAction']);
     $routes->post('/api/v1/exchange/trades/{tradeId}/chat', [TradeChatController::class, 'sendAction']);
 
     // Скрипты автосообщений

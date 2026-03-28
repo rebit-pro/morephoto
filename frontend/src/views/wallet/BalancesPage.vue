@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
+import { PlugConnectedIcon, RefreshIcon, WalletIcon } from 'vue-tabler-icons';
 import { useWalletStore } from '@/stores/wallet';
+import AppEmptyState from '@/components/shared/AppEmptyState.vue';
 
 const wallet = useWalletStore();
 
@@ -28,17 +30,11 @@ async function handleSync(): Promise<void> {
     <div class="d-flex align-center justify-space-between mb-6">
       <h2 class="text-h4">Балансы</h2>
       <div class="d-flex align-center ga-3">
-        <span v-if="lastSyncedAt" class="text-caption text-lightText">
-          Синхронизировано: {{ lastSyncedAt }}
-        </span>
-        <v-btn
-          color="primary"
-          variant="outlined"
-          size="small"
-          :loading="wallet.syncing"
-          prepend-icon="mdi-sync"
-          @click="handleSync"
-        >
+        <span v-if="lastSyncedAt" class="text-caption text-lightText"> Синхронизировано: {{ lastSyncedAt }} </span>
+        <v-btn color="primary" variant="outlined" size="small" :loading="wallet.syncing" @click="handleSync">
+          <template #prepend>
+            <RefreshIcon :size="18" stroke-width="1.75" />
+          </template>
           Синхронизировать
         </v-btn>
       </div>
@@ -74,13 +70,23 @@ async function handleSync(): Promise<void> {
       </v-col>
 
       <v-col v-if="0 === wallet.balances.length" cols="12">
-        <v-card rounded="md">
-          <v-card-text class="text-center pa-8 text-lightText">
-            <v-icon size="48" class="mb-3">mdi-wallet-outline</v-icon>
-            <p class="text-h6">Балансы пока пусты</p>
-            <p class="text-body-2">Подключите Bybit API для отображения балансов</p>
-          </v-card-text>
-        </v-card>
+        <AppEmptyState
+          :icon="WalletIcon"
+          tone="primary"
+          title="Балансы пока пусты"
+          description="Подключите Bybit API и запустите синхронизацию, чтобы увидеть доступные и заблокированные средства по валютам."
+        >
+          <template #actions>
+            <div class="d-flex justify-center">
+              <v-btn color="primary" variant="outlined" to="/profile/api-connection">
+                <template #prepend>
+                  <PlugConnectedIcon :size="18" stroke-width="1.75" />
+                </template>
+                Подключить Bybit API
+              </v-btn>
+            </div>
+          </template>
+        </AppEmptyState>
       </v-col>
     </v-row>
   </div>

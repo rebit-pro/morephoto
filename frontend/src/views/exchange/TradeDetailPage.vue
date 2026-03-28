@@ -3,7 +3,9 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useTradesStore } from '@/stores/trades';
 import { usePolling } from '@/composables/usePolling';
+import type { Trade } from '@/api/exchange';
 import TradeChat from './components/TradeChat.vue';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const route = useRoute();
 const router = useRouter();
@@ -22,7 +24,7 @@ const statusLabels: Record<string, string> = {
   payment_confirmed: 'Оплата подтверждена',
   completed: 'Завершена',
   cancelled: 'Отменена',
-  disputed: 'Спор',
+  disputed: 'Спор'
 };
 
 const statusColors: Record<string, string> = {
@@ -31,33 +33,61 @@ const statusColors: Record<string, string> = {
   payment_confirmed: 'primary',
   completed: 'success',
   cancelled: 'error',
-  disputed: 'error',
+  disputed: 'error'
 };
 
-const trade = computed(() => trades.currentTrade);
+function hasTrade(): boolean {
+  return null !== trades.currentTrade;
+}
+
+function getTradeValue<TKey extends keyof Trade>(key: TKey): Trade[TKey] | null {
+  if (null === trades.currentTrade) {
+    return null;
+  }
+
+  return trades.currentTrade[key];
+}
 
 const isChatReadonly = computed(() => {
-  if (!trade.value) return true;
-  return 'completed' === trade.value.status || 'cancelled' === trade.value.status;
+  const status = getTradeValue('status');
+
+  if (null === status) {
+    return true;
+  }
+
+  return 'completed' === status || 'cancelled' === status;
 });
 
 const canConfirmPayment = computed(() => {
-  return trade.value && 'pending_payment' === trade.value.status && 'buy' === trade.value.side;
+  return 'pending_payment' === getTradeValue('status') && 'buy' === getTradeValue('side');
 });
 
 const canRelease = computed(() => {
-  return trade.value && 'payment_sent' === trade.value.status && 'sell' === trade.value.side;
+  return 'payment_sent' === getTradeValue('status') && 'sell' === getTradeValue('side');
+});
+
+const canOpenAdvertisement = computed(() => {
+  return null !== getTradeValue('advertisementId');
+});
+
+const canCancelOrder = computed(() => {
+  const status = getTradeValue('status');
+
+  return 'pending_payment' === status || 'payment_sent' === status;
 });
 
 const timeRemaining = ref('');
 let countdownTimer: ReturnType<typeof setInterval> | null = null;
 
 function updateCountdown(): void {
-  if (!trade.value?.paymentDeadline) {
+  const paymentDeadline = getTradeValue('paymentDeadline');
+
+  if (null === paymentDeadline || '' === paymentDeadline) {
     timeRemaining.value = '';
     return;
   }
-  const deadline = new Date(trade.value.paymentDeadline).getTime();
+
+  const deadline = new Date(paymentDeadline).getTime();
   const now = Date.now();
   const diff = deadline - now;
 
@@ -83,7 +113,7 @@ async function handleConfirmPayment(): Promise<void> {
   try {
     await trades.confirmPayment(tradeId.value, {
       paymentType: paymentType.value,
-      paymentId: paymentId.value,
+      paymentId: paymentId.value
     });
     confirmPaymentDialog.value = false;
   } catch {
@@ -98,6 +128,25 @@ async function handleRelease(): Promise<void> {
   } catch {
     // ошибка обрабатывается в сторе
   }
+}
+
+function openCurrentAdvertisement(): void {
+  const advertisementId = getTradeValue('advertisementId');
+
+  if ('number' !== typeof advertisementId) {
+    return;
+  }
+
+  void router.push({
+    path: '/exchange/advertisements',
+    query: {
+      highlight: String(advertisementId)
+    }
+  });
+}
+
+function openBybitTradePage(): void {
+  window.open('https://www.bybit.com/fiat/trade/otc', '_blank', 'noopener,noreferrer');
 }
 
 const polling = usePolling(loadTrade, 10000);
@@ -141,21 +190,24 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <v-btn variant="text" class="mb-4" prepend-icon="mdi-arrow-left" @click="router.push('/exchange/trades')">
-      К списку сделок
-    </v-btn>
+    <v-btn variant="text" class="mb-4" prepend-icon="mdi-arrow-left" @click="router.push('/exchange/trades')"> К списку сделок </v-btn>
 
-    <v-row v-if="trades.loading && !trade" justify="center" class="mt-8">
+    <v-row v-if="trades.loading && !hasTrade()" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
     </v-row>
 
     <v-alert v-if="trades.error" type="error" variant="tonal" class="mb-4">{{ trades.error }}</v-alert>
 
-    <template v-if="trade">
+    <v-alert v-if="isMockApiEnabled && hasTrade()" type="info" variant="tonal" class="mb-4">
+      В mock-режиме в этом окне доступны и детали сделки, и чат. После успешной оплаты используйте действие
+      <strong>«Отпустить средства»</strong>.
+    </v-alert>
+
+    <template v-if="null !== trades.currentTrade">
       <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
-        <h2 class="text-h4">Сделка #{{ trade.id }}</h2>
-        <v-chip :color="statusColors[trade.status] ?? 'default'" variant="tonal">
-          {{ statusLabels[trade.status] ?? trade.status }}
+        <h2 class="text-h4">Сделка #{{ trades.currentTrade['id'] }}</h2>
+        <v-chip :color="statusColors[trades.currentTrade['status']] ?? 'default'" variant="tonal">
+          {{ statusLabels[trades.currentTrade['status']] ?? trades.currentTrade['status'] }}
         </v-chip>
       </div>
 
@@ -170,15 +222,15 @@ onUnmounted(() => {
                   <template #prepend><v-icon size="20">mdi-account</v-icon></template>
                   <v-list-item-title>Контрагент</v-list-item-title>
                   <template #append>
-                    <span class="font-weight-medium">{{ trade.counterpartyName }}</span>
+                    <span class="font-weight-medium">{{ trades.currentTrade['counterpartyName'] }}</span>
                   </template>
                 </v-list-item>
                 <v-list-item>
                   <template #prepend><v-icon size="20">mdi-swap-horizontal</v-icon></template>
                   <v-list-item-title>Направление</v-list-item-title>
                   <template #append>
-                    <v-chip size="small" variant="tonal" :color="'buy' === trade.side ? 'success' : 'error'">
-                      {{ 'buy' === trade.side ? 'Покупка' : 'Продажа' }}
+                    <v-chip size="small" variant="tonal" :color="'buy' === trades.currentTrade['side'] ? 'success' : 'error'">
+                      {{ 'buy' === trades.currentTrade['side'] ? 'Покупка' : 'Продажа' }}
                     </v-chip>
                   </template>
                 </v-list-item>
@@ -186,35 +238,35 @@ onUnmounted(() => {
                   <template #prepend><v-icon size="20">mdi-currency-rub</v-icon></template>
                   <v-list-item-title>Цена</v-list-item-title>
                   <template #append>
-                    <span class="font-weight-bold">{{ trade.price.toFixed(2) }} ₽</span>
+                    <span class="font-weight-bold">{{ trades.currentTrade['price'].toFixed(2) }} ₽</span>
                   </template>
                 </v-list-item>
                 <v-list-item>
                   <template #prepend><v-icon size="20">mdi-bitcoin</v-icon></template>
                   <v-list-item-title>Количество</v-list-item-title>
                   <template #append>
-                    <span class="font-weight-medium">{{ trade.quantity }}</span>
+                    <span class="font-weight-medium">{{ trades.currentTrade['quantity'] }}</span>
                   </template>
                 </v-list-item>
                 <v-list-item>
                   <template #prepend><v-icon size="20">mdi-cash</v-icon></template>
                   <v-list-item-title>Сумма (фиат)</v-list-item-title>
                   <template #append>
-                    <span class="font-weight-bold text-h6">{{ trade.fiatAmount.toFixed(2) }} ₽</span>
+                    <span class="font-weight-bold text-h6">{{ trades.currentTrade['fiatAmount'].toFixed(2) }} ₽</span>
                   </template>
                 </v-list-item>
-                <v-list-item v-if="0 < trade.fee">
+                <v-list-item v-if="0 < trades.currentTrade['fee']">
                   <template #prepend><v-icon size="20">mdi-percent</v-icon></template>
                   <v-list-item-title>Комиссия</v-list-item-title>
                   <template #append>
-                    <span>{{ trade.fee }}</span>
+                    <span>{{ trades.currentTrade['fee'] }}</span>
                   </template>
                 </v-list-item>
                 <v-list-item>
                   <template #prepend><v-icon size="20">mdi-calendar</v-icon></template>
                   <v-list-item-title>Создана</v-list-item-title>
                   <template #append>
-                    <span class="text-body-2 text-lightText">{{ formatDate(trade.createdAt) }}</span>
+                    <span class="text-body-2 text-lightText">{{ formatDate(trades.currentTrade['createdAt']) }}</span>
                   </template>
                 </v-list-item>
               </v-list>
@@ -223,7 +275,7 @@ onUnmounted(() => {
 
           <!-- Таймер обратного отсчёта -->
           <v-card
-            v-if="trade.paymentDeadline && 'pending_payment' === trade.status"
+            v-if="trades.currentTrade['paymentDeadline'] && 'pending_payment' === trades.currentTrade['status']"
             rounded="md"
             class="mb-4"
             :color="'Время вышло' === timeRemaining ? 'error' : 'warning'"
@@ -259,18 +311,35 @@ onUnmounted(() => {
                   prepend-icon="mdi-check-all"
                   @click="releaseDialog = true"
                 >
-                  Подтвердить получение
+                  Отпустить средства
                 </v-btn>
 
                 <v-btn
+                  v-if="canOpenAdvertisement"
                   variant="outlined"
                   block
-                  prepend-icon="mdi-open-in-new"
-                  href="https://www.bybit.com/fiat/trade/otc"
-                  target="_blank"
+                  prepend-icon="mdi-bullhorn-outline"
+                  @click="openCurrentAdvertisement"
                 >
-                  Перейти на Bybit
+                  Открыть текущее объявление
                 </v-btn>
+
+                <v-btn
+                  v-if="canCancelOrder"
+                  color="error"
+                  variant="outlined"
+                  block
+                  prepend-icon="mdi-close-circle-outline"
+                  @click="openBybitTradePage"
+                >
+                  Отменить заказ на Bybit
+                </v-btn>
+
+                <v-btn variant="outlined" block prepend-icon="mdi-open-in-new" @click="openBybitTradePage"> Перейти на Bybit </v-btn>
+
+                <v-alert v-if="canCancelOrder" type="info" variant="tonal" density="compact">
+                  Программной отмены ордера через Bybit API нет, поэтому кнопка переводит в интерфейс Bybit.
+                </v-alert>
               </div>
             </v-card-text>
           </v-card>
@@ -289,25 +358,13 @@ onUnmounted(() => {
         <v-card-title>Подтвердить оплату</v-card-title>
         <v-card-text>
           <p class="mb-4">Убедитесь, что вы совершили перевод перед подтверждением.</p>
-          <v-text-field
-            v-model="paymentType"
-            label="Тип оплаты"
-            variant="outlined"
-            density="compact"
-          />
-          <v-text-field
-            v-model="paymentId"
-            label="ID платежа (опционально)"
-            variant="outlined"
-            density="compact"
-          />
+          <v-text-field v-model="paymentType" label="Тип оплаты" variant="outlined" density="compact" />
+          <v-text-field v-model="paymentId" label="ID платежа (опционально)" variant="outlined" density="compact" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="confirmPaymentDialog = false">Отмена</v-btn>
-          <v-btn color="primary" :loading="trades.actionLoading" @click="handleConfirmPayment">
-            Подтвердить
-          </v-btn>
+          <v-btn color="primary" :loading="trades.actionLoading" @click="handleConfirmPayment"> Подтвердить </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -315,7 +372,7 @@ onUnmounted(() => {
     <!-- Диалог подтверждения получения -->
     <v-dialog v-model="releaseDialog" max-width="500">
       <v-card>
-        <v-card-title>Подтвердить получение</v-card-title>
+        <v-card-title>Отпустить средства</v-card-title>
         <v-card-text>
           <v-alert type="warning" variant="tonal" class="mb-4">
             Подтвердите только после получения оплаты! Криптовалюта будет передана покупателю.
@@ -324,9 +381,7 @@ onUnmounted(() => {
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="releaseDialog = false">Отмена</v-btn>
-          <v-btn color="success" :loading="trades.actionLoading" @click="handleRelease">
-            Подтвердить
-          </v-btn>
+          <v-btn color="success" :loading="trades.actionLoading" @click="handleRelease"> Подтвердить </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useTradesStore } from '@/stores/trades';
 import { usePolling } from '@/composables/usePolling';
 import type { TradeStatus } from '@/api/exchange';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const router = useRouter();
 const trades = useTradesStore();
@@ -17,7 +18,7 @@ const statusOptions: { title: string; value: TradeStatus | '' }[] = [
   { title: 'Оплата подтверждена', value: 'payment_confirmed' },
   { title: 'Завершена', value: 'completed' },
   { title: 'Отменена', value: 'cancelled' },
-  { title: 'Спор', value: 'disputed' },
+  { title: 'Спор', value: 'disputed' }
 ];
 
 const statusLabels: Record<string, string> = {
@@ -26,7 +27,7 @@ const statusLabels: Record<string, string> = {
   payment_confirmed: 'Оплата подтверждена',
   completed: 'Завершена',
   cancelled: 'Отменена',
-  disputed: 'Спор',
+  disputed: 'Спор'
 };
 
 const statusColors: Record<string, string> = {
@@ -35,7 +36,7 @@ const statusColors: Record<string, string> = {
   payment_confirmed: 'primary',
   completed: 'success',
   cancelled: 'error',
-  disputed: 'error',
+  disputed: 'error'
 };
 
 function formatDate(iso: string): string {
@@ -81,6 +82,10 @@ onUnmounted(() => {
       />
     </div>
 
+    <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
+      Новая сделка подсвечивается, пока вы её не откроете. Первый шаг одношагового сценария уже отправлен в чат, статус — «Ожидание оплаты».
+    </v-alert>
+
     <v-row v-if="trades.loading && 0 === trades.trades.length" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
     </v-row>
@@ -107,6 +112,7 @@ onUnmounted(() => {
             v-for="trade in trades.trades"
             :key="trade.id"
             class="cursor-pointer"
+            :class="{ 'trades-page__row--new': true === trade.isNew }"
             @click="openTrade(trade.id)"
           >
             <td>
@@ -114,7 +120,12 @@ onUnmounted(() => {
                 <v-avatar size="28" color="lightsecondary" class="mr-2">
                   <span class="text-caption">{{ trade.counterpartyName.charAt(0).toUpperCase() }}</span>
                 </v-avatar>
-                <span class="text-body-2 font-weight-medium">{{ trade.counterpartyName }}</span>
+                <div>
+                  <div class="text-body-2 font-weight-medium">{{ trade.counterpartyName }}</div>
+                  <v-chip v-if="true === trade.isNew" size="x-small" color="warning" variant="tonal" class="mt-1">
+                    Новый сценарий отправлен
+                  </v-chip>
+                </div>
               </div>
             </td>
             <td>
@@ -140,5 +151,9 @@ onUnmounted(() => {
 <style scoped>
 .cursor-pointer {
   cursor: pointer;
+}
+
+.trades-page__row--new {
+  background: rgba(255, 193, 7, 0.08);
 }
 </style>
