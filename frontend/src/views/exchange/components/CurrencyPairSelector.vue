@@ -18,9 +18,7 @@ const selectedMethods = ref<string[]>([]);
 const limitMin = ref<string>('');
 const limitMax = ref<string>('');
 
-const hasActiveFilters = computed(
-  () => 0 < selectedMethods.value.length || '' !== limitMin.value || '' !== limitMax.value
-);
+const hasActiveFilters = computed(() => 0 < selectedMethods.value.length || '' !== limitMin.value || '' !== limitMax.value);
 
 function onSelectPair(pair: CurrencyPair): void {
   exchange.selectPair(pair);
@@ -42,8 +40,7 @@ function clearFilters(): void {
 }
 
 const isActivePair = computed(
-  () => (pair: CurrencyPair) =>
-    pair.token === exchange.selectedPair.token && pair.fiat === exchange.selectedPair.fiat
+  () => (pair: CurrencyPair) => pair.token === exchange.selectedPair.token && pair.fiat === exchange.selectedPair.fiat
 );
 
 watch(
@@ -52,10 +49,10 @@ watch(
     emit('update:filters', {
       selectedMethods: [...selectedMethods.value],
       limitMin: limitMin.value,
-      limitMax: limitMax.value,
+      limitMax: limitMax.value
     });
   },
-  { immediate: true, deep: true },
+  { immediate: true, deep: true }
 );
 </script>
 
@@ -125,9 +122,7 @@ watch(
 
       <!-- Сброс -->
       <div v-if="hasActiveFilters">
-        <v-btn variant="text" size="x-small" color="error" prepend-icon="mdi-close-circle" @click="clearFilters">
-          Сбросить фильтры
-        </v-btn>
+        <v-btn variant="text" size="x-small" color="error" prepend-icon="mdi-close-circle" @click="clearFilters"> Сбросить фильтры </v-btn>
       </div>
     </v-card-text>
   </v-card>

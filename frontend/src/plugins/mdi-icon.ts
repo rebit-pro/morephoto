@@ -1,33 +1,16 @@
-import {
-  mdiClose,
-  mdiHome,
-  mdiEyeOff,
-  mdiEye,
-  mdiCircle,
-  mdiAccount,
-  mdiAlertCircleOutline,
-  mdiCheck,
-  mdiCheckCircle,
-  mdiChevronUp,
-  mdiChevronDown,
-  mdiChevronLeft,
-  mdiChevronRight,
-  mdiMenuDown
-} from '@mdi/js';
-
 export const icons = {
-  close: mdiClose,
-  home: mdiHome,
-  eyeOff: mdiEyeOff,
-  eye: mdiEye,
-  circle: mdiCircle,
-  account: mdiAccount,
-  alertCircleOutline: mdiAlertCircleOutline,
-  check: mdiCheck,
-  checkCircle: mdiCheckCircle,
-  chevronUp: mdiChevronUp,
-  chevronDown: mdiChevronDown,
-  chevronLeft: mdiChevronLeft,
-  chevronRight: mdiChevronRight,
-  menuDown: mdiMenuDown
+  close: 'mdi-close',
+  home: 'mdi-home',
+  eyeOff: 'mdi-eye-off',
+  eye: 'mdi-eye',
+  circle: 'mdi-circle',
+  account: 'mdi-account',
+  alertCircleOutline: 'mdi-alert-circle-outline',
+  check: 'mdi-check',
+  checkCircle: 'mdi-check-circle',
+  chevronUp: 'mdi-chevron-up',
+  chevronDown: 'mdi-chevron-down',
+  chevronLeft: 'mdi-chevron-left',
+  chevronRight: 'mdi-chevron-right',
+  menuDown: 'mdi-menu-down'
 };

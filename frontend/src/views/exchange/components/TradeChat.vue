@@ -26,7 +26,7 @@ const selectedAttachment = ref<SelectedAttachment | null>(null);
 const senderLabels: Record<string, string> = {
   user: 'Вы',
   system: 'Система',
-  script: 'Автосообщение',
+  script: 'Автосообщение'
 };
 
 const canSendMessage = computed(() => {
@@ -112,7 +112,7 @@ async function handleFileSelected(event: Event): Promise<void> {
     file,
     fileName: file.name,
     contentType,
-    previewUrl: 'pic' === contentType ? URL.createObjectURL(file) : null,
+    previewUrl: 'pic' === contentType ? URL.createObjectURL(file) : null
   };
   input.value = '';
 }
@@ -131,7 +131,7 @@ async function sendMessage(): Promise<void> {
   const text = messageText.value.trim();
   const attachment = selectedAttachment.value;
 
-  if ((!canSendMessage.value) || sending.value) {
+  if (!canSendMessage.value || sending.value) {
     return;
   }
 
@@ -143,7 +143,7 @@ async function sendMessage(): Promise<void> {
         tradeId: props.tradeId,
         message: text,
         contentType: 'str',
-        fileName: null,
+        fileName: null
       });
     }
 
@@ -154,7 +154,7 @@ async function sendMessage(): Promise<void> {
         tradeId: props.tradeId,
         message: uploadedFile.fileUrl,
         contentType: uploadedFile.contentType,
-        fileName: uploadedFile.fileName,
+        fileName: uploadedFile.fileName
       });
     }
 
@@ -176,7 +176,7 @@ watch(
   () => trades.chatMessages.length,
   () => {
     void scrollToBottom();
-  },
+  }
 );
 
 onMounted(async () => {
@@ -205,9 +205,7 @@ onUnmounted(() => {
         <v-progress-circular indeterminate color="primary" size="24" />
       </v-row>
 
-      <div v-if="0 === trades.chatMessages.length && !trades.chatLoading" class="text-center text-lightText pa-6">
-        Сообщений пока нет
-      </div>
+      <div v-if="0 === trades.chatMessages.length && !trades.chatLoading" class="text-center text-lightText pa-6">Сообщений пока нет</div>
 
       <div v-for="msg in trades.chatMessages" :key="msg.id" class="mb-3">
         <div class="d-flex" :class="'user' === msg.senderType ? 'justify-end' : 'justify-start'">
@@ -216,7 +214,7 @@ onUnmounted(() => {
             :class="{
               'bg-primary text-white': 'user' === msg.senderType,
               'bg-grey-lighten-3': 'system' === msg.senderType,
-              'bg-blue-lighten-4': 'script' === msg.senderType,
+              'bg-blue-lighten-4': 'script' === msg.senderType
             }"
             style="max-width: 70%"
           >
@@ -252,11 +250,7 @@ onUnmounted(() => {
               <div class="text-body-2" style="white-space: pre-wrap">{{ msg.message }}</div>
             </template>
 
-            <div
-              class="text-caption mt-1"
-              :class="'user' === msg.senderType ? 'text-white' : 'text-lightText'"
-              style="opacity: 0.7"
-            >
+            <div class="text-caption mt-1" :class="'user' === msg.senderType ? 'text-white' : 'text-lightText'" style="opacity: 0.7">
               {{ formatTime(msg.createdAt) }}
             </div>
           </div>
@@ -266,19 +260,12 @@ onUnmounted(() => {
 
     <v-divider />
 
-    <v-alert v-if="readonly" type="info" variant="tonal" class="ma-2" density="compact">
-      Сделка завершена / отменена. Чат закрыт.
-    </v-alert>
+    <v-alert v-if="readonly" type="info" variant="tonal" class="ma-2" density="compact"> Сделка завершена / отменена. Чат закрыт. </v-alert>
 
     <v-card-actions v-if="!readonly" class="pa-3 flex-column align-stretch ga-3">
       <div class="d-flex flex-wrap align-center ga-3">
         <label class="d-inline-flex">
-          <input
-            class="d-none"
-            type="file"
-            accept="image/*,application/pdf,video/*"
-            @change="handleFileSelected"
-          />
+          <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleFileSelected" />
           <v-btn size="small" variant="outlined" prepend-icon="mdi-paperclip" tag="span">
             {{ hasSelectedAttachment ? 'Заменить файл' : 'Прикрепить файл' }}
           </v-btn>
@@ -286,14 +273,7 @@ onUnmounted(() => {
         <v-chip v-if="hasSelectedAttachment" size="small" color="primary" variant="tonal">
           {{ getSelectedAttachmentName() }}
         </v-chip>
-        <v-btn
-          v-if="hasSelectedAttachment"
-          size="small"
-          variant="text"
-          color="error"
-          prepend-icon="mdi-close"
-          @click="clearAttachment"
-        >
+        <v-btn v-if="hasSelectedAttachment" size="small" variant="text" color="error" prepend-icon="mdi-close" @click="clearAttachment">
           Удалить
         </v-btn>
       </div>

@@ -18,7 +18,7 @@ const statusOptions: { title: string; value: TradeStatus | '' }[] = [
   { title: 'Оплата подтверждена', value: 'payment_confirmed' },
   { title: 'Завершена', value: 'completed' },
   { title: 'Отменена', value: 'cancelled' },
-  { title: 'Спор', value: 'disputed' },
+  { title: 'Спор', value: 'disputed' }
 ];
 
 const statusLabels: Record<string, string> = {
@@ -27,7 +27,7 @@ const statusLabels: Record<string, string> = {
   payment_confirmed: 'Оплата подтверждена',
   completed: 'Завершена',
   cancelled: 'Отменена',
-  disputed: 'Спор',
+  disputed: 'Спор'
 };
 
 const statusColors: Record<string, string> = {
@@ -36,7 +36,7 @@ const statusColors: Record<string, string> = {
   payment_confirmed: 'primary',
   completed: 'success',
   cancelled: 'error',
-  disputed: 'error',
+  disputed: 'error'
 };
 
 function formatDate(iso: string): string {

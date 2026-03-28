@@ -19,13 +19,11 @@ const identity = useIdentityStore();
 const filters = ref<OrderBookFilters>({
   selectedMethods: [],
   limitMin: '',
-  limitMax: '',
+  limitMax: ''
 });
 
 const hasOrderBookAccess = computed(() => identity.hasActiveConnection);
-const isResolvingOrderBookAccess = computed(
-  () => identity.loading && null === identity.connectionStatus,
-);
+const isResolvingOrderBookAccess = computed(() => identity.loading && null === identity.connectionStatus);
 const orderBookConnectionStatus = computed(() => identity.connectionStatus?.['status'] ?? null);
 
 function onFiltersUpdate(nextFilters: OrderBookFilters): void {
@@ -46,7 +44,7 @@ watch(
     await exchange.fetchOrderBook();
     exchange.startAutoRefresh();
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 const bestBuyPrice = computed(() => {
@@ -70,11 +68,7 @@ const spreadPercent = computed(() => {
 });
 
 onMounted(async () => {
-  await Promise.all([
-    exchange.fetchCurrencyPairs(),
-    exchange.fetchPaymentMethods(),
-    identity.fetchStatus()
-  ]);
+  await Promise.all([exchange.fetchCurrencyPairs(), exchange.fetchPaymentMethods(), identity.fetchStatus()]);
 });
 
 onUnmounted(() => {
@@ -155,11 +149,7 @@ onUnmounted(() => {
       </v-card>
     </template>
 
-    <OrderBookAccessState
-      v-else
-      :is-authenticated="auth.isAuthenticated"
-      :connection-status="orderBookConnectionStatus"
-    />
+    <OrderBookAccessState v-else :is-authenticated="auth.isAuthenticated" :connection-status="orderBookConnectionStatus" />
 
     <v-row v-if="exchange.loading" justify="center" class="mt-4">
       <v-progress-circular indeterminate color="primary" />

@@ -40,25 +40,25 @@ export interface ApiConnectionStatus {
 }
 
 function normalizeApiEnum<TValue extends string>(
-  value: TValue | ApiEnumDto<TValue> | null | undefined,
+  value: TValue | ApiEnumDto<TValue> | null | undefined
 ): { value: TValue | null; label: string | null } {
   if (null === value || undefined === value) {
     return {
       value: null,
-      label: null,
+      label: null
     };
   }
 
   if ('string' === typeof value) {
     return {
       value,
-      label: null,
+      label: null
     };
   }
 
   return {
     value: value.value,
-    label: value.name,
+    label: value.name
   };
 }
 
@@ -76,15 +76,13 @@ function normalizeConnectionStatus(response: ApiConnectionStatusResponse): ApiCo
     userId: response.userId ?? null,
     maskedApiKey: response.maskedApiKey ?? null,
     createdAt: response.createdAt ?? null,
-    verifiedAt: response.verifiedAt ?? null,
+    verifiedAt: response.verifiedAt ?? null
   };
 }
 
 export const identityApi = {
   connect(data: ApiConnectionRequest): Promise<ApiConnectionStatus> {
-    return api
-      .post('/api/v1/identity/connection', data)
-      .then((r) => normalizeConnectionStatus(r.data as ApiConnectionStatusResponse));
+    return api.post('/api/v1/identity/connection', data).then((r) => normalizeConnectionStatus(r.data as ApiConnectionStatusResponse));
   },
 
   disconnect(): Promise<void> {
@@ -92,14 +90,10 @@ export const identityApi = {
   },
 
   verify(): Promise<ApiConnectionStatus> {
-    return api
-      .post('/api/v1/identity/connection/verify')
-      .then((r) => normalizeConnectionStatus(r.data as ApiConnectionStatusResponse));
+    return api.post('/api/v1/identity/connection/verify').then((r) => normalizeConnectionStatus(r.data as ApiConnectionStatusResponse));
   },
 
   status(): Promise<ApiConnectionStatus> {
-    return api
-      .get('/api/v1/identity/connection/status')
-      .then((r) => normalizeConnectionStatus(r.data as ApiConnectionStatusResponse));
+    return api.get('/api/v1/identity/connection/status').then((r) => normalizeConnectionStatus(r.data as ApiConnectionStatusResponse));
   }
 };

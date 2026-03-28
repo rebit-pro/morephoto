@@ -74,6 +74,6 @@ export const useChatScriptsStore = defineStore('chatScripts', () => {
     fetchScripts,
     createScript,
     updateScript,
-    deleteScript,
+    deleteScript
   };
 });

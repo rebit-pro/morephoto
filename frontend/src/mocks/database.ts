@@ -61,9 +61,10 @@ type MockChatMessagePayload = {
   fileUrl: string | null;
 };
 
-type MockRegistration = RequestRegistrationCodeResponse & RegisterRequest & {
-  code: string;
-};
+type MockRegistration = RequestRegistrationCodeResponse &
+  RegisterRequest & {
+    code: string;
+  };
 
 export interface MockState {
   version: number;
@@ -100,7 +101,7 @@ export interface MockState {
 const dictionaryCurrencies: DictionaryCurrency[] = [
   { id: 1, code: 'USDT', name: 'Tether USD', type: 'crypto', decimals: 2, sort: 10 },
   { id: 2, code: 'BTC', name: 'Bitcoin', type: 'crypto', decimals: 8, sort: 20 },
-  { id: 3, code: 'RUB', name: 'Российский рубль', type: 'fiat', decimals: 2, sort: 100 },
+  { id: 3, code: 'RUB', name: 'Российский рубль', type: 'fiat', decimals: 2, sort: 100 }
 ];
 
 const dictionaryCurrencyPairs: DictionaryCurrencyPair[] = [
@@ -112,7 +113,7 @@ const dictionaryCurrencyPairs: DictionaryCurrencyPair[] = [
     tokenCode: 'USDT',
     fiatCode: 'RUB',
     isDefault: true,
-    sort: 10,
+    sort: 10
   },
   {
     id: 2,
@@ -122,8 +123,8 @@ const dictionaryCurrencyPairs: DictionaryCurrencyPair[] = [
     tokenCode: 'BTC',
     fiatCode: 'RUB',
     isDefault: false,
-    sort: 20,
-  },
+    sort: 20
+  }
 ];
 
 const dictionaryPaymentMethods: DictionaryPaymentMethod[] = [
@@ -131,7 +132,7 @@ const dictionaryPaymentMethods: DictionaryPaymentMethod[] = [
   { id: 20, code: 'TINKOFF', name: 'T-Банк', sort: 20 },
   { id: 21, code: 'SBERBANK', name: 'Сбербанк', sort: 30 },
   { id: 22, code: 'BANK_TRANSFER', name: 'Банковский перевод', sort: 40 },
-  { id: 23, code: 'BALANCE', name: 'Баланс Bybit', sort: 50 },
+  { id: 23, code: 'BALANCE', name: 'Баланс Bybit', sort: 50 }
 ];
 
 const counterpartyNames = ['Иван', 'Мария', 'Alex', 'Сергей', 'Olga'];
@@ -175,7 +176,7 @@ function createEmptyConnectionStatus(): ApiConnectionStatus {
     userId: null,
     maskedApiKey: null,
     createdAt: null,
-    verifiedAt: null,
+    verifiedAt: null
   };
 }
 
@@ -214,7 +215,7 @@ function getOrCreateUser(state: MockState, email: string, password: string): Moc
     id: state.nextIds.user++,
     email,
     password,
-    name: email.split('@')[0] || 'Пользователь',
+    name: email.split('@')[0] || 'Пользователь'
   };
 
   state.users.push(user);
@@ -229,7 +230,7 @@ function createOrderBook(): OrderBookResponseDto {
         id: 101,
         bybitOrderId: 'ob-buy-1',
         side: 'buy',
-        price: 93.10,
+        price: 93.1,
         amount: 1500,
         minLimit: 1000,
         maxLimit: 50000,
@@ -237,7 +238,7 @@ function createOrderBook(): OrderBookResponseDto {
         completedTrades: 352,
         completionRate: 99.2,
         paymentMethods: ['SBP', 'TINKOFF'],
-        paymentTimeLimit: 15,
+        paymentTimeLimit: 15
       },
       {
         id: 102,
@@ -251,8 +252,8 @@ function createOrderBook(): OrderBookResponseDto {
         completedTrades: 128,
         completionRate: 98.5,
         paymentMethods: ['SBERBANK'],
-        paymentTimeLimit: 15,
-      },
+        paymentTimeLimit: 15
+      }
     ],
     sell: [
       {
@@ -267,13 +268,13 @@ function createOrderBook(): OrderBookResponseDto {
         completedTrades: 286,
         completionRate: 97.9,
         paymentMethods: ['SBP', 'BANK_TRANSFER'],
-        paymentTimeLimit: 15,
+        paymentTimeLimit: 15
       },
       {
         id: 202,
         bybitOrderId: 'ob-sell-2',
         side: 'sell',
-        price: 93.90,
+        price: 93.9,
         amount: 600,
         minLimit: 300,
         maxLimit: 20000,
@@ -281,9 +282,9 @@ function createOrderBook(): OrderBookResponseDto {
         completedTrades: 511,
         completionRate: 99.6,
         paymentMethods: ['TINKOFF'],
-        paymentTimeLimit: 15,
-      },
-    ],
+        paymentTimeLimit: 15
+      }
+    ]
   };
 }
 
@@ -295,8 +296,8 @@ function createInitialState(): MockState {
         id: 1,
         email: DEFAULT_USER_EMAIL,
         password: DEFAULT_USER_PASSWORD,
-        name: 'Владелец аккаунта',
-      },
+        name: 'Владелец аккаунта'
+      }
     ],
     authTokens: {},
     registration: null,
@@ -319,12 +320,12 @@ function createInitialState(): MockState {
       advertisement: 1,
       trade: 1,
       message: 1,
-      transaction: 1,
+      transaction: 1
     },
     automation: {
       lastTradeGenerationAt: null,
-      counterpartyIndex: 0,
-    },
+      counterpartyIndex: 0
+    }
   };
 }
 
@@ -366,15 +367,15 @@ function loadState(): MockState {
       ...parsedState,
       nextIds: {
         ...baseState.nextIds,
-        ...(parsedState.nextIds ?? {}),
+        ...(parsedState.nextIds ?? {})
       },
       automation: {
         ...baseState.automation,
-        ...(parsedState.automation ?? {}),
+        ...(parsedState.automation ?? {})
       },
       connectionStatus: {
         ...baseState.connectionStatus,
-        ...(parsedState.connectionStatus ?? {}),
+        ...(parsedState.connectionStatus ?? {})
       },
       authTokens: parsedState.authTokens ?? {},
       users: parsedState.users ?? baseState.users,
@@ -384,14 +385,14 @@ function loadState(): MockState {
       advertisements: parsedState.advertisements ?? [],
       trades: (parsedState.trades ?? []).map((trade) => ({
         ...trade,
-        isNew: trade.isNew,
+        isNew: trade.isNew
       })),
       tradeMessages: parsedState.tradeMessages ?? {},
       currencies: parsedState.currencies ?? baseState.currencies,
       currencyPairs: parsedState.currencyPairs ?? baseState.currencyPairs,
       paymentMethods: parsedState.paymentMethods ?? baseState.paymentMethods,
       orderBook: parsedState.orderBook ?? baseState.orderBook,
-      registration: parsedState.registration ?? null,
+      registration: parsedState.registration ?? null
     };
 
     saveState(restoredState);
@@ -428,11 +429,7 @@ export function commitMockState(): void {
   saveState(getMockState());
 }
 
-function createChatMessage(
-  state: MockState,
-  tradeId: number,
-  payload: MockChatMessagePayload,
-): ChatMessage {
+function createChatMessage(state: MockState, tradeId: number, payload: MockChatMessagePayload): ChatMessage {
   const message: ChatMessage = {
     id: state.nextIds.message++,
     tradeId,
@@ -441,7 +438,7 @@ function createChatMessage(
     contentType: payload.contentType,
     fileName: payload.fileName ?? null,
     fileUrl: payload.fileUrl ?? null,
-    createdAt: nowIso(),
+    createdAt: nowIso()
   };
 
   if (undefined === state.tradeMessages[tradeId]) {
@@ -477,7 +474,7 @@ function syncIncomingTradeMessagesWithMock(state: MockState, tradeId: number): b
 
   const messages = state.tradeMessages[tradeId] ?? [];
 
-  if ([] === messages) {
+  if (0 === messages.length) {
     return false;
   }
 
@@ -494,7 +491,7 @@ function syncIncomingTradeMessagesWithMock(state: MockState, tradeId: number): b
   }
 
   const hasCounterpartyIntro = messages.some(
-    (message) => 'user' === message.senderType && 'Контрагент: реквизиты отправлены, ожидаю перевод.' === message.message,
+    (message) => 'user' === message.senderType && 'Контрагент: реквизиты отправлены, ожидаю перевод.' === message.message
   );
 
   if ('pending_payment' === trade.status && !hasCounterpartyIntro) {
@@ -503,15 +500,13 @@ function syncIncomingTradeMessagesWithMock(state: MockState, tradeId: number): b
       message: 'Контрагент: реквизиты отправлены, ожидаю перевод.',
       contentType: 'str',
       fileName: null,
-      fileUrl: null,
+      fileUrl: null
     });
 
     return true;
   }
 
-  const hasCounterpartyAttachment = messages.some(
-    (message) => MOCK_BYBIT_ATTACHMENT_FILE_NAME === message.fileName,
-  );
+  const hasCounterpartyAttachment = messages.some((message) => MOCK_BYBIT_ATTACHMENT_FILE_NAME === message.fileName);
 
   if ('payment_sent' === trade.status && !hasCounterpartyAttachment) {
     createChatMessage(state, tradeId, {
@@ -519,7 +514,7 @@ function syncIncomingTradeMessagesWithMock(state: MockState, tradeId: number): b
       message: 'Контрагент: прикладываю подтверждение из ByBit.',
       contentType: 'pic',
       fileName: MOCK_BYBIT_ATTACHMENT_FILE_NAME,
-      fileUrl: createMockBybitAttachmentUrl(),
+      fileUrl: createMockBybitAttachmentUrl()
     });
 
     return true;
@@ -542,7 +537,7 @@ function seedBalances(state: MockState): void {
       available: '1250.5',
       locked: '0',
       total: '1250.5',
-      syncedAt: nowIso(),
+      syncedAt: nowIso()
     },
     {
       id: 2,
@@ -552,7 +547,7 @@ function seedBalances(state: MockState): void {
       available: '0.15',
       locked: '0',
       total: '0.15',
-      syncedAt: nowIso(),
+      syncedAt: nowIso()
     },
     {
       id: 3,
@@ -562,22 +557,19 @@ function seedBalances(state: MockState): void {
       available: '120000',
       locked: '0',
       total: '120000',
-      syncedAt: nowIso(),
-    },
+      syncedAt: nowIso()
+    }
   ];
 }
 
-function addTransaction(
-  state: MockState,
-  payload: Omit<Transaction, 'id' | 'createdAt'> & { createdAt?: string },
-): Transaction {
+function addTransaction(state: MockState, payload: Omit<Transaction, 'id' | 'createdAt'> & { createdAt?: string }): Transaction {
   const transaction: Transaction = {
     id: String(state.nextIds.transaction++),
     type: payload.type,
     amount: payload.amount,
     currency: payload.currency,
     tradeId: payload.tradeId ?? null,
-    createdAt: payload.createdAt ?? nowIso(),
+    createdAt: payload.createdAt ?? nowIso()
   };
 
   state.transactions.unshift(transaction);
@@ -595,7 +587,7 @@ function seedTransactions(state: MockState): void {
     amount: '1500',
     currency: 'USDT',
     tradeId: null,
-    createdAt: shiftIso(-60 * 24 * 7),
+    createdAt: shiftIso(-60 * 24 * 7)
   });
 
   addTransaction(state, {
@@ -603,7 +595,7 @@ function seedTransactions(state: MockState): void {
     amount: '250',
     currency: 'USDT',
     tradeId: 'history-1',
-    createdAt: shiftIso(-60 * 24 * 2),
+    createdAt: shiftIso(-60 * 24 * 2)
   });
 
   addTransaction(state, {
@@ -611,7 +603,7 @@ function seedTransactions(state: MockState): void {
     amount: '0.5',
     currency: 'USDT',
     tradeId: 'history-1',
-    createdAt: shiftIso(-60 * 24 * 2),
+    createdAt: shiftIso(-60 * 24 * 2)
   });
 }
 
@@ -643,7 +635,7 @@ function seedHistoricalTrade(state: MockState): void {
     cancelReason: null,
     createdAt,
     updatedAt: completedAt,
-    isNew: false,
+    isNew: false
   };
 
   state.trades.push(historicalTrade);
@@ -653,7 +645,7 @@ function seedHistoricalTrade(state: MockState): void {
     message: 'Историческая сделка успешно завершена.',
     contentType: 'str',
     fileName: null,
-    fileUrl: null,
+    fileUrl: null
   });
 }
 
@@ -687,7 +679,7 @@ function syncBalancesTimestamp(state: MockState): void {
 
   state.balances = state.balances.map((balance) => ({
     ...balance,
-    syncedAt,
+    syncedAt
   }));
 }
 
@@ -702,9 +694,10 @@ function renderScriptMessage(step: MockChatScriptStepRecord, trade: MockTradeRec
 }
 
 function createTradeFromAdvertisement(state: MockState, advertisementId?: number): MockTradeRecord | null {
-  const advertisement = undefined === advertisementId
-    ? state.advertisements.find((item) => 'active' === item.status)
-    : state.advertisements.find((item) => advertisementId === item.id);
+  const advertisement =
+    undefined === advertisementId
+      ? state.advertisements.find((item) => 'active' === item.status)
+      : state.advertisements.find((item) => advertisementId === item.id);
 
   if (undefined === advertisement || 'active' !== advertisement.status) {
     return null;
@@ -744,7 +737,7 @@ function createTradeFromAdvertisement(state: MockState, advertisementId?: number
     cancelReason: null,
     createdAt: nowIso(),
     updatedAt: nowIso(),
-    isNew: true,
+    isNew: true
   };
 
   state.trades.unshift(trade);
@@ -755,12 +748,13 @@ function createTradeFromAdvertisement(state: MockState, advertisementId?: number
     message: `Появилась новая сделка по объявлению #${advertisement.id}. Ожидается действие пользователя.`,
     contentType: 'str',
     fileName: null,
-    fileUrl: null,
+    fileUrl: null
   });
 
-  const chatScript = null === advertisement.chatScriptId
-    ? null
-    : state.chatScripts.find((script) => advertisement.chatScriptId === script.id && script.isActive);
+  const chatScript =
+    null === advertisement.chatScriptId
+      ? null
+      : state.chatScripts.find((script) => advertisement.chatScriptId === script.id && script.isActive);
   const firstStep = chatScript?.steps.slice().sort((first, second) => first.sort - second.sort)[0] ?? null;
 
   if (null !== firstStep) {
@@ -769,7 +763,7 @@ function createTradeFromAdvertisement(state: MockState, advertisementId?: number
       message: renderScriptMessage(firstStep, trade),
       contentType: firstStep.contentType,
       fileName: firstStep.fileName,
-      fileUrl: firstStep.fileUrl,
+      fileUrl: firstStep.fileUrl
     });
   }
 
@@ -783,7 +777,9 @@ export function ensureAutomatedTrade(): MockTradeRecord | null {
       return false;
     }
 
-    return !state.trades.some((trade) => advertisement.id === trade.advertisementId && 'cancelled' !== trade.status && 'completed' !== trade.status);
+    return !state.trades.some(
+      (trade) => advertisement.id === trade.advertisementId && 'cancelled' !== trade.status && 'completed' !== trade.status
+    );
   });
 
   if (undefined === activeAdvertisement) {
@@ -845,8 +841,8 @@ export function loginWithMock(request: LoginRequest): { token: string; user: Aut
     user: {
       id: user.id,
       email: user.email,
-      name: user.name,
-    },
+      name: user.name
+    }
   };
 }
 
@@ -857,14 +853,14 @@ export function requestRegistrationCodeWithMock(request: RegisterRequest): Reque
     email: request.email.trim().toLowerCase(),
     code: '123456',
     codeExpiresAt: shiftIso(15),
-    resendAvailableAt: shiftIsoSeconds(60),
+    resendAvailableAt: shiftIsoSeconds(60)
   };
   commitMockState();
 
   return {
     email: state.registration.email,
     codeExpiresAt: state.registration.codeExpiresAt,
-    resendAvailableAt: state.registration.resendAvailableAt,
+    resendAvailableAt: state.registration.resendAvailableAt
   };
 }
 
@@ -890,8 +886,8 @@ export function confirmRegistrationWithMock(email: string, code: string): { toke
     user: {
       id: user.id,
       email: user.email,
-      name: user.name,
-    },
+      name: user.name
+    }
   };
 }
 
@@ -920,12 +916,14 @@ function buildStatusLabel(status: ApiConnectionState | null): string | null {
     return null;
   }
 
-  return {
-    active: 'Активен',
-    invalid: 'Недействителен',
-    revoked: 'Отозван',
-    pending_verification: 'Ожидает проверки',
-  }[status] ?? null;
+  return (
+    {
+      active: 'Активен',
+      invalid: 'Недействителен',
+      revoked: 'Отозван',
+      pending_verification: 'Ожидает проверки'
+    }[status] ?? null
+  );
 }
 
 function buildModeLabel(mode: ApiConnectionMode | null): string | null {
@@ -948,7 +946,7 @@ export function connectApiWithMock(userId: number, apiKey: string, mode: ApiConn
     userId,
     maskedApiKey: `${'*'.repeat(Math.max(0, apiKey.length - 4))}${apiKey.slice(-4)}`,
     createdAt: nowIso(),
-    verifiedAt: nowIso(),
+    verifiedAt: nowIso()
   };
   seedConnectionData(state);
   commitMockState();
@@ -1015,7 +1013,7 @@ export function getTransactionsWithMock(filters?: TransactionFilters): { transac
 
   return {
     transactions: clone(transactions.slice(offset, offset + limit)),
-    total,
+    total
   };
 }
 
@@ -1054,7 +1052,7 @@ export function getCashFlowReportWithMock(filters?: CashFlowFilters): CashFlowRe
       openingBalance: 0,
       incoming: 0,
       outgoing: 0,
-      closingBalance: 0,
+      closingBalance: 0
     };
 
     const amount = Number.parseFloat(transaction.amount);
@@ -1078,30 +1076,31 @@ export function getCashFlowReportWithMock(filters?: CashFlowFilters): CashFlowRe
     return {
       ...item,
       openingBalance,
-      closingBalance,
+      closingBalance
     };
   });
 
-  const totals = 0 === items.length
-    ? null
-    : items.reduce(
-      (carry, item) => ({
-        totalIncoming: carry.totalIncoming + item.incoming,
-        totalOutgoing: carry.totalOutgoing + item.outgoing,
-        totalOpeningBalance: carry.totalOpeningBalance + item.openingBalance,
-        totalClosingBalance: carry.totalClosingBalance + item.closingBalance,
-      }),
-      {
-        totalIncoming: 0,
-        totalOutgoing: 0,
-        totalOpeningBalance: 0,
-        totalClosingBalance: 0,
-      },
-    );
+  const totals =
+    0 === items.length
+      ? null
+      : items.reduce(
+          (carry, item) => ({
+            totalIncoming: carry.totalIncoming + item.incoming,
+            totalOutgoing: carry.totalOutgoing + item.outgoing,
+            totalOpeningBalance: carry.totalOpeningBalance + item.openingBalance,
+            totalClosingBalance: carry.totalClosingBalance + item.closingBalance
+          }),
+          {
+            totalIncoming: 0,
+            totalOutgoing: 0,
+            totalOpeningBalance: 0,
+            totalClosingBalance: 0
+          }
+        );
 
   return {
     items: clone(items),
-    totals,
+    totals
   };
 }
 
@@ -1123,9 +1122,8 @@ export function getOrderBookWithMock(): OrderBookResponseDto {
 
 export function getAdvertisementsWithMock(status?: Advertisement['status']): Advertisement[] {
   const state = getMockState();
-  const advertisements = undefined === status
-    ? state.advertisements
-    : state.advertisements.filter((advertisement) => status === advertisement.status);
+  const advertisements =
+    undefined === status ? state.advertisements : state.advertisements.filter((advertisement) => status === advertisement.status);
 
   return clone(advertisements);
 }
@@ -1149,7 +1147,7 @@ export function createAdvertisementWithMock(payload: Omit<Advertisement, 'id' | 
     chatScriptId: payload.chatScriptId,
     status: 'active',
     createdAt,
-    updatedAt: createdAt,
+    updatedAt: createdAt
   };
 
   const pair = getPairById(state, advertisement.currencyPairId);
@@ -1169,7 +1167,7 @@ export function createAdvertisementWithMock(payload: Omit<Advertisement, 'id' | 
         type: 'lock',
         amount: formatAmount(quantity, tokenCurrency.decimals),
         currency: tokenCurrency.code,
-        tradeId: null,
+        tradeId: null
       });
     }
   }
@@ -1228,7 +1226,7 @@ export function toggleAdvertisementWithMock(id: number, status: 'active' | 'paus
           type: 'lock',
           amount: formatAmount(quantity, tokenCurrency.decimals),
           currency: tokenCurrency.code,
-          tradeId: null,
+          tradeId: null
         });
       }
 
@@ -1238,7 +1236,7 @@ export function toggleAdvertisementWithMock(id: number, status: 'active' | 'paus
           type: 'unlock',
           amount: formatAmount(quantity, tokenCurrency.decimals),
           currency: tokenCurrency.code,
-          tradeId: null,
+          tradeId: null
         });
       }
     }
@@ -1254,9 +1252,7 @@ export function toggleAdvertisementWithMock(id: number, status: 'active' | 'paus
 export function getTradesWithMock(status?: Trade['status']): MockTradeRecord[] {
   ensureAutomatedTrade();
   const state = getMockState();
-  const trades = undefined === status
-    ? state.trades
-    : state.trades.filter((trade) => status === trade.status);
+  const trades = undefined === status ? state.trades : state.trades.filter((trade) => status === trade.status);
 
   return clone(trades);
 }
@@ -1295,7 +1291,7 @@ export function confirmPaymentWithMock(id: number): MockTradeRecord {
     message: 'Покупатель отметил перевод как отправленный. Ожидается отпуск средств продавцом.',
     contentType: 'str',
     fileName: null,
-    fileUrl: null,
+    fileUrl: null
   });
   commitMockState();
 
@@ -1326,13 +1322,13 @@ export function releaseAssetsWithMock(id: number): MockTradeRecord {
         type: 'trade_sell',
         amount: formatAmount(trade.quantity, tokenCurrency.decimals),
         currency: tokenCurrency.code,
-        tradeId: String(trade.id),
+        tradeId: String(trade.id)
       });
       addTransaction(state, {
         type: 'fee',
         amount: formatAmount(trade.fee, tokenCurrency.decimals),
         currency: tokenCurrency.code,
-        tradeId: String(trade.id),
+        tradeId: String(trade.id)
       });
     }
   }
@@ -1342,7 +1338,7 @@ export function releaseAssetsWithMock(id: number): MockTradeRecord {
     message: 'Средства отпущены. Сделка завершена успешно.',
     contentType: 'str',
     fileName: null,
-    fileUrl: null,
+    fileUrl: null
   });
   commitMockState();
 
@@ -1366,7 +1362,7 @@ export function sendTradeMessageWithMock(
     contentType: ChatContentType;
     fileName: string | null;
     fileUrl?: string | null;
-  },
+  }
 ): ChatMessage {
   const state = getMockState();
   const trade = state.trades.find((item) => tradeId === item.id);
@@ -1380,7 +1376,7 @@ export function sendTradeMessageWithMock(
     message: payload.message,
     contentType: payload.contentType,
     fileName: payload.fileName ?? null,
-    fileUrl: payload.fileUrl ?? null,
+    fileUrl: payload.fileUrl ?? null
   });
   commitMockState();
 
@@ -1405,11 +1401,11 @@ export function createChatScriptWithMock(payload: Pick<MockChatScriptRecord, 'na
       delaySeconds: step.delaySeconds,
       contentType: step.contentType ?? 'str',
       fileName: step.fileName ?? null,
-      fileUrl: step.fileUrl ?? null,
+      fileUrl: step.fileUrl ?? null
     })),
     advertisementsCount: 0,
     createdAt,
-    updatedAt: createdAt,
+    updatedAt: createdAt
   };
 
   state.chatScripts.unshift(script);
@@ -1418,7 +1414,10 @@ export function createChatScriptWithMock(payload: Pick<MockChatScriptRecord, 'na
   return clone(script);
 }
 
-export function updateChatScriptWithMock(id: number, payload: Pick<MockChatScriptRecord, 'name' | 'isActive' | 'steps'>): MockChatScriptRecord {
+export function updateChatScriptWithMock(
+  id: number,
+  payload: Pick<MockChatScriptRecord, 'name' | 'isActive' | 'steps'>
+): MockChatScriptRecord {
   const state = getMockState();
   const script = state.chatScripts.find((item) => id === item.id);
 
@@ -1435,7 +1434,7 @@ export function updateChatScriptWithMock(id: number, payload: Pick<MockChatScrip
     delaySeconds: step.delaySeconds,
     contentType: step.contentType ?? 'str',
     fileName: step.fileName ?? null,
-    fileUrl: step.fileUrl ?? null,
+    fileUrl: step.fileUrl ?? null
   }));
   script.updatedAt = nowIso();
   commitMockState();
@@ -1454,7 +1453,7 @@ export function deleteChatScriptWithMock(id: number): void {
     return {
       ...advertisement,
       chatScriptId: null,
-      updatedAt: nowIso(),
+      updatedAt: nowIso()
     };
   });
   commitMockState();

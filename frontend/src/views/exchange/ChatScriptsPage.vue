@@ -18,7 +18,7 @@ function createFormStep(step?: Partial<ChatScriptStep>): FormStep {
     delaySeconds: step?.delaySeconds ?? 0,
     contentType: step?.contentType ?? 'str',
     fileName: step?.fileName ?? null,
-    fileUrl: step?.fileUrl ?? null,
+    fileUrl: step?.fileUrl ?? null
   };
 }
 
@@ -26,7 +26,7 @@ const contentTypeOptions: { title: string; value: ChatContentType }[] = [
   { title: 'Текст', value: 'str' },
   { title: 'Изображение / QR', value: 'pic' },
   { title: 'PDF', value: 'pdf' },
-  { title: 'Видео', value: 'video' },
+  { title: 'Видео', value: 'video' }
 ];
 
 const scripts = useChatScriptsStore();
@@ -45,7 +45,7 @@ const form = reactive<{
 }>({
   name: '',
   isActive: true,
-  steps: [createFormStep({ sort: 1 })],
+  steps: [createFormStep({ sort: 1 })]
 });
 
 const placeholders = [
@@ -54,7 +54,7 @@ const placeholders = [
   { tag: '{currency}', desc: 'Код валюты (USDT, BTC)' },
   { tag: '{fiat_amount}', desc: 'Сумма в фиате' },
   { tag: '{fiat_currency}', desc: 'Фиатная валюта (RUB)' },
-  { tag: '{trade_id}', desc: 'Номер сделки' },
+  { tag: '{trade_id}', desc: 'Номер сделки' }
 ];
 
 const canSaveScript = computed(() => {
@@ -195,8 +195,8 @@ async function handleSave(): Promise<void> {
       delaySeconds: s.delaySeconds,
       contentType: s.contentType,
       fileName: s.fileName ?? null,
-      fileUrl: s.fileUrl ?? null,
-    })),
+      fileUrl: s.fileUrl ?? null
+    }))
   };
 
   try {
@@ -251,14 +251,12 @@ onMounted(async () => {
   <div>
     <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
       <h2 class="text-h4">Скрипты чата</h2>
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate">
-        Создать скрипт
-      </v-btn>
+      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate"> Создать скрипт </v-btn>
     </div>
 
     <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
-      В mock-режиме шаг сценария можно сохранить как текст, банковские реквизиты, QR-код, PDF или видео.
-      Вложение хранится локально в браузере и автоматически отправится первым сообщением новой сделки.
+      В mock-режиме шаг сценария можно сохранить как текст, банковские реквизиты, QR-код, PDF или видео. Вложение хранится локально в
+      браузере и автоматически отправится первым сообщением новой сделки.
     </v-alert>
 
     <v-row v-if="scripts.loading" justify="center" class="mt-8">
@@ -282,9 +280,7 @@ onMounted(async () => {
           <tr v-if="0 === scripts.scripts.length">
             <td colspan="5" class="text-center text-lightText pa-6">
               Нет скриптов.
-              <v-btn variant="text" color="primary" size="small" @click="openCreate">
-                Создать первый
-              </v-btn>
+              <v-btn variant="text" color="primary" size="small" @click="openCreate"> Создать первый </v-btn>
             </td>
           </tr>
           <tr v-for="script in scripts.scripts" :key="script.id">
@@ -297,25 +293,9 @@ onMounted(async () => {
             </td>
             <td class="text-lightText text-body-2">{{ formatDate(script.createdAt) }}</td>
             <td class="text-right">
-              <v-btn
-                icon="mdi-eye-outline"
-                size="small"
-                variant="text"
-                @click="openPreview(script.steps)"
-              />
-              <v-btn
-                icon="mdi-pencil-outline"
-                size="small"
-                variant="text"
-                @click="openEdit(script.id)"
-              />
-              <v-btn
-                icon="mdi-delete-outline"
-                size="small"
-                variant="text"
-                color="error"
-                @click="confirmDelete(script.id)"
-              />
+              <v-btn icon="mdi-eye-outline" size="small" variant="text" @click="openPreview(script.steps)" />
+              <v-btn icon="mdi-pencil-outline" size="small" variant="text" @click="openEdit(script.id)" />
+              <v-btn icon="mdi-delete-outline" size="small" variant="text" color="error" @click="confirmDelete(script.id)" />
             </td>
           </tr>
         </tbody>
@@ -329,21 +309,8 @@ onMounted(async () => {
           {{ null !== editingId ? 'Редактировать скрипт' : 'Создать скрипт' }}
         </v-card-title>
         <v-card-text>
-          <v-text-field
-            v-model="form.name"
-            label="Название скрипта"
-            variant="outlined"
-            density="compact"
-            class="mb-2"
-          />
-          <v-switch
-            v-model="form.isActive"
-            label="Активен"
-            color="primary"
-            density="compact"
-            hide-details
-            class="mb-4"
-          />
+          <v-text-field v-model="form.name" label="Название скрипта" variant="outlined" density="compact" class="mb-2" />
+          <v-switch v-model="form.isActive" label="Активен" color="primary" density="compact" hide-details class="mb-4" />
 
           <div class="text-subtitle-2 mb-2">Шаги скрипта</div>
 
@@ -351,13 +318,7 @@ onMounted(async () => {
             <div class="d-flex align-center justify-space-between mb-2">
               <span class="text-caption font-weight-bold">Шаг {{ index + 1 }}</span>
               <div class="d-flex ga-1">
-                <v-btn
-                  icon="mdi-arrow-up"
-                  size="x-small"
-                  variant="text"
-                  :disabled="0 === index"
-                  @click="moveStep(index, -1)"
-                />
+                <v-btn icon="mdi-arrow-up" size="x-small" variant="text" :disabled="0 === index" @click="moveStep(index, -1)" />
                 <v-btn
                   icon="mdi-arrow-down"
                   size="x-small"
@@ -396,18 +357,8 @@ onMounted(async () => {
             />
             <div class="d-flex flex-wrap align-center ga-3 mb-2">
               <label class="d-inline-flex">
-                <input
-                  class="d-none"
-                  type="file"
-                  accept="image/*,application/pdf,video/*"
-                  @change="handleStepFileSelected($event, step)"
-                />
-                <v-btn
-                  variant="outlined"
-                  size="small"
-                  prepend-icon="mdi-paperclip"
-                  tag="span"
-                >
+                <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleStepFileSelected($event, step)" />
+                <v-btn variant="outlined" size="small" prepend-icon="mdi-paperclip" tag="span">
                   {{ null === step.fileUrl ? 'Загрузить файл' : 'Заменить файл' }}
                 </v-btn>
               </label>
@@ -440,20 +391,14 @@ onMounted(async () => {
             />
           </div>
 
-          <v-btn variant="outlined" size="small" prepend-icon="mdi-plus" @click="addStep" class="mb-4">
-            Добавить шаг
-          </v-btn>
+          <v-btn variant="outlined" size="small" prepend-icon="mdi-plus" @click="addStep" class="mb-4"> Добавить шаг </v-btn>
 
           <!-- Подсказка по плейсхолдерам -->
           <v-expansion-panels variant="accordion" class="mt-2">
             <v-expansion-panel title="Доступные плейсхолдеры">
               <v-expansion-panel-text>
                 <v-list density="compact" class="pa-0">
-                  <v-list-item
-                    v-for="p in placeholders"
-                    :key="p.tag"
-                    class="px-0"
-                  >
+                  <v-list-item v-for="p in placeholders" :key="p.tag" class="px-0">
                     <template #prepend>
                       <code class="text-primary mr-2">{{ p.tag }}</code>
                     </template>
@@ -467,14 +412,7 @@ onMounted(async () => {
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="formDialog = false">Отмена</v-btn>
-          <v-btn
-            color="primary"
-            :loading="scripts.actionLoading"
-            :disabled="!canSaveScript"
-            @click="handleSave"
-          >
-            Сохранить
-          </v-btn>
+          <v-btn color="primary" :loading="scripts.actionLoading" :disabled="!canSaveScript" @click="handleSave"> Сохранить </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -494,13 +432,7 @@ onMounted(async () => {
                     :alt="step.fileName ?? 'preview'"
                     class="chat-scripts-page__preview-image mb-2"
                   />
-                  <v-chip
-                    v-else-if="step.fileUrl && step.fileName"
-                    size="small"
-                    variant="tonal"
-                    prepend-icon="mdi-paperclip"
-                    class="mb-2"
-                  >
+                  <v-chip v-else-if="step.fileUrl && step.fileName" size="small" variant="tonal" prepend-icon="mdi-paperclip" class="mb-2">
                     {{ step.fileName }}
                   </v-chip>
                   <div class="text-body-2" style="white-space: pre-wrap">{{ renderPreview(step.message) }}</div>
@@ -523,9 +455,7 @@ onMounted(async () => {
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
         <v-card-title>Удалить скрипт?</v-card-title>
-        <v-card-text>
-          Скрипт будет удалён и отвязан от всех объявлений. Уже запущенные сделки не затрагиваются.
-        </v-card-text>
+        <v-card-text> Скрипт будет удалён и отвязан от всех объявлений. Уже запущенные сделки не затрагиваются. </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="deleteDialog = false">Отмена</v-btn>

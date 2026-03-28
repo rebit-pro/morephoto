@@ -82,14 +82,7 @@ onMounted(async () => {
       <v-tabs-window-item value="balances">
         <div class="d-flex align-center justify-space-between mb-4">
           <span class="text-body-1 text-lightText">Ваши балансы на Bybit</span>
-          <v-btn
-            variant="text"
-            color="primary"
-            size="small"
-            :loading="wallet.loading"
-            prepend-icon="mdi-refresh"
-            @click="refreshBalances"
-          >
+          <v-btn variant="text" color="primary" size="small" :loading="wallet.loading" prepend-icon="mdi-refresh" @click="refreshBalances">
             Обновить
           </v-btn>
         </div>
@@ -190,16 +183,10 @@ onMounted(async () => {
 
               <v-row justify="center" class="mb-4">
                 <v-col cols="auto">
-                  <v-chip color="info" variant="tonal" size="default">
-                    Режим: {{ identity.modeLabel ?? '—' }}
-                  </v-chip>
+                  <v-chip color="info" variant="tonal" size="default"> Режим: {{ identity.modeLabel ?? '—' }} </v-chip>
                 </v-col>
                 <v-col cols="auto">
-                  <v-chip
-                    :color="identityStatusColor()"
-                    variant="tonal"
-                    size="default"
-                  >
+                  <v-chip :color="identityStatusColor()" variant="tonal" size="default">
                     {{ identity.statusLabel ?? '—' }}
                   </v-chip>
                 </v-col>
@@ -232,9 +219,7 @@ onMounted(async () => {
               <v-icon size="48" color="warning" class="mb-3">mdi-link-variant-off</v-icon>
               <h3 class="text-h5 mb-2">API не подключён</h3>
               <p class="text-lightText mb-4">Подключите Bybit API для начала торговли</p>
-              <v-btn color="primary" prepend-icon="mdi-link-variant-plus" to="/profile/api-connection">
-                Подключить
-              </v-btn>
+              <v-btn color="primary" prepend-icon="mdi-link-variant-plus" to="/profile/api-connection"> Подключить </v-btn>
             </div>
           </v-card-text>
         </v-card>

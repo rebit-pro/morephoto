@@ -1,11 +1,19 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 import NavItem from '../NavItem/NavItem.vue';
 import Icon from '../IconSet.vue';
 
 const props = defineProps({ item: Object, level: Number });
+
+function translateLabel(value) {
+  if ('string' !== typeof value || '' === value) {
+    return '';
+  }
+
+  return te(value) ? t(value) : value;
+}
 </script>
 
 <template>
@@ -24,13 +32,13 @@ const props = defineProps({ item: Object, level: Number });
         </template>
         <!---Title  -->
         <v-list-item-title class="me-auto">
-          {{ t(item.title) }}
+          {{ translateLabel(item.title) }}
           <!---If any chip or label-->
           <v-badge :color="item.chipColor" v-if="item.chip" :aria-label="item.chip" inline dot></v-badge>
         </v-list-item-title>
         <!---If Caption-->
         <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-n1 hide-menu">
-          {{ t(item.subCaption) }}
+          {{ translateLabel(item.subCaption) }}
         </v-list-item-subtitle>
       </v-list-item>
     </template>

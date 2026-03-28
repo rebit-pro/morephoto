@@ -15,7 +15,7 @@ const notificationItems = computed(() => {
       color: 'warning',
       icon: 'swap-horizontal',
       title: `Новая сделка #${trade.id}`,
-      desc: `${trade.counterpartyName} · ${'buy' === trade.side ? 'Покупка' : 'Продажа'} · ${trade.fiatAmount.toFixed(2)} ₽`,
+      desc: `${trade.counterpartyName} · ${'buy' === trade.side ? 'Покупка' : 'Продажа'} · ${trade.fiatAmount.toFixed(2)} ₽`
     }));
 });
 
@@ -48,8 +48,6 @@ function openTrade(tradeId: number): void {
       <v-divider v-if="i < notificationItems.length - 1" />
     </template>
 
-    <v-list-item v-if="0 === notificationItems.length" class="text-center text-lightText pa-6">
-      Новых сделок пока нет
-    </v-list-item>
+    <v-list-item v-if="0 === notificationItems.length" class="text-center text-lightText pa-6"> Новых сделок пока нет </v-list-item>
   </v-list>
 </template>

@@ -6,7 +6,7 @@ import {
   type TradeStatus,
   type ConfirmPaymentPayload,
   type ChatMessage,
-  type SendMessagePayload,
+  type SendMessagePayload
 } from '@/api/exchange';
 
 export const useTradesStore = defineStore('trades', () => {
@@ -26,14 +26,14 @@ export const useTradesStore = defineStore('trades', () => {
     if (-1 !== index) {
       trades.value[index] = {
         ...trades.value[index],
-        ...trade,
+        ...trade
       };
     }
 
     if (null !== currentTradeValue && currentTradeValue['id'] === trade.id) {
       currentTrade.value = {
         ...currentTradeValue,
-        ...trade,
+        ...trade
       };
     }
   }
@@ -66,11 +66,11 @@ export const useTradesStore = defineStore('trades', () => {
 
       currentTrade.value = {
         ...trade,
-        isNew: false,
+        isNew: false
       };
       updateTradeInCollections({
         ...trade,
-        isNew: false,
+        isNew: false
       });
     } catch (e: unknown) {
       if (requestGeneration !== tradeDetailRequestGeneration) {
@@ -156,6 +156,6 @@ export const useTradesStore = defineStore('trades', () => {
     releaseAssets,
     fetchChatHistory,
     sendMessage,
-    clearCurrentTrade,
+    clearCurrentTrade
   };
 });

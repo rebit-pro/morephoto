@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { ArrowsExchangeIcon, CircleCheckIcon, KeyIcon, ShieldCheckIcon } from 'vue-tabler-icons';
 import { useIdentityStore } from '@/stores/identity';
+import AppEmptyState from '@/components/shared/AppEmptyState.vue';
 
 const identity = useIdentityStore();
 
@@ -111,12 +113,14 @@ const statusChipColor = computed(() => {
   }
 });
 const connectionTone = computed(() => ('mainnet' === connectionMode.value ? 'warning' : 'info'));
-const connectionTitle = computed(() => ('mainnet' === connectionMode.value ? 'Подключён боевой Bybit API' : 'Подключён тестовый Bybit API'));
-const connectionDescription = computed(() => (
+const connectionTitle = computed(() =>
+  'mainnet' === connectionMode.value ? 'Подключён боевой Bybit API' : 'Подключён тестовый Bybit API'
+);
+const connectionDescription = computed(() =>
   'mainnet' === connectionMode.value
     ? 'У вас активирован боевой ключ. Операции будут выполняться в реальной среде Bybit.'
     : 'У вас активирован тестовый ключ. Можно безопасно проверять сценарии без боевых сделок.'
-));
+);
 
 function resetForm(resetMode = true): void {
   apiKey.value = '';
@@ -161,7 +165,7 @@ async function onSubmit(): Promise<void> {
     notification.value = {
       type: 'success',
       title: 'Bybit API подключён',
-      text: `Подключен ${identity.modeLabel ?? ('mainnet' === mode.value ? 'Mainnet' : 'Testnet')} ключ. Теперь можно пользоваться стаканами и торговыми сценариями.`,
+      text: `Подключен ${identity.modeLabel ?? ('mainnet' === mode.value ? 'Mainnet' : 'Testnet')} ключ. Теперь можно пользоваться стаканами и торговыми сценариями.`
     };
   } catch (e: unknown) {
     if (e instanceof Error) {
@@ -192,7 +196,7 @@ async function onVerify(): Promise<void> {
     notification.value = {
       type: 'info',
       title: 'Проверка выполнена',
-      text: `Статус подключения: ${identity.statusLabel ?? '—'}. Режим: ${identity.modeLabel ?? '—'}.`,
+      text: `Статус подключения: ${identity.statusLabel ?? '—'}. Режим: ${identity.modeLabel ?? '—'}.`
     };
   } catch (e: unknown) {
     if (e instanceof Error) {
@@ -225,7 +229,7 @@ async function onDisconnect(): Promise<void> {
     notification.value = {
       type: 'info',
       title: 'Bybit API отключён',
-      text: 'Ключ и секрет отвязаны. Можно подключить новый testnet или mainnet ключ.',
+      text: 'Ключ и секрет отвязаны. Можно подключить новый testnet или mainnet ключ.'
     };
   } catch (e: unknown) {
     if (e instanceof Error) {
@@ -246,49 +250,41 @@ async function onDisconnect(): Promise<void> {
     <h2 class="text-h4 mb-2">Подключение Bybit API</h2>
     <p class="text-lightText mb-6">Подключите testnet или mainnet ключ, чтобы видеть стаканы, балансы и работать с P2P.</p>
 
-    <v-alert
-      v-if="null !== notification"
-      :type="notificationType"
-      variant="tonal"
-      class="mb-6"
-      closable
-      @click:close="notification = null"
-    >
+    <v-alert v-if="null !== notification" :type="notificationType" variant="tonal" class="mb-6" closable @click:close="notification = null">
       <div class="font-weight-medium mb-1">{{ notificationTitle }}</div>
       <div>{{ notificationText }}</div>
     </v-alert>
 
     <v-row class="mb-6">
       <v-col cols="12" md="6">
-        <v-card rounded="xl" variant="outlined" class="fill-height api-connection-page__hero-card">
-          <v-card-text class="pa-6 pa-md-8">
-            <div class="d-flex align-center mb-4">
-              <v-avatar size="52" color="secondary" variant="tonal" class="mr-4">
-                <v-icon size="28">mdi-key-chain-variant</v-icon>
-              </v-avatar>
-              <div>
-                <div class="text-h6 font-weight-bold mb-1">Bybit API</div>
-                <div class="text-body-2 text-lightText">Поддерживаются testnet и mainnet ключи</div>
-              </div>
-            </div>
+        <AppEmptyState
+          class="fill-height api-connection-page__hero-card"
+          :icon="KeyIcon"
+          variant="gradient"
+          align="left"
+          tone="secondary"
+          eyebrow="Bybit integration"
+          title="Bybit API"
+          description="Поддерживаются testnet и mainnet ключи. Подключите доступ один раз, чтобы видеть статусы подключения, балансы и P2P-стаканы прямо в интерфейсе проекта."
+        >
+          <div class="d-flex flex-wrap ga-2 mb-4">
+            <v-chip color="info" variant="flat">Testnet для безопасной отладки</v-chip>
+            <v-chip color="warning" variant="flat">Mainnet для реальных операций</v-chip>
+          </div>
 
-            <div class="d-flex flex-wrap ga-2 mb-4">
-              <v-chip color="info" variant="tonal">Testnet для безопасной отладки</v-chip>
-              <v-chip color="warning" variant="tonal">Mainnet для реальных операций</v-chip>
+          <v-alert :type="isConnected ? connectionTone : 'info'" variant="outlined" class="api-connection-page__hero-alert">
+            <div class="font-weight-medium mb-1">
+              {{ isConnected ? connectionTitle : 'Ключ пока не подключён' }}
             </div>
-
-            <v-alert :type="isConnected ? connectionTone : 'info'" variant="tonal">
-              <div class="font-weight-medium mb-1">
-                {{ isConnected ? connectionTitle : 'Ключ пока не подключён' }}
-              </div>
-              <div>
-                {{ isConnected
+            <div>
+              {{
+                isConnected
                   ? connectionDescription
-                  : 'После подключения вы сможете видеть P2P-стаканы, статусы подключения и балансы Bybit прямо в интерфейсе.' }}
-              </div>
-            </v-alert>
-          </v-card-text>
-        </v-card>
+                  : 'После подключения вы сможете видеть P2P-стаканы, статусы подключения и балансы Bybit прямо в интерфейсе.'
+              }}
+            </div>
+          </v-alert>
+        </AppEmptyState>
       </v-col>
 
       <v-col cols="12" md="6">
@@ -296,9 +292,21 @@ async function onDisconnect(): Promise<void> {
           <v-card-text class="pa-6 pa-md-8">
             <div class="text-subtitle-1 font-weight-bold mb-4">Рекомендации по ключам</div>
             <v-list density="comfortable" class="bg-transparent py-0">
-              <v-list-item prepend-icon="mdi-shield-check-outline" title="Давайте только нужные права" subtitle="Достаточно чтения и торговли, без вывода средств." />
-              <v-list-item prepend-icon="mdi-flask-outline" title="Для тестов используйте Testnet" subtitle="Подходит для проверки сценариев без риска для боевых средств." />
-              <v-list-item prepend-icon="mdi-swap-horizontal" title="Mainnet используйте осознанно" subtitle="Все операции выполняются в реальной среде Bybit." />
+              <v-list-item title="Давайте только нужные права" subtitle="Достаточно чтения и торговли, без вывода средств.">
+                <template #prepend>
+                  <ShieldCheckIcon :size="20" stroke-width="1.75" class="text-secondary" />
+                </template>
+              </v-list-item>
+              <v-list-item title="Для тестов используйте Testnet" subtitle="Подходит для проверки сценариев без риска для боевых средств.">
+                <template #prepend>
+                  <CircleCheckIcon :size="20" stroke-width="1.75" class="text-info" />
+                </template>
+              </v-list-item>
+              <v-list-item title="Mainnet используйте осознанно" subtitle="Все операции выполняются в реальной среде Bybit.">
+                <template #prepend>
+                  <ArrowsExchangeIcon :size="20" stroke-width="1.75" class="text-warning" />
+                </template>
+              </v-list-item>
             </v-list>
           </v-card-text>
         </v-card>
@@ -311,7 +319,7 @@ async function onDisconnect(): Promise<void> {
         <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-6">
           <div class="d-flex align-center">
             <v-avatar size="56" color="success" variant="tonal" class="mr-4">
-              <v-icon size="30">mdi-check-circle</v-icon>
+              <CircleCheckIcon :size="30" stroke-width="1.75" />
             </v-avatar>
             <div>
               <h3 class="text-h5 mb-1">{{ connectionTitle }}</h3>
@@ -341,12 +349,8 @@ async function onDisconnect(): Promise<void> {
         </v-row>
 
         <div class="d-flex flex-wrap ga-3">
-          <v-btn color="info" variant="outlined" @click="onVerify" :loading="verifying || identity.loading">
-            Проверить
-          </v-btn>
-          <v-btn color="error" variant="outlined" @click="onDisconnect" :loading="disconnecting || identity.loading">
-            Отключить
-          </v-btn>
+          <v-btn color="info" variant="outlined" @click="onVerify" :loading="verifying || identity.loading"> Проверить </v-btn>
+          <v-btn color="error" variant="outlined" @click="onDisconnect" :loading="disconnecting || identity.loading"> Отключить </v-btn>
         </div>
       </v-card-text>
     </v-card>
@@ -357,7 +361,9 @@ async function onDisconnect(): Promise<void> {
         <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-6">
           <div>
             <h3 class="text-h5 mb-1">Подключить Bybit API</h3>
-            <p class="text-lightText mb-0">Введите ключ и секрет. После подключения форма скроется, а при отключении снова станет доступна.</p>
+            <p class="text-lightText mb-0">
+              Введите ключ и секрет. После подключения форма скроется, а при отключении снова станет доступна.
+            </p>
           </div>
           <v-chip :color="'mainnet' === mode ? 'warning' : 'info'" variant="tonal" size="large">
             {{ 'mainnet' === mode ? 'Будет подключён Mainnet' : 'Будет подключён Testnet' }}
@@ -413,18 +419,16 @@ async function onDisconnect(): Promise<void> {
 
           <v-alert :type="'mainnet' === mode ? 'warning' : 'info'" variant="tonal" class="mb-6">
             <strong>Важно:</strong> Создайте API-ключ с правами только на чтение и торговлю.
-            {{ 'mainnet' === mode
-              ? ' Вы выбрали боевой режим. Не давайте права на вывод средств и перепроверьте ограничения ключа.'
-              : ' Вы выбрали тестовый режим — это безопасный вариант для первичной проверки интеграции.' }}
+            {{
+              'mainnet' === mode
+                ? ' Вы выбрали боевой режим. Не давайте права на вывод средств и перепроверьте ограничения ключа.'
+                : ' Вы выбрали тестовый режим — это безопасный вариант для первичной проверки интеграции.'
+            }}
           </v-alert>
 
           <div class="d-flex flex-wrap ga-3">
-            <v-btn color="secondary" :loading="submitting" variant="flat" size="large" type="submit">
-            Подключить API
-            </v-btn>
-            <v-btn variant="text" size="large" @click="resetForm(false)">
-              Очистить поля
-            </v-btn>
+            <v-btn color="secondary" :loading="submitting" variant="flat" size="large" type="submit"> Подключить API </v-btn>
+            <v-btn variant="text" size="large" @click="resetForm(false)"> Очистить поля </v-btn>
           </div>
         </v-form>
       </v-card-text>
@@ -433,7 +437,21 @@ async function onDisconnect(): Promise<void> {
 </template>
 
 <style scoped>
-.api-connection-page__hero-card {
-  background: linear-gradient(180deg, rgba(103, 80, 164, 0.04) 0%, rgba(103, 80, 164, 0.08) 100%);
+.api-connection-page__hero-card :deep(.app-empty-state__body) {
+  justify-content: center;
+  min-height: 100%;
+}
+
+.api-connection-page__hero-card :deep(.v-chip) {
+  color: #ffffff;
+}
+
+.api-connection-page__hero-alert {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.api-connection-page__hero-card :deep(.v-alert__content) {
+  color: #ffffff;
 }
 </style>

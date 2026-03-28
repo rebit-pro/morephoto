@@ -8,9 +8,6 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
-    hmr: {
-      clientPort: 5173
-    },
     allowedHosts: ['rebit-p2p.loc']
   },
   plugins: [

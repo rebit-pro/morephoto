@@ -25,21 +25,21 @@ const statusOptions: { title: string; value: AdvertisementStatus | '' }[] = [
   { title: 'Активные', value: 'active' },
   { title: 'Приостановлены', value: 'paused' },
   { title: 'Завершены', value: 'completed' },
-  { title: 'Отменены', value: 'cancelled' },
+  { title: 'Отменены', value: 'cancelled' }
 ];
 
 const statusLabels: Record<string, string> = {
   active: 'Активно',
   paused: 'Приостановлено',
   completed: 'Завершено',
-  cancelled: 'Отменено',
+  cancelled: 'Отменено'
 };
 
 const statusColors: Record<string, string> = {
   active: 'success',
   paused: 'warning',
   completed: 'grey',
-  cancelled: 'error',
+  cancelled: 'error'
 };
 
 function formatDate(iso: string): string {
@@ -121,18 +121,13 @@ watch(highlightedAdvertisementId, async () => {
           style="max-width: 200px"
           @update:model-value="loadAds"
         />
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-plus"
-          @click="router.push('/exchange/advertisements/create')"
-        >
-          Создать
-        </v-btn>
+        <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/exchange/advertisements/create')"> Создать </v-btn>
       </div>
     </div>
 
     <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
-      Для активного объявления можно вручную создать mock-сделку. Если ничего не нажимать, новая сделка тоже появится автоматически по polling.
+      Для активного объявления можно вручную создать mock-сделку. Если ничего не нажимать, новая сделка тоже появится автоматически по
+      polling.
     </v-alert>
 
     <v-row v-if="ads.loading" justify="center" class="mt-8">
@@ -159,12 +154,7 @@ watch(highlightedAdvertisementId, async () => {
           <tr v-if="0 === ads.advertisements.length">
             <td colspan="8" class="text-center text-lightText pa-6">
               Нет объявлений.
-              <v-btn
-                variant="text"
-                color="primary"
-                size="small"
-                @click="router.push('/exchange/advertisements/create')"
-              >
+              <v-btn variant="text" color="primary" size="small" @click="router.push('/exchange/advertisements/create')">
                 Создать первое
               </v-btn>
             </td>
@@ -246,9 +236,7 @@ watch(highlightedAdvertisementId, async () => {
     <v-dialog v-model="deleteDialog" max-width="400">
       <v-card>
         <v-card-title>Удалить объявление?</v-card-title>
-        <v-card-text>
-          Объявление будет деактивировано и отменено на Bybit. Это действие нельзя отменить.
-        </v-card-text>
+        <v-card-text> Объявление будет деактивировано и отменено на Bybit. Это действие нельзя отменить. </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="deleteDialog = false">Отмена</v-btn>

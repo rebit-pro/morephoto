@@ -104,7 +104,7 @@ function normalizeOrderBookEntry(item: OrderBookEntryDto): OrderBookEntry {
     completedTrades: item.completedTrades,
     completionRate: item.completionRate,
     paymentMethods: item.paymentMethods,
-    paymentTimeLimit: item.paymentTimeLimit ?? null,
+    paymentTimeLimit: item.paymentTimeLimit ?? null
   };
 }
 
@@ -141,7 +141,7 @@ function normalizeChatMessage(item: ChatMessageDto): ChatMessage {
     contentType: item.contentType,
     fileName: item.fileName,
     fileUrl,
-    createdAt: item.createdAt,
+    createdAt: item.createdAt
   };
 }
 
@@ -303,7 +303,7 @@ export const exchangeApi = {
         id: item.id,
         token: item.tokenCode,
         fiat: item.fiatCode,
-        label: `${item.tokenCode} / ${item.fiatCode}`,
+        label: `${item.tokenCode} / ${item.fiatCode}`
       }));
     });
   },
@@ -315,7 +315,7 @@ export const exchangeApi = {
         id: String(item.id),
         code: item.code,
         name: item.name,
-        sort: item.sort,
+        sort: item.sort
       }));
     });
   },
@@ -326,7 +326,7 @@ export const exchangeApi = {
 
       return {
         buy: (data.buy ?? []).map(normalizeOrderBookEntry),
-        sell: (data.sell ?? []).map(normalizeOrderBookEntry),
+        sell: (data.sell ?? []).map(normalizeOrderBookEntry)
       };
     });
   },
@@ -334,9 +334,7 @@ export const exchangeApi = {
   // — Advertisements —
 
   getAdvertisements(status?: AdvertisementStatus): Promise<Advertisement[]> {
-    return api
-      .get('/api/v1/exchange/advertisements', { params: status ? { status } : {} })
-      .then((r) => r.data?.items ?? r.data ?? []);
+    return api.get('/api/v1/exchange/advertisements', { params: status ? { status } : {} }).then((r) => r.data?.items ?? r.data ?? []);
   },
 
   createAdvertisement(payload: CreateAdvertisementPayload): Promise<Advertisement> {
@@ -354,9 +352,7 @@ export const exchangeApi = {
   // — Trades —
 
   getTrades(status?: TradeStatus): Promise<Trade[]> {
-    return api
-      .get('/api/v1/exchange/trades', { params: status ? { status } : {} })
-      .then((r) => r.data?.items ?? r.data ?? []);
+    return api.get('/api/v1/exchange/trades', { params: status ? { status } : {} }).then((r) => r.data?.items ?? r.data ?? []);
   },
 
   getTradeDetail(id: number): Promise<Trade> {
@@ -374,12 +370,10 @@ export const exchangeApi = {
   // — Trade Chat —
 
   getChatHistory(tradeId: number): Promise<ChatMessage[]> {
-    return api
-      .get(`/api/v1/exchange/trades/${tradeId}/chat`)
-      .then((r) => {
-        const items: ChatMessageDto[] = r.data?.messages ?? r.data ?? [];
-        return items.map(normalizeChatMessage);
-      });
+    return api.get(`/api/v1/exchange/trades/${tradeId}/chat`).then((r) => {
+      const items: ChatMessageDto[] = r.data?.messages ?? r.data ?? [];
+      return items.map(normalizeChatMessage);
+    });
   },
 
   sendMessage(tradeId: number, payload: SendMessagePayload): Promise<ChatMessage> {
@@ -394,15 +388,17 @@ export const exchangeApi = {
     const uploadedFile = await api
       .post<ShareUploadResponseDto>('/api/v1/share/file/upload/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+          'Content-Type': 'multipart/form-data'
+        }
       })
       .then((r) => r.data);
 
-    return api.post(`/api/v1/exchange/trades/${tradeId}/chat/upload`, {
-      tradeId,
-      fileId: uploadedFile.id,
-    }).then((r) => r.data as TradeChatUploadedFile);
+    return api
+      .post(`/api/v1/exchange/trades/${tradeId}/chat/upload`, {
+        tradeId,
+        fileId: uploadedFile.id
+      })
+      .then((r) => r.data as TradeChatUploadedFile);
   },
 
   // — Chat Scripts —
@@ -421,7 +417,7 @@ export const exchangeApi = {
 
   deleteChatScript(id: number): Promise<void> {
     return api.delete(`/api/v1/exchange/chat-scripts/${id}`);
-  },
+  }
 };
 
 // endregion

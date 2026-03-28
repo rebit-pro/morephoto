@@ -25,7 +25,7 @@ export function initializeMockRuntime(): void {
     },
     createTrade(advertisementId?: number) {
       return generateTradeForActiveAdvertisement(advertisementId);
-    },
+    }
   };
 }
 

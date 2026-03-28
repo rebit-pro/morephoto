@@ -21,10 +21,7 @@ const emailRules = ref([
   (v: string) => /.+@.+\..+/.test(v.trim()) || 'Некорректный email'
 ]);
 
-const passwordRules = ref([
-  (v: string) => '' !== v || 'Введите пароль',
-  (v: string) => v.length >= 6 || 'Минимум 6 символов'
-]);
+const passwordRules = ref([(v: string) => '' !== v || 'Введите пароль', (v: string) => v.length >= 6 || 'Минимум 6 символов']);
 
 const canResendCode = computed(() => 0 === resendSecondsLeft.value);
 
@@ -170,18 +167,10 @@ onUnmounted(() => {
     />
 
     <div v-if="'confirm-code' === step" class="mb-2">
-      <v-otp-input
-        v-model="code"
-        :length="6"
-        variant="outlined"
-        density="comfortable"
-        class="mb-2"
-      />
+      <v-otp-input v-model="code" :length="6" variant="outlined" density="comfortable" class="mb-2" />
       <div class="text-caption text-lightText">
         Введите 6-значный код из письма.
-        <span v-if="null !== codeExpiresAt">
-          Код действует до {{ new Date(codeExpiresAt).toLocaleString('ru-RU') }}.
-        </span>
+        <span v-if="null !== codeExpiresAt"> Код действует до {{ new Date(codeExpiresAt).toLocaleString('ru-RU') }}. </span>
       </div>
     </div>
 
@@ -189,26 +178,11 @@ onUnmounted(() => {
       {{ 'request-code' === step ? 'Получить код' : 'Подтвердить регистрацию' }}
     </v-btn>
 
-    <v-btn
-      v-if="'confirm-code' === step"
-      :disabled="!canResendCode"
-      block
-      class="mt-3"
-      variant="text"
-      color="primary"
-      @click="resendCode"
-    >
+    <v-btn v-if="'confirm-code' === step" :disabled="!canResendCode" block class="mt-3" variant="text" color="primary" @click="resendCode">
       {{ canResendCode ? 'Отправить код повторно' : `Повторная отправка через ${resendSecondsLeft} сек.` }}
     </v-btn>
 
-    <v-btn
-      v-if="'confirm-code' === step"
-      block
-      class="mt-1"
-      variant="text"
-      color="secondary"
-      @click="goBackToRequestCode"
-    >
+    <v-btn v-if="'confirm-code' === step" block class="mt-1" variant="text" color="secondary" @click="goBackToRequestCode">
       Изменить e-mail или пароль
     </v-btn>
 
@@ -224,9 +198,7 @@ onUnmounted(() => {
   <div class="mt-5 text-center">
     <v-divider class="mb-3" />
     <span class="text-lightText">Уже есть аккаунт?</span>
-    <router-link to="/login" class="text-primary text-decoration-none ml-1 font-weight-medium">
-      Войти
-    </router-link>
+    <router-link to="/login" class="text-primary text-decoration-none ml-1 font-weight-medium"> Войти </router-link>
   </div>
 </template>
 

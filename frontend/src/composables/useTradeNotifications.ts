@@ -41,7 +41,7 @@ function showBrowserNotification(title: string, body: string): void {
   new Notification(title, {
     body,
     icon: '/favicon.ico',
-    tag: 'rebit-new-trade',
+    tag: 'rebit-new-trade'
   });
 }
 
@@ -56,7 +56,10 @@ export function useTradeNotifications(getTrades: () => Trade[]): void {
   requestNotificationPermission();
 
   watch(
-    () => getTrades().map((trade) => trade.id + (true === trade.isNew ? ':new' : '')).join(','),
+    () =>
+      getTrades()
+        .map((trade) => trade.id + (true === trade.isNew ? ':new' : ''))
+        .join(','),
     () => {
       const currentTrades = getTrades();
 
@@ -69,9 +72,7 @@ export function useTradeNotifications(getTrades: () => Trade[]): void {
         return;
       }
 
-      const newTrades = currentTrades.filter(
-        (trade) => true === trade.isNew && !knownTradeIds.value.has(trade.id),
-      );
+      const newTrades = currentTrades.filter((trade) => true === trade.isNew && !knownTradeIds.value.has(trade.id));
 
       for (const trade of currentTrades) {
         knownTradeIds.value.add(trade.id);
@@ -81,6 +82,11 @@ export function useTradeNotifications(getTrades: () => Trade[]): void {
         playSound();
 
         const trade = newTrades[0];
+
+        if (undefined === trade) {
+          return;
+        }
+
         const side = 'buy' === trade.side ? 'Покупка' : 'Продажа';
         const body =
           1 === newTrades.length
@@ -89,6 +95,6 @@ export function useTradeNotifications(getTrades: () => Trade[]): void {
 
         showBrowserNotification(NOTIFICATION_TITLE, body);
       }
-    },
+    }
   );
 }

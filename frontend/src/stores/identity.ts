@@ -13,7 +13,7 @@ function createEmptyConnectionStatus(): ApiConnectionStatus {
     userId: null,
     maskedApiKey: null,
     createdAt: null,
-    verifiedAt: null,
+    verifiedAt: null
   };
 }
 

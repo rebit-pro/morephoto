@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { HistoryIcon, PlugConnectedIcon, WalletIcon } from 'vue-tabler-icons';
 import { useAuthStore } from '@/stores/auth';
 import { useWalletStore } from '@/stores/wallet';
 import { useIdentityStore } from '@/stores/identity';
 import { useExchangeStore } from '@/stores/exchange';
 import type { OrderBookEntry } from '@/api/exchange';
+import AppEmptyState from '@/components/shared/AppEmptyState.vue';
 
 const auth = useAuthStore();
 const wallet = useWalletStore();
@@ -48,22 +50,28 @@ const sortedBalances = computed(() => {
   return [...wallet.balances].sort((left, right) => parseAmount(right.total) - parseAmount(left.total));
 });
 const bestBuyOrder = computed(() => {
-  return exchange.buyOrders.reduce((best, current) => {
-    if (null === best || parseAmount(current.price) > parseAmount(best.price)) {
-      return current;
-    }
+  return exchange.buyOrders.reduce(
+    (best, current) => {
+      if (null === best || parseAmount(current.price) > parseAmount(best.price)) {
+        return current;
+      }
 
-    return best;
-  }, null as OrderBookEntry | null);
+      return best;
+    },
+    null as OrderBookEntry | null
+  );
 });
 const bestSellOrder = computed(() => {
-  return exchange.sellOrders.reduce((best, current) => {
-    if (null === best || parseAmount(current.price) < parseAmount(best.price)) {
-      return current;
-    }
+  return exchange.sellOrders.reduce(
+    (best, current) => {
+      if (null === best || parseAmount(current.price) < parseAmount(best.price)) {
+        return current;
+      }
 
-    return best;
-  }, null as OrderBookEntry | null);
+      return best;
+    },
+    null as OrderBookEntry | null
+  );
 });
 const spread = computed(() => {
   if (null === bestBuyOrder.value || null === bestSellOrder.value) {
@@ -191,9 +199,7 @@ onMounted(async () => {
               <v-chip v-if="hasConnectionMode" color="primary" variant="tonal" size="small">
                 {{ identity.modeLabel }}
               </v-chip>
-              <v-chip color="secondary" variant="tonal" size="small">
-                Пара: {{ exchange.selectedPair.label }}
-              </v-chip>
+              <v-chip color="secondary" variant="tonal" size="small"> Пара: {{ exchange.selectedPair.label }} </v-chip>
             </div>
 
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">Добро пожаловать, {{ userDisplayName }}</h1>
@@ -204,9 +210,7 @@ onMounted(async () => {
 
           <v-col cols="12" md="4">
             <div class="d-flex flex-column ga-3 dashboard-hero__actions">
-              <v-btn color="primary" size="large" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook">
-                Открыть P2P стакан
-              </v-btn>
+              <v-btn color="primary" size="large" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook"> Открыть P2P стакан </v-btn>
               <v-btn variant="outlined" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection">
                 Настроить Bybit API
               </v-btn>
@@ -339,11 +343,25 @@ onMounted(async () => {
                 </v-col>
               </v-row>
 
-              <div v-else class="text-center py-8 text-medium-emphasis">
-                <v-icon size="40" class="mb-3">mdi-wallet-outline</v-icon>
-                <div class="text-h6 mb-1">Балансы пока пусты</div>
-                <div class="text-body-2">Подключите Bybit API, чтобы видеть текущее состояние средств</div>
-              </div>
+              <AppEmptyState
+                v-else
+                :icon="WalletIcon"
+                tone="primary"
+                title="Балансы пока пусты"
+                description="Подключите Bybit API, чтобы видеть текущее состояние средств и синхронизацию кошелька прямо на дашборде."
+                compact
+              >
+                <template #actions>
+                  <div class="d-flex justify-center">
+                    <v-btn color="primary" variant="outlined" to="/profile/api-connection">
+                      <template #prepend>
+                        <PlugConnectedIcon :size="18" stroke-width="1.75" />
+                      </template>
+                      Подключить Bybit API
+                    </v-btn>
+                  </div>
+                </template>
+              </AppEmptyState>
             </v-card-text>
           </v-card>
         </v-col>
@@ -400,12 +418,7 @@ onMounted(async () => {
                   text="Подключите активный Bybit API, чтобы видеть лучшие предложения рынка на дашборде."
                 />
 
-                <v-alert
-                  v-else
-                  type="info"
-                  variant="tonal"
-                  text="Для выбранной пары пока нет данных по лучшим предложениям."
-                />
+                <v-alert v-else type="info" variant="tonal" text="Для выбранной пары пока нет данных по лучшим предложениям." />
               </v-card-text>
             </v-card>
 
@@ -502,11 +515,14 @@ onMounted(async () => {
                 </v-list-item>
               </v-list>
 
-              <div v-else class="text-center py-10 px-6 text-medium-emphasis">
-                <v-icon size="44" class="mb-3">mdi-history</v-icon>
-                <div class="text-h6 mb-1">Сделок пока не было</div>
-                <div class="text-body-2">Когда появятся первые транзакции, они сразу отобразятся в этом блоке.</div>
-              </div>
+              <AppEmptyState
+                v-else
+                :icon="HistoryIcon"
+                tone="info"
+                title="Сделок пока не было"
+                description="Когда появятся первые транзакции, они сразу отобразятся в этом блоке и будут доступны в полной истории операций."
+                compact
+              />
             </v-card-text>
           </v-card>
         </v-col>

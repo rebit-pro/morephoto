@@ -1,5 +1,6 @@
 import { createVuetify } from 'vuetify';
-import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
+import '@mdi/font/css/materialdesignicons.css';
+import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { icons } from './mdi-icon';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
@@ -26,7 +27,7 @@ export const i18n = createI18n({
 
 export default createVuetify({
   locale: {
-    adapter: createVueI18nAdapter({ i18n, useI18n })
+    adapter: createVueI18nAdapter({ i18n, useI18n } as never)
   },
   components,
   directives,

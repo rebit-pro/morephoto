@@ -99,28 +99,17 @@ const sortedOrders = computed(() => {
             </v-avatar>
             <div>
               <div class="text-body-2 font-weight-medium">{{ order.username }}</div>
-              <div class="text-caption text-lightText">
-                {{ order.completedTrades }} сделок · {{ order.completionRate }}%
-              </div>
+              <div class="text-caption text-lightText">{{ order.completedTrades }} сделок · {{ order.completionRate }}%</div>
             </div>
           </div>
         </td>
         <td class="text-right">
-          <span :class="'buy' === side ? 'text-success' : 'text-error'" class="font-weight-bold">
-            {{ fmt(order.price) }} ₽
-          </span>
+          <span :class="'buy' === side ? 'text-success' : 'text-error'" class="font-weight-bold"> {{ fmt(order.price) }} ₽ </span>
         </td>
         <td class="text-right text-body-2">{{ fmt(order.amount) }}</td>
         <td class="text-right text-body-2">{{ fmt(order.minLimit) }} – {{ fmt(order.maxLimit) }} ₽</td>
         <td>
-          <v-chip
-            v-for="method in order.paymentMethods"
-            :key="method"
-            size="x-small"
-            variant="tonal"
-            color="primary"
-            class="mr-1"
-          >
+          <v-chip v-for="method in order.paymentMethods" :key="method" size="x-small" variant="tonal" color="primary" class="mr-1">
             {{ method }}
           </v-chip>
         </td>

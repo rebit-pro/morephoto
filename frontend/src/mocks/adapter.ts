@@ -32,7 +32,7 @@ import {
   toggleAdvertisementWithMock,
   updateChatScriptWithMock,
   verifyApiWithMock,
-  confirmRegistrationWithMock,
+  confirmRegistrationWithMock
 } from './database';
 
 class MockHttpError extends Error {
@@ -82,9 +82,10 @@ function normalizePath(config: AxiosRequestConfig): string {
 }
 
 function normalizeToken(config: AxiosRequestConfig): string | null {
-  const authorizationHeader = (config.headers as Record<string, string | undefined> | undefined)?.Authorization
-    ?? (config.headers as Record<string, string | undefined> | undefined)?.authorization
-    ?? null;
+  const authorizationHeader =
+    (config.headers as Record<string, string | undefined> | undefined)?.Authorization ??
+    (config.headers as Record<string, string | undefined> | undefined)?.authorization ??
+    null;
 
   if (null === authorizationHeader || !authorizationHeader.startsWith('Bearer ')) {
     return null;
@@ -107,7 +108,7 @@ function normalizeBody<TBody>(config: AxiosRequestConfig): TBody {
 
 function ok<TData>(data: TData): MockEnvelope<TData> {
   return {
-    data,
+    data
   };
 }
 
@@ -211,7 +212,7 @@ async function handleMockRequest(config: AxiosRequestConfig): Promise<MockEnvelo
       size: file.size,
       type: file.type,
       src: await blobToDataUrl(file),
-      contentType: resolveUploadedFileContentType(file.type),
+      contentType: resolveUploadedFileContentType(file.type)
     };
 
     mockUploadedFiles.set(uploadedFile.id, uploadedFile);
@@ -221,7 +222,7 @@ async function handleMockRequest(config: AxiosRequestConfig): Promise<MockEnvelo
       name: uploadedFile.name,
       size: uploadedFile.size,
       type: uploadedFile.type,
-      src: uploadedFile.src,
+      src: uploadedFile.src
     });
   }
 
@@ -353,7 +354,7 @@ async function handleMockRequest(config: AxiosRequestConfig): Promise<MockEnvelo
       fileName: uploadedFile.name,
       fileUrl: uploadedFile.src,
       contentType: uploadedFile.contentType,
-      providerType: null,
+      providerType: null
     });
   }
 
@@ -387,7 +388,7 @@ function buildResponse(config: AxiosRequestConfig, data: MockEnvelope<unknown>, 
     status,
     statusText: 200 === status ? 'OK' : 'ERROR',
     headers: {},
-    config,
+    config
   } as AxiosResponse;
 }
 
@@ -407,11 +408,11 @@ export const mockApiAdapter: AxiosAdapter = async (config) => {
           {
             data: null,
             error: {
-              message: error.message,
-            },
+              message: error.message
+            }
           },
-          error.status,
-        ),
+          error.status
+        )
       });
     }
 
@@ -424,11 +425,11 @@ export const mockApiAdapter: AxiosAdapter = async (config) => {
         {
           data: null,
           error: {
-            message: fallbackMessage,
-          },
+            message: fallbackMessage
+          }
         },
-        500,
-      ),
+        500
+      )
     });
   }
 };

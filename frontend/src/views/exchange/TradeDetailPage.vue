@@ -24,7 +24,7 @@ const statusLabels: Record<string, string> = {
   payment_confirmed: 'Оплата подтверждена',
   completed: 'Завершена',
   cancelled: 'Отменена',
-  disputed: 'Спор',
+  disputed: 'Спор'
 };
 
 const statusColors: Record<string, string> = {
@@ -33,16 +33,14 @@ const statusColors: Record<string, string> = {
   payment_confirmed: 'primary',
   completed: 'success',
   cancelled: 'error',
-  disputed: 'error',
+  disputed: 'error'
 };
 
 function hasTrade(): boolean {
   return null !== trades.currentTrade;
 }
 
-function getTradeValue<TKey extends keyof Trade>(
-  key: TKey,
-): Trade[TKey] | null {
+function getTradeValue<TKey extends keyof Trade>(key: TKey): Trade[TKey] | null {
   if (null === trades.currentTrade) {
     return null;
   }
@@ -115,7 +113,7 @@ async function handleConfirmPayment(): Promise<void> {
   try {
     await trades.confirmPayment(tradeId.value, {
       paymentType: paymentType.value,
-      paymentId: paymentId.value,
+      paymentId: paymentId.value
     });
     confirmPaymentDialog.value = false;
   } catch {
@@ -142,8 +140,8 @@ function openCurrentAdvertisement(): void {
   void router.push({
     path: '/exchange/advertisements',
     query: {
-      highlight: String(advertisementId),
-    },
+      highlight: String(advertisementId)
+    }
   });
 }
 
@@ -192,9 +190,7 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <v-btn variant="text" class="mb-4" prepend-icon="mdi-arrow-left" @click="router.push('/exchange/trades')">
-      К списку сделок
-    </v-btn>
+    <v-btn variant="text" class="mb-4" prepend-icon="mdi-arrow-left" @click="router.push('/exchange/trades')"> К списку сделок </v-btn>
 
     <v-row v-if="trades.loading && !hasTrade()" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
@@ -339,14 +335,7 @@ onUnmounted(() => {
                   Отменить заказ на Bybit
                 </v-btn>
 
-                <v-btn
-                  variant="outlined"
-                  block
-                  prepend-icon="mdi-open-in-new"
-                  @click="openBybitTradePage"
-                >
-                  Перейти на Bybit
-                </v-btn>
+                <v-btn variant="outlined" block prepend-icon="mdi-open-in-new" @click="openBybitTradePage"> Перейти на Bybit </v-btn>
 
                 <v-alert v-if="canCancelOrder" type="info" variant="tonal" density="compact">
                   Программной отмены ордера через Bybit API нет, поэтому кнопка переводит в интерфейс Bybit.
@@ -369,25 +358,13 @@ onUnmounted(() => {
         <v-card-title>Подтвердить оплату</v-card-title>
         <v-card-text>
           <p class="mb-4">Убедитесь, что вы совершили перевод перед подтверждением.</p>
-          <v-text-field
-            v-model="paymentType"
-            label="Тип оплаты"
-            variant="outlined"
-            density="compact"
-          />
-          <v-text-field
-            v-model="paymentId"
-            label="ID платежа (опционально)"
-            variant="outlined"
-            density="compact"
-          />
+          <v-text-field v-model="paymentType" label="Тип оплаты" variant="outlined" density="compact" />
+          <v-text-field v-model="paymentId" label="ID платежа (опционально)" variant="outlined" density="compact" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="confirmPaymentDialog = false">Отмена</v-btn>
-          <v-btn color="primary" :loading="trades.actionLoading" @click="handleConfirmPayment">
-            Подтвердить
-          </v-btn>
+          <v-btn color="primary" :loading="trades.actionLoading" @click="handleConfirmPayment"> Подтвердить </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -404,9 +381,7 @@ onUnmounted(() => {
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="releaseDialog = false">Отмена</v-btn>
-          <v-btn color="success" :loading="trades.actionLoading" @click="handleRelease">
-            Подтвердить
-          </v-btn>
+          <v-btn color="success" :loading="trades.actionLoading" @click="handleRelease"> Подтвердить </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
