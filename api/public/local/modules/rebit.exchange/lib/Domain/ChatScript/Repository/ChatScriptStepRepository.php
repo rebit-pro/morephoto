@@ -17,6 +17,20 @@ final class ChatScriptStepRepository
     /**
      * @throws RepositoryException
      */
+    public function findById(int $id): ?ChatScriptStep
+    {
+        return $this->query(
+            fn(): ?ChatScriptStep => ChatScriptStepTable::query()
+                ->setSelect(['*'])
+                ->where('ID', $id)
+                ->exec()
+                ->fetchObject(),
+        );
+    }
+
+    /**
+     * @throws RepositoryException
+     */
     public function findByScriptId(int $scriptId): ChatScriptStepCollection
     {
         return $this->query(

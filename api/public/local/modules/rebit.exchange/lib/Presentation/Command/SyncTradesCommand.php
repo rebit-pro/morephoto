@@ -12,9 +12,6 @@ use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
-use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
-use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
-use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Presentation\Command\Attribute\WithLock;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Rebit\Share\Shared\Exception\HttpException;
@@ -38,7 +35,6 @@ final class SyncTradesCommand extends RebitCommand
         private readonly TradeRepository $tradeRepository,
         private readonly BybitTradeGatewayInterface $bybitGateway,
         private readonly BybitConnectionResolverInterface $connectionResolver,
-        private readonly NotificationPublisherInterface $notificationPublisher,
         private readonly MessagePublisherInterface $tradeEventPublisher,
         private readonly LoggerInterface $logger,
     ) {
@@ -109,7 +105,6 @@ final class SyncTradesCommand extends RebitCommand
                 $bybitStatus = (int)($item['status'] ?? 0);
                 $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
                 $fiatAmount = (float)($item['amount'] ?? 0);
-                $rawFiatAmount = (string)($item['amount'] ?? '0');
                 $counterpartyName = (string)($item['targetNickName'] ?? '');
 
                 $trade = $this->tradeRepository->createFromBybit([
@@ -136,32 +131,6 @@ final class SyncTradesCommand extends RebitCommand
                 } catch (\Throwable $exception) {
                     $this->logger->error(
                         'Не удалось опубликовать событие новой сделки',
-                        [
-                            'userId' => $userId,
-                            'tradeId' => $trade->getId(),
-                            'bybitOrderId' => $bybitOrderId,
-                            'error' => $exception->getMessage(),
-                            'exceptionClass' => $exception::class,
-                        ],
-                    );
-                }
-
-                try {
-                    $this->notificationPublisher->publish(
-                        new SendNotificationDto(
-                            type: NotificationTypeEnum::TRADE_DISCOVERED->value,
-                            userId: $userId,
-                            payload: [
-                                'tradeId' => (string)$trade->getId(),
-                                'side' => $side,
-                                'fiatAmount' => $rawFiatAmount,
-                                'counterpartyName' => $counterpartyName,
-                            ],
-                        ),
-                    );
-                } catch (\Throwable $exception) {
-                    $this->logger->error(
-                        'Не удалось опубликовать уведомление tradeDiscovered',
                         [
                             'userId' => $userId,
                             'tradeId' => $trade->getId(),

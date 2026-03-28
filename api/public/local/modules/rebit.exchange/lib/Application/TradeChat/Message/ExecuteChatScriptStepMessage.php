@@ -15,6 +15,7 @@ final readonly class ExecuteChatScriptStepMessage extends AbstractMessage
         public int $executionId,
         public int $tradeId,
         public int $stepId,
+        public int $delaySeconds = 0,
     ) {
         parent::__construct();
     }

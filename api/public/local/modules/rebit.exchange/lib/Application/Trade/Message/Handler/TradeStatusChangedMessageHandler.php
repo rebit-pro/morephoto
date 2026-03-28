@@ -6,24 +6,128 @@ namespace Rebit\Exchange\Application\Trade\Message\Handler;
 
 use Psr\Log\LoggerInterface;
 use Rebit\Exchange\Application\Trade\Message\TradeStatusChangedMessage;
+use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
+use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
+use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
+use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
+use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
+use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
+use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
 
 /**
  * Handler очереди tradeEvent: обработка смены статуса сделки.
- *
- * TODO: Добавить бизнес-логику (уведомления, обновление баланса).
  */
 final readonly class TradeStatusChangedMessageHandler
 {
     public function __construct(
+        private TradeRepository $tradeRepository,
+        private ChatScriptExecutionRepository $chatScriptExecutionRepository,
+        private MessagePublisherInterface $balanceSyncPublisher,
+        private NotificationPublisherInterface $notificationPublisher,
         private LoggerInterface $logger,
     ) {}
 
+    /**
+     * @throws RepositoryException
+     */
     public function __invoke(TradeStatusChangedMessage $message): void
     {
+        $trade = $this->tradeRepository->findById($message->tradeId);
+        if (null === $trade) {
+            $this->logger->warning('TradeStatusChangedMessage пропущено: сделка не найдена', [
+                'tradeId' => $message->tradeId,
+                'oldStatus' => $message->oldStatus,
+                'newStatus' => $message->newStatus,
+            ]);
+
+            return;
+        }
+
+        $newStatus = TradeStatusEnum::tryFrom($message->newStatus);
+        if (null !== $newStatus && false === $newStatus->isChatActive()) {
+            $this->chatScriptExecutionRepository->cancelByTradeId($trade->getId());
+        }
+
+        if (TradeStatusEnum::Completed === $newStatus) {
+            $this->publishBalanceSync($trade->getUfBuyerUserId(), $trade->getId(), 'buyer');
+
+            if (0 < $trade->getUfSellerUserId()) {
+                $this->publishBalanceSync($trade->getUfSellerUserId(), $trade->getId(), 'seller');
+            }
+        }
+
+        $this->publishStatusChangedNotification($trade, $message->oldStatus, $message->newStatus);
+
         $this->logger->info('TradeStatusChangedMessage получено', [
             'tradeId' => $message->tradeId,
             'oldStatus' => $message->oldStatus,
             'newStatus' => $message->newStatus,
         ]);
+    }
+
+    private function publishBalanceSync(int $userId, int $tradeId, string $role): void
+    {
+        if (0 >= $userId) {
+            return;
+        }
+
+        try {
+            $this->balanceSyncPublisher->dispatch(
+                new SyncBalanceMessage(
+                    userId: $userId,
+                ),
+            );
+        } catch (\Throwable $exception) {
+            $this->logger->error('Не удалось поставить синхронизацию баланса по событию сделки', [
+                'tradeId' => $tradeId,
+                'userId' => $userId,
+                'role' => $role,
+                'error' => $exception->getMessage(),
+                'exceptionClass' => $exception::class,
+            ]);
+
+            return;
+        }
+
+        $this->logger->info('Поставлена синхронизация баланса по событию сделки', [
+            'tradeId' => $tradeId,
+            'userId' => $userId,
+            'role' => $role,
+        ]);
+    }
+
+    private function publishStatusChangedNotification(
+        \Rebit\Exchange\Domain\Trade\Entity\Trade $trade,
+        string $oldStatus,
+        string $newStatus,
+    ): void {
+        if (0 >= $trade->getUfBuyerUserId()) {
+            return;
+        }
+
+        try {
+            $this->notificationPublisher->publish(
+                new SendNotificationDto(
+                    type: NotificationTypeEnum::TRADE_STATUS_CHANGED->value,
+                    userId: $trade->getUfBuyerUserId(),
+                    payload: [
+                        'tradeId' => (string)$trade->getId(),
+                        'oldStatus' => $oldStatus,
+                        'newStatus' => $newStatus,
+                        'counterpartyName' => $trade->getUfCounterpartyName(),
+                    ],
+                ),
+            );
+        } catch (\Throwable $exception) {
+            $this->logger->error('Не удалось отправить уведомление о смене статуса сделки', [
+                'tradeId' => $trade->getId(),
+                'oldStatus' => $oldStatus,
+                'newStatus' => $newStatus,
+                'error' => $exception->getMessage(),
+                'exceptionClass' => $exception::class,
+            ]);
+        }
     }
 }

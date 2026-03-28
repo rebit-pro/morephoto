@@ -40,6 +40,7 @@ return [
     SyncBalanceMessageHandler::class => [
         'className' => SyncBalanceMessageHandler::class,
         'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(SyncBalancesUseCase::class),
             Log::channel(LogChannelEnum::wallet),
         ],
     ],

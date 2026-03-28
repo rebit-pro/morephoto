@@ -58,6 +58,20 @@ final class PaymentMethodRepository
     }
 
     /**
+     * @throws RepositoryException
+     */
+    public function findByBybitId(int $bybitId): ?PaymentMethod
+    {
+        return $this->query(
+            fn(): ?PaymentMethod => PaymentMethodTable::query()
+                ->setSelect(['*'])
+                ->where('UF_BYBIT_ID', $bybitId)
+                ->exec()
+                ->fetchObject(),
+        );
+    }
+
+    /**
      * Возвращает маппинг Bybit-ID → UF_CODE для указанных Bybit-идентификаторов.
      *
      * Используется в GetOrderBookUseCase для замены числовых Bybit payment IDs

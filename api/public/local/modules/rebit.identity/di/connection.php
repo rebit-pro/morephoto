@@ -46,6 +46,7 @@ return [
     SyncIdentityMessageHandler::class => [
         'className' => SyncIdentityMessageHandler::class,
         'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(VerifyApiUseCase::class),
             Log::channel(LogChannelEnum::identity),
         ],
     ],
