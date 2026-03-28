@@ -7,6 +7,7 @@ namespace Rebit\Notification\Infrastructure\Channel;
 use Rebit\Notification\Application\Notification\Port\NotificationChannelInterface;
 use Rebit\Notification\Domain\Notification\Enum\NotificationTypeEnum;
 use Rebit\Share\Shared\Exception\HttpException;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 /**
  * Канал email-уведомлений через Bitrix mail events.
@@ -32,6 +33,7 @@ final readonly class EmailNotificationChannel implements NotificationChannelInte
     /**
      * @param array<string, mixed> $payload
      *
+     * @throws UnrecoverableMessageHandlingException
      * @throws HttpException
      */
     public function send(NotificationTypeEnum $type, int $userId, array $payload): void
@@ -45,7 +47,9 @@ final readonly class EmailNotificationChannel implements NotificationChannelInte
         $email = (string)($payload['email'] ?? '');
 
         if ('' === $email) {
-            throw new HttpException('Email получателя не указан для уведомления ' . $type->value, 422);
+            throw new UnrecoverableMessageHandlingException(
+                'Email получателя не указан для уведомления ' . $type->value,
+            );
         }
 
         $fields = $this->buildFields($type, $email, $payload);

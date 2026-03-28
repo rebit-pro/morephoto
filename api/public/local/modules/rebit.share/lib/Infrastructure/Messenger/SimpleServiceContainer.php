@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Share\Infrastructure\Messenger;
 
 use Psr\Container\ContainerInterface;
+use Rebit\Share\Infrastructure\Messenger\Exception\ServiceNotFoundException;
 
 /**
  * Простейший PSR-11 контейнер для локаторов Symfony Messenger.
@@ -23,7 +24,7 @@ final readonly class SimpleServiceContainer implements ContainerInterface
     public function get(string $id): object
     {
         if (!$this->has($id)) {
-            throw new \RuntimeException(sprintf('Сервис "%s" не найден', $id));
+            throw ServiceNotFoundException::forId($id);
         }
 
         return $this->services[$id];

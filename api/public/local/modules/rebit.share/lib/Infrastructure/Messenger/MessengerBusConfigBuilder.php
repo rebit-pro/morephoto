@@ -22,10 +22,9 @@ final class MessengerBusConfigBuilder
         $transports = [];
 
         foreach ($routes as $route) {
-            $handlers[$route->messageClass] = [
-                static fn(object $message): mixed => $locator->get($route->handlerClass)($message),
-            ];
-            $routing[$route->messageClass] = [$route->queue->value];
+            $handlers[$route->messageClass][]
+                = static fn(object $message): mixed => $locator->get($route->handlerClass)($message);
+            $routing[$route->messageClass][] = $route->queue->value;
 
             if (!isset($transports[$route->queue->value])) {
                 /** @var TransportInterface $transport */

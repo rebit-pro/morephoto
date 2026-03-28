@@ -68,6 +68,7 @@ return [
             ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
             ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
             ServiceLocator::getInstance()->get(NotificationPublisherInterface::class),
+            Log::getLogger(LogChannelEnum::exchange),
         ],
     ],
     SyncTradeHistoryUseCase::class => [

@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Rebit\Notification\Domain\Notification\Enum\NotificationTypeEnum;
 use Rebit\Notification\Infrastructure\Channel\EmailNotificationChannel;
 use Rebit\Share\Shared\Exception\HttpException;
+use Symfony\Component\Messenger\Exception\UnrecoverableMessageHandlingException;
 
 /**
  * @internal
@@ -64,8 +65,7 @@ final class EmailNotificationChannelTest extends TestCase
     {
         $channel = new EmailNotificationChannel('s1');
 
-        $this->expectException(HttpException::class);
-        $this->expectExceptionCode(422);
+        $this->expectException(UnrecoverableMessageHandlingException::class);
 
         $channel->send(
             NotificationTypeEnum::TRADE_DISCOVERED,

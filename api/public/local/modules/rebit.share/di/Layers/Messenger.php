@@ -17,7 +17,18 @@ return [
     AmqpConnectionFactory::class => [
         'className' => AmqpConnectionFactory::class,
         'constructorParams' => static fn(): array => [
-            (string)getenv('MESSENGER_TRANSPORT_DSN'),
+            (static function(): string {
+                $dsn = getenv('MESSENGER_TRANSPORT_DSN');
+
+                if (false === $dsn || '' === $dsn) {
+                    throw new RuntimeException(
+                        'Переменная окружения MESSENGER_TRANSPORT_DSN не задана. '
+                        . 'Укажите корректный AMQP DSN в .env или docker-compose.',
+                    );
+                }
+
+                return $dsn;
+            })(),
         ],
     ],
     ConsumerRunnerInterface::class => [
