@@ -22,6 +22,13 @@ final readonly class AmqpConnectionFactory
 
     public function create(MessengerQueueEnum $queue): TransportInterface
     {
+        if ('' === $this->dsn) {
+            throw new \RuntimeException(
+                'MESSENGER_TRANSPORT_DSN не задан или пуст. '
+                . 'Укажите корректный AMQP DSN в .env или docker-compose.',
+            );
+        }
+
         $queueName = $queue->value;
 
         $amqpConfig = [

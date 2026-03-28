@@ -25,6 +25,14 @@ final readonly class MessengerMessagePublisher implements MessagePublisherInterf
             }
         }
 
-        $this->bus->dispatch($message);
+        try {
+            $this->bus->dispatch($message);
+        } catch (\Throwable $exception) {
+            if (0 < $deduplicateTime) {
+                $this->dedupCache->release($dedupKey);
+            }
+
+            throw $exception;
+        }
     }
 }

@@ -80,6 +80,8 @@ services:
             target: rebit_geetest_captcha_key
           - source: rebit_smtp_password
             target: rebit_smtp_password
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -124,6 +126,8 @@ services:
             target: rebit_geetest_captcha_key
           - source: rebit_smtp_password
             target: rebit_smtp_password
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -156,6 +160,8 @@ services:
             target: rebit_encryption_key
           - source: rebit_smtp_password
             target: rebit_smtp_password
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix

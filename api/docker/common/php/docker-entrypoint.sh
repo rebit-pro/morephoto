@@ -13,6 +13,16 @@ load_runtime_env() {
         REBIT_SMTP_PASSWORD="$(tr -d '\r' < /run/secrets/rebit_smtp_password)"
         export REBIT_SMTP_PASSWORD
     fi
+
+    # Подставляем пароль RabbitMQ из secret в MESSENGER_TRANSPORT_DSN.
+    # DSN в .env содержит плейсхолдер __RABBITMQ_PASSWORD__, который заменяется на реальный пароль.
+    # Если secret отсутствует — DSN остаётся как есть (dev-окружение).
+    if [ -f /run/secrets/rebit_rabbitmq_password ] && [ -n "${MESSENGER_TRANSPORT_DSN:-}" ]; then
+        RABBITMQ_SECRET_PASSWORD="$(tr -d '\r' < /run/secrets/rebit_rabbitmq_password)"
+        MESSENGER_TRANSPORT_DSN="$(echo "$MESSENGER_TRANSPORT_DSN" | sed "s/__RABBITMQ_PASSWORD__/${RABBITMQ_SECRET_PASSWORD}/")"
+        export MESSENGER_TRANSPORT_DSN
+        unset RABBITMQ_SECRET_PASSWORD
+    fi
 }
 
 configure_msmtp() {

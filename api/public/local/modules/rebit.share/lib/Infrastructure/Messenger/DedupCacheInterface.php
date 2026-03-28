@@ -18,4 +18,9 @@ interface DedupCacheInterface
      * Возвращает true, если резервирование прошло успешно и сообщение можно отправлять.
      */
     public function claim(string $key, int $ttl): bool;
+
+    /**
+     * Снимает резервирование ключа (rollback при ошибке dispatch).
+     */
+    public function release(string $key): void;
 }
