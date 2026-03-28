@@ -44,7 +44,7 @@ final readonly class SyncChatMessagesUseCase
         $importedCount = 0;
 
         foreach ($messages as $msg) {
-            $bybitMsgId = (string)($msg['id'] ?? '');
+            $bybitMsgId = $msg['id'];
 
             if ('' === $bybitMsgId) {
                 continue;
@@ -54,19 +54,19 @@ final readonly class SyncChatMessagesUseCase
                 continue;
             }
 
-            $contentType = ContentTypeEnum::tryFrom((string)($msg['contentType'] ?? 'str')) ?? ContentTypeEnum::Str;
+            $contentType = ContentTypeEnum::tryFrom($msg['contentType']) ?? ContentTypeEnum::Str;
 
             $this->messageRepository->create(
                 tradeId: $trade->getId(),
                 userId: 0,
-                message: (string)($msg['message'] ?? ''),
+                message: $msg['message'],
                 messageType: MessageTypeEnum::User,
                 contentType: $contentType,
                 bybitMsgUuid: $bybitMsgId,
-                fileName: '' !== ($msg['fileName'] ?? '') ? (string)$msg['fileName'] : null,
+                fileName: '' !== $msg['fileName'] ? $msg['fileName'] : null,
             );
 
-            $importedCount++;
+            ++$importedCount;
         }
 
         return $importedCount;

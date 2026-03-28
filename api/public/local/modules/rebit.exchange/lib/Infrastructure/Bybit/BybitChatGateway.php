@@ -134,9 +134,7 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
          *     nickName: string,
          *     createDate: string,
          * }> $messages */
-        $messages = $response->result['messages'] ?? [];
-
-        return $messages;
+        return $response->result['messages'] ?? [];
     }
 
     private function normalizeUploadedFileUrl(string $url, BybitEnvironmentEnum $environment): string

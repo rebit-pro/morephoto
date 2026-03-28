@@ -102,6 +102,94 @@ const lastTransactionDate = computed(() => {
 
   return formatDate(lastTransaction.createdAt);
 });
+const dashboardMetrics = computed(() => [
+  {
+    title: 'Статус Bybit API',
+    value: identity.statusLabel ?? connectionStateText(),
+    description: hasConnectionMode.value ? `Режим: ${identity.modeLabel}` : 'Подключите API для торговли и синхронизации данных',
+    color: connectionStateColor(),
+    icon: identity.hasActiveConnection ? 'mdi-shield-check-outline' : identity.isConnected ? 'mdi-alert-outline' : 'mdi-link-variant-off'
+  },
+  {
+    title: 'Балансы с активами',
+    value: balancesWithFundsCount.value,
+    description: `Всего валют в кабинете: ${wallet.balances.length}`,
+    color: 'primary',
+    icon: 'mdi-wallet-outline'
+  },
+  {
+    title: 'Заблокированные позиции',
+    value: lockedBalancesCount.value,
+    description: 'Показывает, по скольким валютам есть заблокированные средства',
+    color: 'warning',
+    icon: 'mdi-lock-outline'
+  },
+  {
+    title: 'Последняя активность',
+    value: lastTransactionDate.value,
+    description: 'Последняя транзакция или обновление истории операций',
+    color: 'info',
+    icon: 'mdi-history'
+  }
+]);
+const importantNotices = computed(() => {
+  const notices: Array<{
+    key: string;
+    title: string;
+    description: string;
+    color: 'warning' | 'success' | 'info';
+    icon: string;
+    background: string;
+    actionLabel?: string;
+    actionTo?: string;
+  }> = [];
+
+  if (!identity.hasActiveConnection) {
+    notices.push({
+      key: 'connection-required',
+      title: 'Подключение требует действия',
+      description: 'Без активного Bybit API часть функций кабинета и рынок P2P будут недоступны.',
+      color: 'warning',
+      icon: 'mdi-link-variant-off',
+      background: 'rgba(255, 193, 7, 0.08)',
+      actionLabel: 'Подключить API',
+      actionTo: '/profile/api-connection'
+    });
+  } else {
+    notices.push({
+      key: 'connection-active',
+      title: 'API подключён',
+      description: `Можно работать со стаканом и актуальными данными по паре ${exchange.selectedPair.label}.`,
+      color: 'success',
+      icon: 'mdi-shield-check-outline',
+      background: 'rgba(0, 200, 83, 0.07)'
+    });
+  }
+
+  if (0 < lockedBalancesCount.value) {
+    notices.push({
+      key: 'locked-balances',
+      title: 'Есть заблокированные средства',
+      description: `Проверьте активные объявления и сделки: блокировки найдены по ${lockedBalancesCount.value} валютам.`,
+      color: 'info',
+      icon: 'mdi-lock-outline',
+      background: 'rgba(3, 201, 215, 0.07)'
+    });
+  }
+
+  if (0 === latestTransactions.value.length) {
+    notices.push({
+      key: 'transactions-empty',
+      title: 'История пока пустая',
+      description: 'Когда появятся первые операции, они отобразятся в блоке последних транзакций ниже.',
+      color: 'info',
+      icon: 'mdi-history',
+      background: 'rgba(3, 201, 215, 0.07)'
+    });
+  }
+
+  return notices;
+});
 
 function parseAmount(value: string): number {
   const parsedValue = Number.parseFloat(value);
@@ -188,7 +276,7 @@ onMounted(async () => {
 
 <template>
   <div class="dashboard-page">
-    <v-card class="dashboard-hero mb-6" rounded="xl">
+    <v-card class="dashboard-hero mb-6" rounded="lg">
       <v-card-text class="pa-6 pa-md-8">
         <v-row align="center">
           <v-col cols="12" md="8">
@@ -230,64 +318,22 @@ onMounted(async () => {
 
     <template v-else>
       <v-row class="mb-2">
-        <v-col cols="12" sm="6" xl="3">
-          <v-card class="dashboard-card dashboard-metric-card" rounded="xl">
-            <v-card-text class="pa-5">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-body-2 text-medium-emphasis">Статус Bybit API</span>
-                <v-avatar size="42" :color="connectionStateColor()" variant="tonal">
-                  <v-icon>{{ identity.hasActiveConnection ? 'mdi-shield-check-outline' : 'mdi-link-variant-off' }}</v-icon>
+        <v-col v-for="metric in dashboardMetrics" :key="metric.title" cols="12" sm="6" xl="3">
+          <v-card class="dashboard-card dashboard-metric-card" rounded="lg">
+            <v-card-item class="dashboard-card__header dashboard-card__header--compact px-5 py-4">
+              <template #prepend>
+                <v-avatar size="42" :color="metric.color" variant="tonal">
+                  <v-icon>{{ metric.icon }}</v-icon>
                 </v-avatar>
-              </div>
-              <div class="text-h5 font-weight-bold mb-1">{{ identity.statusLabel ?? connectionStateText() }}</div>
-              <div class="text-body-2 text-medium-emphasis">
-                {{ hasConnectionMode ? `Режим: ${identity.modeLabel}` : 'Подключите API для торговли и синхронизации данных' }}
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+              </template>
+              <v-card-title class="text-body-2 font-weight-medium text-medium-emphasis">{{ metric.title }}</v-card-title>
+            </v-card-item>
 
-        <v-col cols="12" sm="6" xl="3">
-          <v-card class="dashboard-card dashboard-metric-card" rounded="xl">
-            <v-card-text class="pa-5">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-body-2 text-medium-emphasis">Балансы с активами</span>
-                <v-avatar size="42" color="primary" variant="tonal">
-                  <v-icon>mdi-wallet-outline</v-icon>
-                </v-avatar>
-              </div>
-              <div class="text-h5 font-weight-bold mb-1">{{ balancesWithFundsCount }}</div>
-              <div class="text-body-2 text-medium-emphasis">Всего валют в кабинете: {{ wallet.balances.length }}</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
+            <v-divider class="dashboard-card__divider" />
 
-        <v-col cols="12" sm="6" xl="3">
-          <v-card class="dashboard-card dashboard-metric-card" rounded="xl">
-            <v-card-text class="pa-5">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-body-2 text-medium-emphasis">Заблокированные позиции</span>
-                <v-avatar size="42" color="warning" variant="tonal">
-                  <v-icon>mdi-lock-outline</v-icon>
-                </v-avatar>
-              </div>
-              <div class="text-h5 font-weight-bold mb-1">{{ lockedBalancesCount }}</div>
-              <div class="text-body-2 text-medium-emphasis">Показывает, по скольким валютам есть заблокированные средства</div>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6" xl="3">
-          <v-card class="dashboard-card dashboard-metric-card" rounded="xl">
-            <v-card-text class="pa-5">
-              <div class="d-flex align-center justify-space-between mb-3">
-                <span class="text-body-2 text-medium-emphasis">Последняя активность</span>
-                <v-avatar size="42" color="info" variant="tonal">
-                  <v-icon>mdi-history</v-icon>
-                </v-avatar>
-              </div>
-              <div class="text-h6 font-weight-bold mb-1">{{ lastTransactionDate }}</div>
-              <div class="text-body-2 text-medium-emphasis">Последняя транзакция или обновление истории операций</div>
+            <v-card-text class="dashboard-card__body pa-5">
+              <div class="text-h6 font-weight-bold mb-1">{{ metric.value }}</div>
+              <div class="text-body-2 text-medium-emphasis">{{ metric.description }}</div>
             </v-card-text>
           </v-card>
         </v-col>
@@ -295,8 +341,8 @@ onMounted(async () => {
 
       <v-row>
         <v-col cols="12" xl="8">
-          <v-card class="dashboard-card h-100" rounded="xl">
-            <v-card-item class="px-5 pt-5 pb-2">
+          <v-card class="dashboard-card h-100" rounded="lg">
+            <v-card-item class="dashboard-card__header px-5 py-4">
               <template #prepend>
                 <v-avatar size="42" color="primary" variant="tonal">
                   <v-icon>mdi-wallet</v-icon>
@@ -309,10 +355,12 @@ onMounted(async () => {
               </template>
             </v-card-item>
 
-            <v-card-text class="pa-5 pt-3">
+            <v-divider class="dashboard-card__divider" />
+
+            <v-card-text class="dashboard-card__body pa-5">
               <v-row v-if="0 < sortedBalances.length">
                 <v-col v-for="balance in sortedBalances" :key="balance.currency" cols="12" md="6">
-                  <v-sheet class="dashboard-mini-card pa-4" rounded="xl">
+                  <v-sheet class="dashboard-mini-card pa-4" rounded="lg">
                     <div class="d-flex align-start justify-space-between ga-3 mb-4">
                       <div class="d-flex align-center ga-3">
                         <v-avatar size="44" color="primary" variant="tonal">
@@ -349,10 +397,11 @@ onMounted(async () => {
                 tone="primary"
                 title="Балансы пока пусты"
                 description="Подключите Bybit API, чтобы видеть текущее состояние средств и синхронизацию кошелька прямо на дашборде."
+                align="left"
                 compact
               >
                 <template #actions>
-                  <div class="d-flex justify-center">
+                  <div class="d-flex justify-start">
                     <v-btn color="primary" variant="outlined" to="/profile/api-connection">
                       <template #prepend>
                         <PlugConnectedIcon :size="18" stroke-width="1.75" />
@@ -368,8 +417,8 @@ onMounted(async () => {
 
         <v-col cols="12" xl="4">
           <div class="d-flex flex-column ga-6 h-100">
-            <v-card class="dashboard-card" rounded="xl">
-              <v-card-item class="px-5 pt-5 pb-2">
+            <v-card class="dashboard-card" rounded="lg">
+              <v-card-item class="dashboard-card__header px-5 py-4">
                 <template #prepend>
                   <v-avatar size="42" color="secondary" variant="tonal">
                     <v-icon>mdi-trending-up</v-icon>
@@ -379,51 +428,108 @@ onMounted(async () => {
                 <v-card-subtitle>Лучшие цены по паре {{ exchange.selectedPair.label }}</v-card-subtitle>
               </v-card-item>
 
-              <v-card-text class="pa-5 pt-3">
+              <v-divider class="dashboard-card__divider" />
+
+              <v-card-text class="dashboard-card__body pa-5">
                 <template v-if="identity.hasActiveConnection && null !== bestBuyOrder && null !== bestSellOrder">
-                  <v-sheet class="dashboard-market-card dashboard-market-card--buy pa-4 mb-4" rounded="xl">
-                    <div class="d-flex align-center justify-space-between mb-2">
-                      <span class="text-body-2 font-weight-medium">Лучшая покупка</span>
-                      <v-chip color="success" variant="tonal" size="small">Buy</v-chip>
-                    </div>
-                    <div class="text-h5 font-weight-bold mb-1">{{ formatAmount(bestBuyOrder.price) }} ₽</div>
-                    <div class="text-body-2 text-medium-emphasis mb-2">{{ bestBuyOrder.username }}</div>
-                    <div class="text-caption text-medium-emphasis">
-                      Лимит: {{ formatAmount(bestBuyOrder.minLimit) }} — {{ formatAmount(bestBuyOrder.maxLimit) }} ₽
+                  <v-sheet class="dashboard-market-card dashboard-market-card--buy pa-4 mb-4" rounded="lg">
+                    <div class="d-flex align-start ga-4">
+                      <v-avatar size="44" color="success" variant="tonal" class="flex-shrink-0">
+                        <v-icon>mdi-arrow-bottom-left</v-icon>
+                      </v-avatar>
+
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-center justify-space-between flex-wrap ga-2 mb-2">
+                          <span class="text-body-2 font-weight-medium">Лучшая покупка</span>
+                          <v-chip color="success" variant="tonal" size="small">Buy</v-chip>
+                        </div>
+                        <div class="text-h5 font-weight-bold mb-1">{{ formatAmount(bestBuyOrder.price) }} ₽</div>
+                        <div class="text-body-2 text-medium-emphasis mb-2">{{ bestBuyOrder.username }}</div>
+                        <div class="text-caption text-medium-emphasis">
+                          Лимит: {{ formatAmount(bestBuyOrder.minLimit) }} — {{ formatAmount(bestBuyOrder.maxLimit) }} ₽
+                        </div>
+                      </div>
                     </div>
                   </v-sheet>
 
-                  <v-sheet class="dashboard-market-card dashboard-market-card--sell pa-4 mb-4" rounded="xl">
-                    <div class="d-flex align-center justify-space-between mb-2">
-                      <span class="text-body-2 font-weight-medium">Лучшая продажа</span>
-                      <v-chip color="error" variant="tonal" size="small">Sell</v-chip>
-                    </div>
-                    <div class="text-h5 font-weight-bold mb-1">{{ formatAmount(bestSellOrder.price) }} ₽</div>
-                    <div class="text-body-2 text-medium-emphasis mb-2">{{ bestSellOrder.username }}</div>
-                    <div class="text-caption text-medium-emphasis">
-                      Лимит: {{ formatAmount(bestSellOrder.minLimit) }} — {{ formatAmount(bestSellOrder.maxLimit) }} ₽
+                  <v-sheet class="dashboard-market-card dashboard-market-card--sell pa-4 mb-4" rounded="lg">
+                    <div class="d-flex align-start ga-4">
+                      <v-avatar size="44" color="error" variant="tonal" class="flex-shrink-0">
+                        <v-icon>mdi-arrow-top-right</v-icon>
+                      </v-avatar>
+
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-center justify-space-between flex-wrap ga-2 mb-2">
+                          <span class="text-body-2 font-weight-medium">Лучшая продажа</span>
+                          <v-chip color="error" variant="tonal" size="small">Sell</v-chip>
+                        </div>
+                        <div class="text-h5 font-weight-bold mb-1">{{ formatAmount(bestSellOrder.price) }} ₽</div>
+                        <div class="text-body-2 text-medium-emphasis mb-2">{{ bestSellOrder.username }}</div>
+                        <div class="text-caption text-medium-emphasis">
+                          Лимит: {{ formatAmount(bestSellOrder.minLimit) }} — {{ formatAmount(bestSellOrder.maxLimit) }} ₽
+                        </div>
+                      </div>
                     </div>
                   </v-sheet>
 
-                  <v-alert v-if="null !== spread && null !== spreadPercent" type="info" variant="tonal">
-                    Спрэд: <strong>{{ formatAmount(spread) }} ₽</strong>
-                    <span class="text-medium-emphasis"> ({{ formatAmount(spreadPercent) }}%)</span>
-                  </v-alert>
+                  <v-sheet v-if="null !== spread && null !== spreadPercent" class="dashboard-notice dashboard-notice--info pa-4" rounded="lg">
+                    <div class="dashboard-notice__layout">
+                      <v-avatar size="44" color="info" variant="tonal" class="flex-shrink-0">
+                        <v-icon>mdi-chart-timeline-variant</v-icon>
+                      </v-avatar>
+
+                      <div class="dashboard-notice__content">
+                        <div class="text-subtitle-2 font-weight-bold mb-1">Текущий спред</div>
+                        <p class="dashboard-notice__text text-body-2 text-medium-emphasis">
+                          {{ formatAmount(spread) }} ₽
+                          <span class="font-weight-medium">({{ formatAmount(spreadPercent) }}%)</span>
+                        </p>
+                      </div>
+                    </div>
+                  </v-sheet>
                 </template>
 
-                <v-alert
+                <v-sheet
                   v-else-if="!identity.hasActiveConnection"
-                  type="warning"
-                  variant="tonal"
-                  text="Подключите активный Bybit API, чтобы видеть лучшие предложения рынка на дашборде."
-                />
+                  class="dashboard-notice dashboard-notice--warning pa-4"
+                  rounded="lg"
+                >
+                  <div class="dashboard-notice__layout">
+                    <v-avatar size="44" color="warning" variant="tonal" class="flex-shrink-0">
+                      <v-icon>mdi-link-variant-off</v-icon>
+                    </v-avatar>
 
-                <v-alert v-else type="info" variant="tonal" text="Для выбранной пары пока нет данных по лучшим предложениям." />
+                    <div class="dashboard-notice__content">
+                      <div class="text-subtitle-2 font-weight-bold mb-1">Рынок пока недоступен</div>
+                      <p class="dashboard-notice__text text-body-2 text-medium-emphasis mb-3">
+                        Подключите активный Bybit API, чтобы видеть лучшие предложения рынка на дашборде.
+                      </p>
+                      <v-btn size="small" variant="text" color="primary" to="/profile/api-connection">
+                        Настроить Bybit API
+                      </v-btn>
+                    </div>
+                  </div>
+                </v-sheet>
+
+                <v-sheet v-else class="dashboard-notice dashboard-notice--info pa-4" rounded="lg">
+                  <div class="dashboard-notice__layout">
+                    <v-avatar size="44" color="info" variant="tonal" class="flex-shrink-0">
+                      <v-icon>mdi-information-outline</v-icon>
+                    </v-avatar>
+
+                    <div class="dashboard-notice__content">
+                      <div class="text-subtitle-2 font-weight-bold mb-1">Нет данных по лучшим предложениям</div>
+                      <p class="dashboard-notice__text text-body-2 text-medium-emphasis">
+                        Для выбранной пары пока нет доступных предложений на покупку и продажу.
+                      </p>
+                    </div>
+                  </div>
+                </v-sheet>
               </v-card-text>
             </v-card>
 
-            <v-card class="dashboard-card flex-grow-1" rounded="xl">
-              <v-card-item class="px-5 pt-5 pb-2">
+            <v-card class="dashboard-card flex-grow-1" rounded="lg">
+              <v-card-item class="dashboard-card__header px-5 py-4">
                 <template #prepend>
                   <v-avatar size="42" color="info" variant="tonal">
                     <v-icon>mdi-bell-outline</v-icon>
@@ -433,36 +539,35 @@ onMounted(async () => {
                 <v-card-subtitle>То, на что стоит обратить внимание прямо сейчас</v-card-subtitle>
               </v-card-item>
 
-              <v-card-text class="pa-5 pt-3 d-flex flex-column ga-3">
-                <v-alert
-                  v-if="!identity.hasActiveConnection"
-                  type="warning"
-                  variant="tonal"
-                  title="Подключение требует действия"
-                  text="Без активного Bybit API часть функций кабинета и рынок P2P будут недоступны."
-                />
+              <v-divider class="dashboard-card__divider" />
 
-                <v-alert
-                  v-else
-                  type="success"
-                  variant="tonal"
-                  title="API подключён"
-                  :text="`Можно работать со стаканом и актуальными данными по паре ${exchange.selectedPair.label}.`"
-                />
+              <v-card-text class="dashboard-card__body pa-5 d-flex flex-column ga-3">
+                <v-sheet
+                  v-for="notice in importantNotices"
+                  :key="notice.key"
+                  class="dashboard-notice pa-4"
+                  :style="{ background: notice.background }"
+                  rounded="lg"
+                >
+                  <div class="dashboard-notice__layout">
+                    <v-avatar :color="notice.color" size="44" variant="tonal" class="flex-shrink-0">
+                      <v-icon>{{ notice.icon }}</v-icon>
+                    </v-avatar>
 
-                <v-alert
-                  v-if="0 < lockedBalancesCount"
-                  type="info"
-                  variant="tonal"
-                  :text="`Есть ${lockedBalancesCount} ${1 === lockedBalancesCount ? 'позиция' : 'позиции'} с заблокированными средствами. Проверьте активные объявления и сделки.`"
-                />
+                    <div class="dashboard-notice__content">
+                      <div class="d-flex align-center justify-space-between flex-wrap ga-3 mb-1">
+                        <div class="text-subtitle-2 font-weight-bold">{{ notice.title }}</div>
+                        <v-btn v-if="notice.actionTo" size="small" variant="text" color="primary" :to="notice.actionTo">
+                          {{ notice.actionLabel }}
+                        </v-btn>
+                      </div>
 
-                <v-alert
-                  v-if="0 === latestTransactions.length"
-                  type="info"
-                  variant="tonal"
-                  text="Сделок пока не было. Когда появятся первые операции, они отобразятся в истории ниже."
-                />
+                      <p class="dashboard-notice__text text-body-2 text-medium-emphasis">
+                        {{ notice.description }}
+                      </p>
+                    </div>
+                  </div>
+                </v-sheet>
               </v-card-text>
             </v-card>
           </div>
@@ -471,8 +576,8 @@ onMounted(async () => {
 
       <v-row class="mt-1">
         <v-col cols="12" lg="8">
-          <v-card class="dashboard-card h-100" rounded="xl">
-            <v-card-item class="px-5 pt-5 pb-2">
+          <v-card class="dashboard-card h-100" rounded="lg">
+            <v-card-item class="dashboard-card__header px-5 py-4">
               <template #prepend>
                 <v-avatar size="42" color="info" variant="tonal">
                   <v-icon>mdi-history</v-icon>
@@ -484,6 +589,8 @@ onMounted(async () => {
                 <v-btn variant="text" color="primary" to="/wallet/transactions">Вся история</v-btn>
               </template>
             </v-card-item>
+
+            <v-divider class="dashboard-card__divider" />
 
             <v-card-text class="pa-0">
               <v-list v-if="0 < latestTransactions.length" lines="two">
@@ -521,6 +628,7 @@ onMounted(async () => {
                 tone="info"
                 title="Сделок пока не было"
                 description="Когда появятся первые транзакции, они сразу отобразятся в этом блоке и будут доступны в полной истории операций."
+                align="left"
                 compact
               />
             </v-card-text>
@@ -528,8 +636,8 @@ onMounted(async () => {
         </v-col>
 
         <v-col cols="12" lg="4">
-          <v-card class="dashboard-card h-100" rounded="xl">
-            <v-card-item class="px-5 pt-5 pb-2">
+          <v-card class="dashboard-card h-100" rounded="lg">
+            <v-card-item class="dashboard-card__header px-5 py-4">
               <template #prepend>
                 <v-avatar size="42" color="success" variant="tonal">
                   <v-icon>mdi-lightning-bolt-outline</v-icon>
@@ -539,7 +647,9 @@ onMounted(async () => {
               <v-card-subtitle>Часто используемые разделы кабинета</v-card-subtitle>
             </v-card-item>
 
-            <v-card-text class="pa-5 pt-3">
+            <v-divider class="dashboard-card__divider" />
+
+            <v-card-text class="dashboard-card__body pa-5">
               <div class="d-flex flex-column ga-3">
                 <v-btn color="primary" variant="flat" block prepend-icon="mdi-swap-horizontal-bold" to="/orderbook">
                   Перейти в стакан
@@ -569,10 +679,10 @@ onMounted(async () => {
 }
 
 .dashboard-hero {
-  border: 1px solid rgba(var(--v-theme-primary), 0.12);
+  border: 1px solid rgba(30, 136, 229, 0.12);
   background:
-    radial-gradient(circle at top right, rgba(var(--v-theme-secondary), 0.12), transparent 35%),
-    linear-gradient(135deg, rgba(var(--v-theme-primary), 0.12), rgba(var(--v-theme-surface), 1));
+    radial-gradient(circle at top right, rgba(94, 53, 177, 0.12), transparent 35%),
+    linear-gradient(135deg, rgba(30, 136, 229, 0.12), #ffffff);
   overflow: hidden;
 }
 
@@ -586,35 +696,85 @@ onMounted(async () => {
 }
 
 .dashboard-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
 }
 
 .dashboard-metric-card {
   height: 100%;
 }
 
+.dashboard-card__header {
+  min-height: 96px;
+}
+
+.dashboard-card__header--compact {
+  min-height: 76px;
+}
+
+.dashboard-card__divider {
+  opacity: 1;
+}
+
+.dashboard-card__body {
+  padding-top: 20px;
+}
+
 .dashboard-mini-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.07);
-  background: rgba(var(--v-theme-surface), 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .dashboard-market-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .dashboard-market-card--buy {
-  background: rgba(var(--v-theme-success), 0.06);
+  background: rgba(0, 200, 83, 0.06);
 }
 
 .dashboard-market-card--sell {
-  background: rgba(var(--v-theme-error), 0.05);
+  background: rgba(244, 67, 54, 0.05);
+}
+
+.dashboard-notice {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-notice--warning {
+  background: rgba(255, 193, 7, 0.08);
+}
+
+.dashboard-notice--info {
+  background: rgba(3, 201, 215, 0.07);
+}
+
+.dashboard-notice__layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.dashboard-notice__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dashboard-notice__text {
+  margin: 0;
+  line-height: 1.6;
 }
 
 @media (max-width: 959px) {
   .dashboard-hero__actions {
     max-width: 100%;
     margin-left: 0;
+  }
+
+  .dashboard-notice__layout {
+    gap: 12px;
   }
 }
 </style>

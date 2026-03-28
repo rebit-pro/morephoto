@@ -35,7 +35,8 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         $chatGateway->expects($this->never())->method('fetchMessages');
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
-            ->execute($trade, self::USER_ID);
+            ->execute($trade, self::USER_ID)
+        ;
 
         self::assertSame(0, $result);
     }
@@ -59,7 +60,8 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
-            ->execute($trade, self::USER_ID);
+            ->execute($trade, self::USER_ID)
+        ;
 
         self::assertSame(0, $result);
     }
@@ -97,7 +99,8 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
-            ->execute($trade, self::USER_ID);
+            ->execute($trade, self::USER_ID)
+        ;
 
         self::assertSame(0, $result);
     }
@@ -147,7 +150,8 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
-            ->execute($trade, self::USER_ID);
+            ->execute($trade, self::USER_ID)
+        ;
 
         self::assertSame(1, $result);
     }

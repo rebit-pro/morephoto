@@ -332,6 +332,8 @@ namespace {
     {
         /** @param array<string, mixed> $file */
         public static function SaveFile(array $file, string $module): int|false {}
+        /** @return array<string, mixed>|false */
+        public static function GetFileArray(int $fileId, bool|string $uploadDir = false): array|false {}
         public static function GetPath(int $fileId): ?string {}
     }
     function RegisterModule(string $moduleId): void {}
