@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useCustomizerStore } from '@/stores/customizer';
 import { BellIcon, Menu2Icon } from 'vue-tabler-icons';
 import Logo from '../logo/LogoMain.vue';
@@ -10,17 +11,33 @@ import { usePolling } from '@/composables/usePolling';
 
 const customizer = useCustomizerStore();
 const trades = useTradesStore();
+const route = useRoute();
 const newTradesCount = computed(() => trades.trades.filter((trade) => true === trade.isNew).length);
+const shouldPollTrades = computed(() => !route.path.startsWith('/exchange/trades'));
 const polling = usePolling(async () => {
   await trades.fetchTrades();
 }, 10000);
 
-onMounted(async () => {
+async function syncHeaderPollingState(): Promise<void> {
+  if (!shouldPollTrades.value) {
+    polling.stop();
+
+    return;
+  }
+
   if (0 === trades.trades.length) {
     await trades.fetchTrades();
   }
 
   polling.start();
+}
+
+onMounted(async () => {
+  await syncHeaderPollingState();
+});
+
+watch(shouldPollTrades, async () => {
+  await syncHeaderPollingState();
 });
 
 onUnmounted(() => {

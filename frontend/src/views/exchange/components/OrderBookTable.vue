@@ -45,7 +45,7 @@ function paymentMethodsKey(orderId: string | number): string {
 }
 
 function isPaymentMethodsExpanded(orderId: string): boolean {
-  return expandedPaymentMethods.value[orderId];
+  return expandedPaymentMethods.value[orderId] ?? false;
 }
 
 function togglePaymentMethods(orderId: string): void {

@@ -24,15 +24,15 @@
 - production-сервисы `frontend`, `api`, `api-php-fpm`, `api-cron`, `api-mysql`, `api-memcached` на сервере `rebit-pro`;
 - cron/supercronic для polling-процессов: стакан, активные сделки, история, чат-скрипты, балансы;
 - healthcheck на уровне nginx-конфига контейнера (`api/docker/common/nginx/conf.d/default.conf`);
-- b2.ackend quality gates: `lint`, `php-cs-fixer`, `phpstan`, `phpunit`.
+- backend quality gates: `lint`, `php-cs-fixer`, `phpstan`, `phpunit`.
 
 ### 2.2. Важные ограничения текущей реализации
 
 - чат сделки сейчас опирается на polling, а не на realtime transport;
-- история чата хранится локально, входящие сообщения контрагента из UI Bybit не читаются через API;
-- отправка файлов в чат Bybit описана в `docs/api.md`, но end-to-end контур в текущем приложении не завершён;
-- во frontend прикрепление файлов доступно только при `mock api` (`frontend/src/views/exchange/components/TradeChat.vue`);
-- `SendMessageRequestDto` не содержит `fileUrl`, хотя Bybit требует сначала upload файла, потом отправку URL;
+- история чата синхронизируется через API Bybit при чтении (`SyncChatMessagesUseCase` вызывается из `GetChatHistoryUseCase`), но остаётся polling-only и без фоновой очереди;
+- отправка файлов в чат Bybit реализована через backend upload endpoint `/api/v1/exchange/trades/{tradeId}/chat/upload` и последующую отправку `fileUrl`, описанную в `docs/api.md`;
+- во frontend прикрепление файлов доступно как в реальном API, так и в `mock api`, но обработка ошибок upload-а пока остаётся минимальной;
+- `SendMessageRequestDto` синхронизирован с текущим flow Bybit: текст и `fileUrl` отправляются отдельными сообщениями после backend upload-а;
 - в runtime фактически используется cron, а очередь сообщений/консьюмеры из архитектурной документации не подтверждены кодом и прод-инфраструктурой;
 - `README.md` декларирует `Redis` и `RabbitMQ`, но в production compose RabbitMQ отсутствует, а Redis не поднят отдельным сервисом.
 
@@ -48,10 +48,10 @@
 | Production runtime | на `rebit-pro` подняты `frontend`, `api`, `api-php-fpm`, `api-cron`, `api-mysql`, `api-memcached` | Нет подтверждённого Redis-сервиса; нет RabbitMQ runtime | Высокая |
 | Healthcheck | health endpoint описан в nginx-конфиге | На проде проверка через `localhost` вернула `404` | Критическая |
 | Background jobs | `api-cron` + supercronic + polling trade/order/chat scripts | Нет явного мониторинга выполнения cron | Высокая |
-| Text chat | Роуты, контроллер, use case, локальная история, отправка сообщений | Входящие сообщения контрагента из UI Bybit недоступны по API | Средняя |
-| File chat flow | Bybit API flow описан в `docs/api.md` | End-to-end реализация не завершена | Критическая |
-| Backend files | Есть общая загрузка файла в `rebit.share` | Нет завершённого `trade-chat` upload flow с `fileUrl` | Критическая |
-| Frontend files | UI выбора файла есть | Работает только при `mock api` | Критическая |
+| Text chat | Роуты, контроллер, use case, локальная история, polling-синхронизация входящих сообщений из Bybit | Нет realtime-транспорта и фонового sync-контура | Средняя |
+| File chat flow | End-to-end upload в Bybit реализован через backend endpoint и отправку `fileUrl` | Нужны антиспам, мониторинг ошибок и постобработка файлов | Высокая |
+| Backend files | Есть upload flow для trade-chat и серверная валидация базовых MIME/размера | Нет AV scan / object storage / очереди постобработки | Высокая |
+| Frontend files | UI выбора файла есть и работает с реальным API и mock | Нет продвинутого recovery/retry UX при частичных ошибках upload-а | Средняя |
 | Observability | Частично есть лог-каталог `/srv/rebit-p2p/logs` | Нет Prometheus/Grafana/Loki/Sentry/alerts | Критическая |
 | Backup/restore | По документации это требуется | Нет подтверждённого backup/restore процесса | Критическая |
 | Security scans | `roave/security-advisories` в dev-зависимостях | Нет Trivy / Gitleaks / registry scan / secret scan pipeline | Высокая |

@@ -7,6 +7,7 @@ declare(strict_types=1);
  * Подключаются в tests/bootstrap.php.
  */
 
+
 namespace Bitrix\Main\Type;
 
 if (!class_exists(Date::class)) {
@@ -22,6 +23,30 @@ if (!class_exists(Date::class)) {
         public function format(string $format): string
         {
             return date($format, $this->timestamp);
+        }
+
+        public static function createFromTimestamp(int $timestamp): static
+        {
+            $instance = new static();
+            $instance->timestamp = $timestamp;
+
+            return $instance;
+        }
+
+        public function toString(mixed $culture = null): string
+        {
+            return date('d.m.Y', $this->timestamp);
+        }
+
+        public function add(string $interval): static
+        {
+            $timestamp = strtotime($interval, $this->timestamp);
+
+            if (false !== $timestamp) {
+                $this->timestamp = $timestamp;
+            }
+
+            return $this;
         }
 
         public function getTimestamp(): int
@@ -42,7 +67,7 @@ if (!class_exists(DateTime::class)) {
             return $instance;
         }
 
-        public function toString(): string
+        public function toString(mixed $culture = null): string
         {
             return date('d.m.Y H:i:s', $this->timestamp);
         }
@@ -103,6 +128,11 @@ if (!class_exists(Application::class)) {
         {
             return new Data\TaggedCache();
         }
+
+        public function getManagedCache(): Data\ManagedCache
+        {
+            return new Data\ManagedCache();
+        }
     }
 }
 
@@ -124,7 +154,26 @@ if (!class_exists(Cache::class)) {
 }
 
 if (!class_exists(ManagedCache::class)) {
-    class ManagedCache {}
+    class ManagedCache
+    {
+        public function read(int $ttl, string $uniqueId, string $tableId = ''): bool
+        {
+            return false;
+        }
+
+        public function get(string $uniqueId): mixed
+        {
+            return null;
+        }
+
+        public function set(string $uniqueId, mixed $val): void
+        {
+        }
+
+        public function clean(string $uniqueId, string $tableId = ''): void
+        {
+        }
+    }
 }
 
 if (!class_exists(TaggedCache::class)) {
@@ -301,6 +350,16 @@ if (!class_exists(EO_TradeMessage::class)) {
         public function getUfScriptStepId(): int { return 0; }
         public function getUfIsRead(): int { return 0; }
         public function getUfCreatedAt(): ?\Bitrix\Main\Type\DateTime { return null; }
+        public function setUfTradeId(int $value): static { return $this; }
+        public function setUfUserId(int $value): static { return $this; }
+        public function setUfMessage(string $value): static { return $this; }
+        public function setUfMessageType(string $value): static { return $this; }
+        public function setUfContentType(string $value): static { return $this; }
+        public function setUfBybitMsgUuid(string $value): static { return $this; }
+        public function setUfFileName(string $value): static { return $this; }
+        public function setUfScriptStepId(int $value): static { return $this; }
+        public function setUfIsRead(int $value): static { return $this; }
+        public function setUfCreatedAt(?\Bitrix\Main\Type\DateTime $value): static { return $this; }
         public function save(): \Bitrix\Main\ORM\Data\Result { return new \Bitrix\Main\ORM\Data\Result(); }
     }
 }

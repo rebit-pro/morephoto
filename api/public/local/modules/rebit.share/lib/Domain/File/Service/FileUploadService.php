@@ -9,13 +9,17 @@ use Rebit\Share\Domain\File\Dto\Result\UploadFileResultDto;
 use Rebit\Share\Domain\File\Exception\FileUploadFailedException;
 use Rebit\Share\Domain\File\Exception\InvalidFileException;
 
-final class FileUploadService
+final readonly class FileUploadService
 {
+    public function __construct(
+        private UploadedFileOwnershipService $ownershipService,
+    ) {}
+
     /**
      * @throws InvalidFileException
      * @throws FileUploadFailedException
      */
-    public function upload(UploadRequestFileRequestDto $dto): UploadFileResultDto
+    public function upload(UploadRequestFileRequestDto $dto, int $userId): UploadFileResultDto
     {
         if ($dto->size <= 0 || !is_file($dto->tmpName) || !is_readable($dto->tmpName)) {
             throw new InvalidFileException('Некорректный временный файл.');
@@ -33,6 +37,8 @@ final class FileUploadService
         if ($fileId <= 0) {
             throw new FileUploadFailedException('Ошибка загрузки файла(ов).');
         }
+
+        $this->ownershipService->remember($fileId, $userId, $dto->moduleId);
 
         $src = (string)\CFile::GetPath($fileId);
 

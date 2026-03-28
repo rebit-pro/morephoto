@@ -276,10 +276,10 @@ namespace Bitrix\Main\Web {
 namespace Bitrix\Main\Data {
     class ManagedCache
     {
-        public function read(int $ttl, string $uniqueString, string $initDir = ''): bool {}
-        public function get(string $uniqueString): mixed {}
-        public function set(string $uniqueString, mixed $value): void {}
-        public function clean(string $uniqueString, string $initDir = ''): void {}
+        public function read(int $ttl, string $uniqueId, string $tableId = ''): bool {}
+        public function get(string $uniqueId): mixed {}
+        public function set(string $uniqueId, mixed $val): void {}
+        public function clean(string $uniqueId, string $tableId = ''): void {}
     }
     class TaggedCache
     {

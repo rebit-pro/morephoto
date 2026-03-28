@@ -21,6 +21,7 @@ use Rebit\Exchange\Presentation\Command\ExecuteChatScriptsCommand;
 use Rebit\Exchange\Presentation\Controller\TradeChatController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Domain\File\Service\UploadedFileOwnershipService;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Facade\Log;
 
@@ -29,7 +30,11 @@ return [
         'className' => TradeMessageRepository::class,
     ],
     TradeChatUploadFileLocator::class => [
-        'className' => TradeChatUploadFileLocator::class,
+        'constructor' => static function(): TradeChatUploadFileLocator {
+            return new TradeChatUploadFileLocator(
+                ServiceLocator::getInstance()->get(UploadedFileOwnershipService::class),
+            );
+        },
     ],
     BybitChatGatewayInterface::class => [
         'constructor' => static function(): BybitChatGatewayInterface {

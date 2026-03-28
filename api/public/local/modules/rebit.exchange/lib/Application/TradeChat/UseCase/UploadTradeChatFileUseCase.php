@@ -15,6 +15,8 @@ use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class UploadTradeChatFileUseCase
 {
+    private const string UPLOAD_MODULE_ID = 'rebit.exchange';
+
     public function __construct(
         private TradeRepository $tradeRepository,
         private BybitChatGatewayInterface $chatGateway,
@@ -37,7 +39,7 @@ final readonly class UploadTradeChatFileUseCase
             throw new HttpException('Нет доступа к чату этой сделки', 403);
         }
 
-        $file = $this->fileLocator->getById($dto->fileId);
+        $file = $this->fileLocator->getById($dto->fileId, $userId, self::UPLOAD_MODULE_ID);
         $uploadResult = $this->chatGateway->uploadFile(
             $userId,
             $file['path'],

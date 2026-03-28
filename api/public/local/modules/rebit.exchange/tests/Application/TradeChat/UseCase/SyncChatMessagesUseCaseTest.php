@@ -11,6 +11,7 @@ use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\TradeChat\Enum\ContentTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Enum\MessageTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
+use Bitrix\Main\Type\DateTime;
 
 /**
  * @internal
@@ -129,6 +130,8 @@ final class SyncChatMessagesUseCaseTest extends TestCase
                 contentType: ContentTypeEnum::Pic,
                 bybitMsgUuid: 'msg-2',
                 fileName: 'receipt.png',
+                scriptStepId: null,
+                createdAt: $this->callback(static fn(mixed $value): bool => $value instanceof DateTime),
             )
         ;
 
@@ -145,6 +148,59 @@ final class SyncChatMessagesUseCaseTest extends TestCase
                     'userId' => 'bybit-user-2',
                     'nickName' => 'Trader',
                     'createDate' => '2026-03-28T09:01:00+00:00',
+                ],
+            ])
+        ;
+
+        $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
+            ->execute($trade, self::USER_ID)
+        ;
+
+        self::assertSame(1, $result);
+    }
+
+    public function testImportsMessageWithInvalidCreateDateAndPassesNullCreatedAt(): void
+    {
+        $trade = $this->createTradeStub();
+
+        /** @var class-string<TradeMessageRepository> $messageRepositoryClass */
+        $messageRepositoryClass = TradeMessageRepository::class;
+        $messageRepository = $this->createMock($messageRepositoryClass);
+        $messageRepository
+            ->expects($this->once())
+            ->method('existsByBybitMsgUuid')
+            ->with(self::TRADE_ID, 'msg-3')
+            ->willReturn(false)
+        ;
+        $messageRepository
+            ->expects($this->once())
+            ->method('create')
+            ->with(
+                tradeId: self::TRADE_ID,
+                userId: 0,
+                message: 'text message',
+                messageType: MessageTypeEnum::User,
+                contentType: ContentTypeEnum::Str,
+                bybitMsgUuid: 'msg-3',
+                fileName: null,
+                scriptStepId: null,
+                createdAt: null,
+            )
+        ;
+
+        $chatGateway = $this->createMock(BybitChatGatewayInterface::class);
+        $chatGateway
+            ->expects($this->once())
+            ->method('fetchMessages')
+            ->willReturn([
+                [
+                    'id' => 'msg-3',
+                    'message' => 'text message',
+                    'contentType' => 'str',
+                    'fileName' => '',
+                    'userId' => 'bybit-user-3',
+                    'nickName' => 'Trader',
+                    'createDate' => 'not-a-date',
                 ],
             ])
         ;

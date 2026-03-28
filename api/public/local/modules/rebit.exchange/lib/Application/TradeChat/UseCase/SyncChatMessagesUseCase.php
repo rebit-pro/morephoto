@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\TradeChat\UseCase;
 
+use Bitrix\Main\Type\DateTime;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\TradeChat\Enum\ContentTypeEnum;
@@ -55,6 +56,7 @@ final readonly class SyncChatMessagesUseCase
             }
 
             $contentType = ContentTypeEnum::tryFrom($msg['contentType']) ?? ContentTypeEnum::Str;
+            $createdAt = $this->resolveCreatedAt($msg['createDate']);
 
             $this->messageRepository->create(
                 tradeId: $trade->getId(),
@@ -64,11 +66,37 @@ final readonly class SyncChatMessagesUseCase
                 contentType: $contentType,
                 bybitMsgUuid: $bybitMsgId,
                 fileName: '' !== $msg['fileName'] ? $msg['fileName'] : null,
+                createdAt: $createdAt,
             );
 
             ++$importedCount;
         }
 
         return $importedCount;
+    }
+
+    private function resolveCreatedAt(string $createDate): ?DateTime
+    {
+        if ('' === $createDate) {
+            return null;
+        }
+
+        if (ctype_digit($createDate)) {
+            $timestamp = (int)$createDate;
+
+            if (10 < strlen($createDate)) {
+                $timestamp = (int)floor($timestamp / 1000);
+            }
+
+            return DateTime::createFromTimestamp($timestamp);
+        }
+
+        $timestamp = strtotime($createDate);
+
+        if (false === $timestamp) {
+            return null;
+        }
+
+        return DateTime::createFromTimestamp($timestamp);
     }
 }

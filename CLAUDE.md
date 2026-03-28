@@ -5,7 +5,8 @@
 
 ## Stack & Namespaces
 
-PHP 8.4, Bitrix D7, jQuery + Vue 3 (Vite).
+DevOps: Docker, Docker Compose, Docker Swarm, MySQL, Redis, RabbitMQ.
+Programmer: PHP 8.4, Bitrix D7, Vue 3 (Vite), Vuetify, Makefile.
 
 ## PHP Style
 

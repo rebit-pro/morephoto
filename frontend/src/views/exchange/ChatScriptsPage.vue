@@ -11,14 +11,16 @@ interface FormStep extends ChatScriptStep {
 let stepUidCounter = 0;
 
 function createFormStep(step?: Partial<ChatScriptStep>): FormStep {
+  const contentType = isMockApiEnabled ? step?.contentType ?? 'str' : 'str';
+
   return {
     _uid: ++stepUidCounter,
     sort: step?.sort ?? 1,
     message: step?.message ?? '',
     delaySeconds: step?.delaySeconds ?? 0,
-    contentType: step?.contentType ?? 'str',
-    fileName: step?.fileName ?? null,
-    fileUrl: step?.fileUrl ?? null
+    contentType,
+    fileName: isMockApiEnabled ? step?.fileName ?? null : null,
+    fileUrl: isMockApiEnabled ? step?.fileUrl ?? null : null
   };
 }
 
@@ -60,6 +62,10 @@ const placeholders = [
 const canSaveScript = computed(() => {
   if ('' === form.name.trim()) {
     return false;
+  }
+
+  if (!isMockApiEnabled) {
+    return !form.steps.some((step) => '' === step.message.trim());
   }
 
   return !form.steps.some((step) => {
@@ -151,6 +157,14 @@ function clearStepFile(step: FormStep): void {
 }
 
 function onContentTypeChange(step: FormStep): void {
+  if (!isMockApiEnabled) {
+    step.contentType = 'str';
+    step.fileName = null;
+    step.fileUrl = null;
+
+    return;
+  }
+
   if ('str' === step.contentType) {
     step.fileName = null;
     step.fileUrl = null;
@@ -158,6 +172,10 @@ function onContentTypeChange(step: FormStep): void {
 }
 
 async function handleStepFileSelected(event: Event, step: FormStep): Promise<void> {
+  if (!isMockApiEnabled) {
+    return;
+  }
+
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
 
@@ -189,14 +207,24 @@ async function handleSave(): Promise<void> {
   const payload: ChatScriptPayload = {
     name: form.name,
     isActive: form.isActive,
-    steps: form.steps.map((s, i) => ({
-      sort: i + 1,
-      message: s.message,
-      delaySeconds: s.delaySeconds,
-      contentType: s.contentType,
-      fileName: s.fileName ?? null,
-      fileUrl: s.fileUrl ?? null
-    }))
+    steps: form.steps.map((s, i) => {
+      if (!isMockApiEnabled) {
+        return {
+          sort: i + 1,
+          message: s.message,
+          delaySeconds: s.delaySeconds
+        };
+      }
+
+      return {
+        sort: i + 1,
+        message: s.message,
+        delaySeconds: s.delaySeconds,
+        contentType: s.contentType,
+        fileName: s.fileName ?? null,
+        fileUrl: s.fileUrl ?? null
+      };
+    })
   };
 
   try {
@@ -257,6 +285,10 @@ onMounted(async () => {
     <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
       В mock-режиме шаг сценария можно сохранить как текст, банковские реквизиты, QR-код, PDF или видео. Вложение хранится локально в
       браузере и автоматически отправится первым сообщением новой сделки.
+    </v-alert>
+
+    <v-alert v-else type="info" variant="tonal" class="mb-4">
+      В реальном API чат-скриптов сейчас поддерживаются только текстовые шаги. Вложения и media-типы доступны только в mock-режиме.
     </v-alert>
 
     <v-row v-if="scripts.loading" justify="center" class="mt-8">
@@ -338,47 +370,49 @@ onMounted(async () => {
             </div>
             <v-textarea
               v-model="step.message"
-              :label="'str' === step.contentType ? 'Текст сообщения' : 'Комментарий к вложению'"
+              :label="!isMockApiEnabled || 'str' === step.contentType ? 'Текст сообщения' : 'Комментарий к вложению'"
               variant="outlined"
               density="compact"
               rows="2"
               class="mb-2"
             />
-            <v-select
-              v-model="step.contentType"
-              :items="contentTypeOptions"
-              item-title="title"
-              item-value="value"
-              label="Тип шага"
-              variant="outlined"
-              density="compact"
-              class="mb-2"
-              @update:model-value="onContentTypeChange(step)"
-            />
-            <div class="d-flex flex-wrap align-center ga-3 mb-2">
-              <label class="d-inline-flex">
-                <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleStepFileSelected($event, step)" />
-                <v-btn variant="outlined" size="small" prepend-icon="mdi-paperclip" tag="span">
-                  {{ null === step.fileUrl ? 'Загрузить файл' : 'Заменить файл' }}
+            <template v-if="isMockApiEnabled">
+              <v-select
+                v-model="step.contentType"
+                :items="contentTypeOptions"
+                item-title="title"
+                item-value="value"
+                label="Тип шага"
+                variant="outlined"
+                density="compact"
+                class="mb-2"
+                @update:model-value="onContentTypeChange(step)"
+              />
+              <div class="d-flex flex-wrap align-center ga-3 mb-2">
+                <label class="d-inline-flex">
+                  <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleStepFileSelected($event, step)" />
+                  <v-btn variant="outlined" size="small" prepend-icon="mdi-paperclip" tag="span">
+                    {{ null === step.fileUrl ? 'Загрузить файл' : 'Заменить файл' }}
+                  </v-btn>
+                </label>
+                <v-chip v-if="null !== step.fileName" size="small" color="primary" variant="tonal">
+                  {{ step.fileName }}
+                </v-chip>
+                <v-btn
+                  v-if="null !== step.fileUrl"
+                  variant="text"
+                  size="small"
+                  color="error"
+                  prepend-icon="mdi-close"
+                  @click="clearStepFile(step)"
+                >
+                  Удалить файл
                 </v-btn>
-              </label>
-              <v-chip v-if="null !== step.fileName" size="small" color="primary" variant="tonal">
-                {{ step.fileName }}
-              </v-chip>
-              <v-btn
-                v-if="null !== step.fileUrl"
-                variant="text"
-                size="small"
-                color="error"
-                prepend-icon="mdi-close"
-                @click="clearStepFile(step)"
-              >
-                Удалить файл
-              </v-btn>
-            </div>
-            <div v-if="null !== step.fileUrl && isImageStep(step)" class="mb-2">
-              <img :src="step.fileUrl" :alt="step.fileName ?? 'preview'" class="chat-scripts-page__preview-image" />
-            </div>
+              </div>
+              <div v-if="null !== step.fileUrl && isImageStep(step)" class="mb-2">
+                <img :src="step.fileUrl" :alt="step.fileName ?? 'preview'" class="chat-scripts-page__preview-image" />
+              </div>
+            </template>
             <v-text-field
               v-model.number="step.delaySeconds"
               label="Задержка (секунд)"

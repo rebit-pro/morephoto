@@ -145,6 +145,8 @@ async function sendMessage(): Promise<void> {
         contentType: 'str',
         fileName: null
       });
+
+      messageText.value = '';
     }
 
     if (null !== attachment) {
@@ -156,10 +158,10 @@ async function sendMessage(): Promise<void> {
         contentType: uploadedFile.contentType,
         fileName: uploadedFile.fileName
       });
+
+      clearAttachment();
     }
 
-    messageText.value = '';
-    clearAttachment();
     await scrollToBottom();
   } finally {
     sending.value = false;

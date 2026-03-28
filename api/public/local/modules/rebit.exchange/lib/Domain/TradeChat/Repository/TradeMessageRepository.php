@@ -82,6 +82,7 @@ final class TradeMessageRepository
         string $bybitMsgUuid,
         ?string $fileName = null,
         ?int $scriptStepId = null,
+        ?DateTime $createdAt = null,
     ): TradeMessage {
         /** @var TradeMessage $msg */
         $msg = TradeMessageTable::createObject()
@@ -94,7 +95,7 @@ final class TradeMessageRepository
             ->setUfFileName($fileName ?? '')
             ->setUfScriptStepId($scriptStepId ?? 0)
             ->setUfIsRead(0)
-            ->setUfCreatedAt(new DateTime())
+            ->setUfCreatedAt($createdAt ?? new DateTime())
         ;
 
         $this->persist($msg);

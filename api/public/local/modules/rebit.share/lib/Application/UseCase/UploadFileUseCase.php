@@ -20,8 +20,8 @@ final readonly class UploadFileUseCase
      * @throws InvalidFileException
      * @throws FileUploadFailedException
      */
-    public function handle(UploadRequestFileRequestDto $dto): UploadFileResultDto
+    public function handle(UploadRequestFileRequestDto $dto, int $userId): UploadFileResultDto
     {
-        return $this->service->upload($dto);
+        return $this->service->upload($dto, $userId);
     }
 }
