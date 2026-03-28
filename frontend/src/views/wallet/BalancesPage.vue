@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { PlugConnectedIcon, RefreshIcon, WalletIcon, HistoryIcon } from 'vue-tabler-icons';
+import { PlugConnectedIcon, RefreshIcon, WalletIcon } from 'vue-tabler-icons';
 import { useWalletStore } from '@/stores/wallet';
 import { useExchangeStore } from '@/stores/exchange';
 import { useCurrencyFormat } from '@/composables/useCurrencyFormat';

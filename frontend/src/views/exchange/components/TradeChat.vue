@@ -320,7 +320,7 @@ onUnmounted(() => {
       <div class="d-flex align-center ga-2">
         <label class="d-inline-flex">
           <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleFileSelected" />
-          <v-btn icon="mdi-paperclip" size="small" variant="text" color="secondary" tag="span" />
+          <v-btn icon="mdi-paperclip" size="small" variant="text" color="secondary" tag="span" aria-label="Прикрепить файл" title="Прикрепить файл" />
         </label>
 
         <v-text-field
@@ -342,6 +342,8 @@ onUnmounted(() => {
           rounded="lg"
           :loading="sending"
           :disabled="!canSendMessage"
+          aria-label="Отправить сообщение"
+          title="Отправить сообщение"
           @click="sendMessage"
         />
       </div>

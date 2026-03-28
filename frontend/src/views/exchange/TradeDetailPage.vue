@@ -167,6 +167,7 @@ watch(tradeId, async (newId, oldId) => {
   if (newId === oldId) return;
   reinitialize();
   await loadTrade();
+  trades.fetchCounterpartyInfo(newId);
   polling.start();
 });
 

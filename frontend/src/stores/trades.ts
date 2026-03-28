@@ -20,6 +20,7 @@ export const useTradesStore = defineStore('trades', () => {
   const actionLoading = ref(false);
   const error = ref<string | null>(null);
   let tradeDetailRequestGeneration = 0;
+  let counterpartyInfoRequestGeneration = 0;
 
   function updateTradeInCollections(trade: Trade): void {
     const index = trades.value.findIndex((item) => item.id === trade.id);
@@ -139,15 +140,28 @@ export const useTradesStore = defineStore('trades', () => {
   }
 
   async function fetchCounterpartyInfo(tradeId: number): Promise<void> {
+    const currentGeneration = ++counterpartyInfoRequestGeneration;
+
     try {
-      counterpartyInfo.value = await exchangeApi.getCounterpartyInfo(tradeId);
+      const info = await exchangeApi.getCounterpartyInfo(tradeId);
+
+      if (currentGeneration !== counterpartyInfoRequestGeneration) {
+        return;
+      }
+
+      counterpartyInfo.value = info;
     } catch {
+      if (currentGeneration !== counterpartyInfoRequestGeneration) {
+        return;
+      }
+
       counterpartyInfo.value = null;
     }
   }
 
   function clearCurrentTrade(): void {
     tradeDetailRequestGeneration += 1;
+    counterpartyInfoRequestGeneration += 1;
     currentTrade.value = null;
     counterpartyInfo.value = null;
     chatMessages.value = [];

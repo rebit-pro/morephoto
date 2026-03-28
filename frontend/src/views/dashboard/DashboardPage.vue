@@ -16,7 +16,7 @@ const wallet = useWalletStore();
 const identity = useIdentityStore();
 const exchange = useExchangeStore();
 const { txLabel, txColor, txIcon } = useTransactionLabels();
-const { parseAmount: parseAmountFn, formatRub } = useCurrencyFormat();
+const { formatRub } = useCurrencyFormat();
 const isPageLoading = ref(true);
 
 

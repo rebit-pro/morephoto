@@ -190,6 +190,8 @@ watch(highlightedAdvertisementId, async () => {
                   variant="text"
                   color="primary"
                   :disabled="ads.actionLoading"
+                  aria-label="Создать тестовую сделку"
+                  title="Создать тестовую сделку"
                   @click.stop="handleCreateMockTrade(ad.id)"
                 />
                 <v-btn
@@ -199,6 +201,8 @@ watch(highlightedAdvertisementId, async () => {
                   variant="text"
                   color="warning"
                   :disabled="ads.actionLoading"
+                  aria-label="Приостановить объявление"
+                  title="Приостановить объявление"
                   @click="handleToggle(ad.id, 'paused')"
                 />
                 <v-btn
@@ -208,6 +212,8 @@ watch(highlightedAdvertisementId, async () => {
                   variant="text"
                   color="success"
                   :disabled="ads.actionLoading"
+                  aria-label="Включить объявление"
+                  title="Включить объявление"
                   @click="handleToggle(ad.id, 'active')"
                 />
                 <v-btn
@@ -216,6 +222,8 @@ watch(highlightedAdvertisementId, async () => {
                   variant="text"
                   color="error"
                   :disabled="'cancelled' === ad.status || 'completed' === ad.status"
+                  aria-label="Удалить объявление"
+                  title="Удалить объявление"
                   @click="confirmDelete(ad.id)"
                 />
               </div>
