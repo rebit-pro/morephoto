@@ -19,7 +19,7 @@ load_runtime_env() {
     # Если secret отсутствует — DSN остаётся как есть (dev-окружение).
     if [ -f /run/secrets/rebit_rabbitmq_password ] && [ -n "${MESSENGER_TRANSPORT_DSN:-}" ]; then
         RABBITMQ_SECRET_PASSWORD="$(tr -d '\r' < /run/secrets/rebit_rabbitmq_password)"
-        MESSENGER_TRANSPORT_DSN="$(echo "$MESSENGER_TRANSPORT_DSN" | sed "s/__RABBITMQ_PASSWORD__/${RABBITMQ_SECRET_PASSWORD}/")"
+        MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN//__RABBITMQ_PASSWORD__/$RABBITMQ_SECRET_PASSWORD}"
         export MESSENGER_TRANSPORT_DSN
         unset RABBITMQ_SECRET_PASSWORD
     fi
