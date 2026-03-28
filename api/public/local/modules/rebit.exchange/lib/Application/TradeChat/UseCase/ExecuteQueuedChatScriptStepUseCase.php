@@ -181,6 +181,8 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
         $execution->setUfNextRunAt((new DateTime())->add('+' . $nextStep->getUfDelaySeconds() . ' seconds'));
         $this->executionRepository->save($execution);
 
+        // Отложенные шаги подбирает cron-планировщик
+        // app:exchange:execute-chat-scripts по UF_NEXT_RUN_AT.
         if (0 === $nextStep->getUfDelaySeconds()) {
             $this->chatScriptStepPublisher->dispatch(
                 new ExecuteChatScriptStepMessage(

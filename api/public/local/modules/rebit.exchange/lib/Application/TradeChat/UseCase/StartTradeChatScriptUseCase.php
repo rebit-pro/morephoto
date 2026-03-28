@@ -96,6 +96,8 @@ final readonly class StartTradeChatScriptUseCase
             firstStepDelaySeconds: $firstStep->getUfDelaySeconds(),
         );
 
+        // Отложенный первый шаг подбирает cron-планировщик
+        // app:exchange:execute-chat-scripts по UF_NEXT_RUN_AT.
         if (0 === $firstStep->getUfDelaySeconds()) {
             $this->chatScriptStepPublisher->dispatch(
                 new ExecuteChatScriptStepMessage(

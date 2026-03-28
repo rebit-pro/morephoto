@@ -182,7 +182,6 @@ services:
           restart_policy:
             condition: any
             delay: 5s
-            max_attempts: 5
     api-trade-event-consumer:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
         command: ["php", "public/local/bin/bitrix-console", "app:exchange:trade-event:consume"]
@@ -214,7 +213,6 @@ services:
           restart_policy:
             condition: any
             delay: 5s
-            max_attempts: 5
     api-chat-script-consumer:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
         command: ["php", "public/local/bin/bitrix-console", "app:exchange:chat-script:consume"]
@@ -246,7 +244,6 @@ services:
           restart_policy:
             condition: any
             delay: 5s
-            max_attempts: 5
     api-balance-sync-consumer:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
         command: ["php", "public/local/bin/bitrix-console", "app:wallet:balance-sync:consume"]
@@ -278,7 +275,6 @@ services:
           restart_policy:
             condition: any
             delay: 5s
-            max_attempts: 5
     api-identity-sync-consumer:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
         command: ["php", "public/local/bin/bitrix-console", "app:identity:sync:consume"]
@@ -310,7 +306,6 @@ services:
           restart_policy:
             condition: any
             delay: 5s
-            max_attempts: 5
     api-audit-consumer:
         image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
         command: ["php", "public/local/bin/bitrix-console", "app:audit:consume"]
@@ -342,7 +337,6 @@ services:
           restart_policy:
             condition: any
             delay: 5s
-            max_attempts: 5
     rabbitmq:
         image: rabbitmq:3.13-management-alpine
         entrypoint:
