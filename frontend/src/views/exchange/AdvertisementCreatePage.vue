@@ -6,6 +6,7 @@ import { useAdvertisementsStore } from '@/stores/advertisements';
 import { useChatScriptsStore } from '@/stores/chatScripts';
 import type { CreateAdvertisementPayload, AdvertisementSide, PriceType } from '@/api/exchange';
 import { isMockApiEnabled } from '@/mocks/config';
+import UiFormCard from '@/components/shared/UiFormCard.vue';
 
 const router = useRouter();
 const exchange = useExchangeStore();
@@ -130,7 +131,7 @@ onMounted(async () => {
       К объявлениям
     </v-btn>
 
-    <h2 class="text-h4 mb-6">Создать объявление</h2>
+    <h2 class="text-h4 font-weight-bold mb-6">Создать объявление</h2>
 
     <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
       В mock-режиме активное объявление автоматически получает новую сделку через несколько секунд. Если выбрать сценарий с QR/файлом,
@@ -140,8 +141,12 @@ onMounted(async () => {
     <v-alert v-if="formError" type="error" variant="tonal" class="mb-4">{{ formError }}</v-alert>
     <v-alert v-if="ads.error" type="error" variant="tonal" class="mb-4">{{ ads.error }}</v-alert>
 
-    <v-card rounded="md">
-      <v-card-text>
+    <UiFormCard
+      title="Параметры объявления"
+      description="Заполните все обязательные поля для создания объявления на P2P рынке"
+      icon="mdi-bullhorn-outline"
+      color="primary"
+    >
         <v-row>
           <!-- Направление -->
           <v-col cols="12" sm="6">
@@ -265,15 +270,12 @@ onMounted(async () => {
             <v-textarea v-model="conditions" label="Условия сделки" variant="outlined" density="compact" rows="3" />
           </v-col>
         </v-row>
-      </v-card-text>
 
-      <v-divider />
-
-      <v-card-actions class="pa-4">
+      <template #actions>
         <v-spacer />
         <v-btn variant="text" @click="router.push('/exchange/advertisements')">Отмена</v-btn>
-        <v-btn color="primary" :loading="submitting" :disabled="!isFormValid" @click="handleSubmit"> Создать объявление </v-btn>
-      </v-card-actions>
-    </v-card>
+        <v-btn color="secondary" variant="flat" rounded="lg" size="large" :loading="submitting" :disabled="!isFormValid" @click="handleSubmit"> Создать объявление </v-btn>
+      </template>
+    </UiFormCard>
   </div>
 </template>

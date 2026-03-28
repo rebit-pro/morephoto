@@ -195,6 +195,34 @@ export interface CreateAdvertisementPayload {
 
 export type TradeStatus = 'pending_payment' | 'payment_sent' | 'payment_confirmed' | 'completed' | 'cancelled' | 'disputed';
 
+export interface CounterpartyInfo {
+  nickName: string;
+  realName: string;
+  realNameEn: string;
+  isOnline: boolean;
+  kycLevel: number;
+  kycCountryCode: string;
+  email: string;
+  mobile: string;
+  totalFinishCount: number;
+  totalFinishBuyCount: number;
+  totalFinishSellCount: number;
+  recentFinishCount: number;
+  recentRate: number;
+  averageReleaseTime: string;
+  averageTransferTime: string;
+  accountCreateDays: number;
+  firstTradeDays: number;
+  recentTradeAmount: string;
+  totalTradeAmount: string;
+  goodAppraiseRate: string;
+  goodAppraiseCount: number;
+  badAppraiseCount: number;
+  authStatus: number;
+  blocked: string;
+  vipLevel: number;
+}
+
 export interface Trade {
   id: number;
   bybitOrderId: string;
@@ -357,6 +385,10 @@ export const exchangeApi = {
 
   getTradeDetail(id: number): Promise<Trade> {
     return api.get(`/api/v1/exchange/trades/${id}`).then((r) => r.data);
+  },
+
+  getCounterpartyInfo(tradeId: number): Promise<CounterpartyInfo> {
+    return api.get(`/api/v1/exchange/trades/${tradeId}/counterparty`).then((r) => r.data);
   },
 
   confirmPayment(id: number, payload: ConfirmPaymentPayload): Promise<Trade> {

@@ -13,6 +13,7 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "@typescript-eslint/parser": "8.47.0",
+    "@unhead/vue": "^2.1.12",
     "@vue/eslint-config-prettier": "10.2.0",
     "axios": "1.13.2",
     "date-fns": "4.1.0",

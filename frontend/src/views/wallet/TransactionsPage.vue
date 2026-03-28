@@ -2,10 +2,16 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { DownloadIcon, HistoryIcon } from 'vue-tabler-icons';
 import { useWalletStore } from '@/stores/wallet';
+import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
+import { useTransactionLabels } from '@/composables/useTransactionLabels';
 import type { TransactionFilters } from '@/api/wallet';
 import AppEmptyState from '@/components/shared/AppEmptyState.vue';
+import UiTableCard from '@/components/shared/UiTableCard.vue';
+import UiParentCard from '@/components/shared/UiParentCard.vue';
 
 const wallet = useWalletStore();
+const { formatAmount, formatDate } = useCurrencyFormat();
+const { txLabel, txColor } = useTransactionLabels();
 
 const typeFilter = ref<string | undefined>(undefined);
 const dateFrom = ref('');
@@ -24,37 +30,6 @@ const typeOptions = [
   { title: 'Комиссия', value: 'fee' }
 ];
 
-const txLabels: Record<string, string> = {
-  deposit: 'Депозит',
-  withdrawal: 'Вывод',
-  trade_buy: 'Покупка',
-  trade_sell: 'Продажа',
-  lock: 'Блокировка',
-  unlock: 'Разблокировка',
-  fee: 'Комиссия'
-};
-
-const txColors: Record<string, string> = {
-  deposit: 'success',
-  withdrawal: 'error',
-  trade_buy: 'info',
-  trade_sell: 'warning',
-  lock: 'grey',
-  unlock: 'grey',
-  fee: 'error'
-};
-
-function txLabel(type: string): string {
-  return txLabels[type] ?? type;
-}
-
-function txColor(type: string): string {
-  return txColors[type] ?? 'default';
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('ru-RU');
-}
 
 const totalPages = computed(() => Math.max(1, Math.ceil(wallet.transactionsTotal / itemsPerPage)));
 
@@ -101,8 +76,8 @@ onMounted(async () => {
 <template>
   <div>
     <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
-      <h2 class="text-h4">Транзакции</h2>
-      <v-btn color="primary" variant="outlined" size="small" @click="handleExport">
+      <h2 class="text-h4 font-weight-bold">Транзакции</h2>
+      <v-btn color="secondary" variant="outlined" size="small" rounded="lg" @click="handleExport">
         <template #prepend>
           <DownloadIcon :size="18" stroke-width="1.75" />
         </template>
@@ -111,7 +86,7 @@ onMounted(async () => {
     </div>
 
     <!-- Фильтры -->
-    <v-card rounded="md" class="mb-4">
+    <UiParentCard title="Фильтры" icon="mdi-filter-outline" color="secondary" header-compact class="mb-4">
       <v-card-text>
         <v-row dense>
           <v-col cols="12" sm="3">
@@ -165,7 +140,7 @@ onMounted(async () => {
           </v-col>
         </v-row>
       </v-card-text>
-    </v-card>
+    </UiParentCard>
 
     <v-row v-if="wallet.loading" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
@@ -181,7 +156,14 @@ onMounted(async () => {
       description="История операций пока пуста. Когда появятся депозиты, выводы или торговые движения, они отобразятся здесь и будут доступны для экспорта."
     />
 
-    <v-card v-else-if="!wallet.loading" rounded="md">
+    <UiTableCard
+      v-else-if="!wallet.loading"
+      title="История операций"
+      subtitle="Все движения средств по вашему аккаунту"
+      icon="mdi-history"
+      color="info"
+      gradient="neutral"
+    >
       <v-table density="comfortable" hover>
         <thead>
           <tr>
@@ -197,7 +179,7 @@ onMounted(async () => {
             <td>
               <v-chip size="small" variant="tonal" :color="txColor(tx.type)">{{ txLabel(tx.type) }}</v-chip>
             </td>
-            <td class="text-right font-weight-medium">{{ tx.amount }}</td>
+            <td class="text-right font-weight-medium">{{ formatAmount(tx.amount, tx.currency) }}</td>
             <td>{{ tx.currency }}</td>
             <td class="text-lightText">{{ tx.tradeId ?? '—' }}</td>
             <td class="text-lightText">{{ formatDate(tx.createdAt) }}</td>
@@ -205,10 +187,9 @@ onMounted(async () => {
         </tbody>
       </v-table>
 
-      <!-- Пагинация -->
       <v-card-actions v-if="totalPages > 1" class="justify-center">
         <v-pagination v-model="currentPage" :length="totalPages" :total-visible="7" density="compact" />
       </v-card-actions>
-    </v-card>
+    </UiTableCard>
   </div>
 </template>

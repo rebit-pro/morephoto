@@ -129,11 +129,11 @@ onUnmounted(() => {
         <v-row align="center">
           <v-col cols="12" lg="8">
             <div class="d-flex align-center flex-wrap ga-3 mb-4">
-              <v-chip :color="hasOrderBookAccess ? 'success' : 'warning'" variant="tonal" size="small">
+              <v-chip :color="hasOrderBookAccess ? 'success' : 'warning'" variant="tonal" size="small" class="font-weight-bold">
                 {{ hasOrderBookAccess ? 'Bybit API активен' : 'Доступ к стакану ограничен' }}
               </v-chip>
-              <v-chip color="secondary" variant="tonal" size="small">Пара: {{ exchange.selectedPair.label }}</v-chip>
-              <v-chip color="info" variant="tonal" size="small">Автообновление раз в 15 секунд</v-chip>
+              <v-chip color="secondary" variant="tonal" size="small" class="font-weight-bold">Пара: {{ exchange.selectedPair.label }}</v-chip>
+              <v-chip color="info" variant="tonal" size="small" class="font-weight-bold">Автообновление раз в 15 секунд</v-chip>
             </div>
 
             <h2 class="text-h4 text-md-h3 font-weight-bold mb-2">P2P стакан</h2>
@@ -144,10 +144,10 @@ onUnmounted(() => {
 
           <v-col cols="12" lg="4">
             <div class="d-flex flex-column ga-3 orderbook-page__hero-actions">
-              <v-btn class="orderbook-page__hero-button" color="primary" size="large" prepend-icon="mdi-refresh" :loading="exchange.loading" @click="refreshOrderBook">
+              <v-btn class="orderbook-page__hero-button text-secondary" color="white" size="large" prepend-icon="mdi-refresh" :loading="exchange.loading" @click="refreshOrderBook">
                 Обновить стакан
               </v-btn>
-              <v-btn class="orderbook-page__hero-button" variant="outlined" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection">
+              <v-btn class="orderbook-page__hero-button text-secondary" color="white" variant="outlined" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection">
                 Настроить Bybit API
               </v-btn>
             </div>

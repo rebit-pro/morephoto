@@ -6,18 +6,21 @@ import {
   type TradeStatus,
   type ConfirmPaymentPayload,
   type ChatMessage,
-  type SendMessagePayload
+  type SendMessagePayload,
+  type CounterpartyInfo
 } from '@/api/exchange';
 
 export const useTradesStore = defineStore('trades', () => {
   const trades = ref<Trade[]>([]);
   const currentTrade = ref<Trade | null>(null);
+  const counterpartyInfo = ref<CounterpartyInfo | null>(null);
   const chatMessages = ref<ChatMessage[]>([]);
   const loading = ref(false);
   const chatLoading = ref(false);
   const actionLoading = ref(false);
   const error = ref<string | null>(null);
   let tradeDetailRequestGeneration = 0;
+  let counterpartyInfoRequestGeneration = 0;
 
   function updateTradeInCollections(trade: Trade): void {
     const index = trades.value.findIndex((item) => item.id === trade.id);
@@ -136,15 +139,38 @@ export const useTradesStore = defineStore('trades', () => {
     }
   }
 
+  async function fetchCounterpartyInfo(tradeId: number): Promise<void> {
+    const currentGeneration = ++counterpartyInfoRequestGeneration;
+
+    try {
+      const info = await exchangeApi.getCounterpartyInfo(tradeId);
+
+      if (currentGeneration !== counterpartyInfoRequestGeneration) {
+        return;
+      }
+
+      counterpartyInfo.value = info;
+    } catch {
+      if (currentGeneration !== counterpartyInfoRequestGeneration) {
+        return;
+      }
+
+      counterpartyInfo.value = null;
+    }
+  }
+
   function clearCurrentTrade(): void {
     tradeDetailRequestGeneration += 1;
+    counterpartyInfoRequestGeneration += 1;
     currentTrade.value = null;
+    counterpartyInfo.value = null;
     chatMessages.value = [];
   }
 
   return {
     trades,
     currentTrade,
+    counterpartyInfo,
     chatMessages,
     loading,
     chatLoading,
@@ -152,6 +178,7 @@ export const useTradesStore = defineStore('trades', () => {
     error,
     fetchTrades,
     fetchTradeDetail,
+    fetchCounterpartyInfo,
     confirmPayment,
     releaseAssets,
     fetchChatHistory,

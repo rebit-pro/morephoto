@@ -1,5 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import { createHead } from '@unhead/vue/client';
 import App from './App.vue';
 import { router } from './router';
 import vuetify, { i18n } from './plugins/vuetify';
@@ -11,6 +12,8 @@ import { initializeMockRuntime } from '@/mocks/runtime';
 initializeMockRuntime();
 
 const app = createApp(App);
+const head = createHead();
+app.use(head);
 app.use(router);
 app.use(PerfectScrollbarPlugin);
 app.use(createPinia());

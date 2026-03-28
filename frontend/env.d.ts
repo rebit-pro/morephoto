@@ -36,3 +36,11 @@ interface Window {
 	callback: (captcha: GeeTestCaptchaInstance) => void,
   ) => void;
 }
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string;
+    description?: string;
+    requiresAuth?: boolean;
+  }
+}

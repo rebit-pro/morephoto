@@ -121,7 +121,8 @@ watch(highlightedAdvertisementId, async () => {
           style="max-width: 200px"
           @update:model-value="loadAds"
         />
-        <v-btn color="primary" prepend-icon="mdi-plus" @click="router.push('/exchange/advertisements/create')"> Создать </v-btn>
+        <v-btn color="secondary" variant="tonal" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook"> Стакан заявок </v-btn>
+        <v-btn color="secondary" prepend-icon="mdi-plus" @click="router.push('/exchange/advertisements/create')"> Создать </v-btn>
       </div>
     </div>
 
@@ -184,47 +185,47 @@ watch(highlightedAdvertisementId, async () => {
               <div class="d-flex justify-end flex-wrap ga-1">
                 <v-btn
                   v-if="isMockApiEnabled && 'active' === ad.status"
+                  icon="mdi-chat-plus-outline"
                   size="small"
                   variant="text"
                   color="primary"
-                  prepend-icon="mdi-chat-plus-outline"
                   :disabled="ads.actionLoading"
+                  aria-label="Создать тестовую сделку"
+                  title="Создать тестовую сделку"
                   @click.stop="handleCreateMockTrade(ad.id)"
-                >
-                  Сделка
-                </v-btn>
+                />
                 <v-btn
                   v-if="'active' === ad.status"
+                  icon="mdi-pause"
                   size="small"
                   variant="text"
                   color="warning"
-                  prepend-icon="mdi-pause"
                   :disabled="ads.actionLoading"
+                  aria-label="Приостановить объявление"
+                  title="Приостановить объявление"
                   @click="handleToggle(ad.id, 'paused')"
-                >
-                  Отключить
-                </v-btn>
+                />
                 <v-btn
                   v-if="'paused' === ad.status"
+                  icon="mdi-play"
                   size="small"
                   variant="text"
                   color="success"
-                  prepend-icon="mdi-play"
                   :disabled="ads.actionLoading"
+                  aria-label="Включить объявление"
+                  title="Включить объявление"
                   @click="handleToggle(ad.id, 'active')"
-                >
-                  Включить
-                </v-btn>
+                />
                 <v-btn
+                  icon="mdi-delete-outline"
                   size="small"
                   variant="text"
                   color="error"
-                  prepend-icon="mdi-delete-outline"
                   :disabled="'cancelled' === ad.status || 'completed' === ad.status"
+                  aria-label="Удалить объявление"
+                  title="Удалить объявление"
                   @click="confirmDelete(ad.id)"
-                >
-                  Удалить
-                </v-btn>
+                />
               </div>
             </td>
           </tr>

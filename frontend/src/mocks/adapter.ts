@@ -14,6 +14,7 @@ import {
   getBalancesWithMock,
   getCashFlowReportWithMock,
   getChatScriptsWithMock,
+  getCounterpartyInfoWithMock,
   getCurrenciesWithMock,
   getCurrencyPairsWithMock,
   getOrderBookWithMock,
@@ -328,6 +329,12 @@ async function handleMockRequest(config: AxiosRequestConfig): Promise<MockEnvelo
     const id = getRouteId(path, /^\/api\/v1\/exchange\/trades\/(\d+)\/release$/);
 
     return ok(releaseAssetsWithMock(id));
+  }
+
+  if ('get' === method && /^\/api\/v1\/exchange\/trades\/\d+\/counterparty$/.test(path)) {
+    const tradeId = getRouteId(path, /^\/api\/v1\/exchange\/trades\/(\d+)\/counterparty$/);
+
+    return ok(getCounterpartyInfoWithMock(tradeId));
   }
 
   if ('get' === method && /^\/api\/v1\/exchange\/trades\/\d+\/chat$/.test(path)) {

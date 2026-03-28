@@ -102,8 +102,8 @@ onUnmounted(() => {
     <!-- User Profile -->
     <v-menu :close-on-content-click="false">
       <template #activator="{ props }">
-        <v-btn class="profileBtn text-primary" color="lightprimary" variant="flat" rounded="pill" v-bind="props">
-          <v-avatar size="30" color="primary" variant="tonal" class="me-2">
+        <v-btn class="profileBtn" variant="text" rounded="pill" v-bind="props">
+          <v-avatar size="30" color="primary" variant="tonal">
             <v-icon size="18">mdi-account</v-icon>
           </v-avatar>
         </v-btn>

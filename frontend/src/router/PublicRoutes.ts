@@ -8,22 +8,38 @@ const PublicRoutes = {
     {
       name: 'Home',
       path: '/',
-      component: () => import('@/views/home/HomePage.vue')
+      component: () => import('@/views/home/HomePage.vue'),
+      meta: {
+        title: 'Главная',
+        description: 'Rebit P2P — платформа для безопасной P2P-торговли криптовалютой. Обмен USDT по лучшим курсам.'
+      }
     },
     {
       name: 'Login',
       path: '/login',
-      component: () => import('@/views/authentication/LoginPage.vue')
+      component: () => import('@/views/authentication/LoginPage.vue'),
+      meta: {
+        title: 'Вход',
+        description: 'Войдите в аккаунт Rebit P2P для доступа к торговле и управлению балансами.'
+      }
     },
     {
       name: 'Register',
       path: '/register',
-      component: () => import('@/views/authentication/RegisterPage.vue')
+      component: () => import('@/views/authentication/RegisterPage.vue'),
+      meta: {
+        title: 'Регистрация',
+        description: 'Создайте аккаунт Rebit P2P и начните торговать криптовалютой на P2P-платформе.'
+      }
     },
     {
       name: 'Error 404',
       path: '/error',
-      component: () => import('@/views/pages/maintenance/error/Error404Page.vue')
+      component: () => import('@/views/pages/maintenance/error/Error404Page.vue'),
+      meta: {
+        title: 'Страница не найдена',
+        description: 'Запрашиваемая страница не найдена.'
+      }
     }
   ]
 };
