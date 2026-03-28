@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Presentation\Command\Balance;
 
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Share\Application\Contract\Wallet\BalanceSyncPublisherInterface;
+use Rebit\Share\Application\Contract\Wallet\Message\SyncBalanceMessage;
 use Rebit\Share\Presentation\Command\RebitCommand;
-use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class TestBalanceSyncCommand extends RebitCommand
 {
     public function __construct(
-        private readonly MessagePublisherInterface $publisher,
+        private readonly BalanceSyncPublisherInterface $publisher,
     ) {
         parent::__construct();
     }

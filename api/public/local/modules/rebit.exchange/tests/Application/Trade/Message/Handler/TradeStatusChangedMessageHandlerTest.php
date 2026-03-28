@@ -13,11 +13,11 @@ use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Messenger\AbstractMessage;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
+use Rebit\Share\Application\Contract\Wallet\BalanceSyncPublisherInterface;
+use Rebit\Share\Application\Contract\Wallet\Message\SyncBalanceMessage;
 use Rebit\Share\Shared\Exception\RepositoryException;
-use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
 
 /**
  * @internal
@@ -38,7 +38,7 @@ final class TradeStatusChangedMessageHandlerTest extends TestCase
         $handler = new TradeStatusChangedMessageHandler(
             $tradeRepository,
             $this->createStub(ChatScriptExecutionRepository::class),
-            $this->createStub(MessagePublisherInterface::class),
+            $this->createStub(BalanceSyncPublisherInterface::class),
             $this->createStub(NotificationPublisherInterface::class),
             $logger,
         );
@@ -66,7 +66,7 @@ final class TradeStatusChangedMessageHandlerTest extends TestCase
             }
         });
 
-        $balancePublisher = $this->createMock(MessagePublisherInterface::class);
+        $balancePublisher = $this->createMock(BalanceSyncPublisherInterface::class);
         $balancePublisher
             ->expects($this->once())
             ->method('dispatch')
@@ -116,7 +116,7 @@ final class TradeStatusChangedMessageHandlerTest extends TestCase
 
         $executionRepository = $this->createStub(ChatScriptExecutionRepository::class);
 
-        $balancePublisher = $this->createMock(MessagePublisherInterface::class);
+        $balancePublisher = $this->createMock(BalanceSyncPublisherInterface::class);
         $balancePublisher->expects($this->once())->method('dispatch')->willThrowException(new \RuntimeException('queue down'));
 
         $notificationPublisher = $this->createMock(NotificationPublisherInterface::class);

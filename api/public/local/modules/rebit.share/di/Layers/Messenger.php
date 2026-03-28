@@ -9,7 +9,9 @@ use Rebit\Share\Infrastructure\Messenger\ConsumerRunner;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Infrastructure\Messenger\DedupCacheInterface;
 use Rebit\Share\Infrastructure\Notification\NullNotificationPublisher;
+use Rebit\Share\Infrastructure\Wallet\NullBalanceSyncPublisher;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
+use Rebit\Share\Application\Contract\Wallet\BalanceSyncPublisherInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Enum\MessengerQueueEnum;
 use Rebit\Share\Shared\Facade\Log;
@@ -48,5 +50,12 @@ return [
      */
     NotificationPublisherInterface::class => [
         'constructor' => static fn(): NotificationPublisherInterface => new NullNotificationPublisher(),
+    ],
+    /**
+     * Fallback: NullPublisher используется, если rebit.wallet не установлен.
+     * Модуль rebit.wallet перезаписывает этот ключ реальной реализацией.
+     */
+    BalanceSyncPublisherInterface::class => [
+        'constructor' => static fn(): BalanceSyncPublisherInterface => new NullBalanceSyncPublisher(),
     ],
 ];

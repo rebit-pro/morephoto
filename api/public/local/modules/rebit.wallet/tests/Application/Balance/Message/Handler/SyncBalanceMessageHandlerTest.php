@@ -6,11 +6,11 @@ namespace Rebit\Wallet\Tests\Application\Balance\Message\Handler;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Rebit\Share\Application\Contract\Wallet\Message\SyncBalanceMessage;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Wallet\Application\Balance\Dto\Result\BalanceListResultDto;
 use Rebit\Wallet\Application\Balance\Dto\Result\BalanceResultDto;
 use Rebit\Wallet\Application\Balance\Message\Handler\SyncBalanceMessageHandler;
-use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
 use Rebit\Wallet\Application\Balance\UseCase\SyncBalancesUseCase;
 
 /**

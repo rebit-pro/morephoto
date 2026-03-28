@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Application\Balance\Message;
 
-use Rebit\Share\Application\Contract\Messenger\AbstractMessage;
+use Rebit\Share\Application\Contract\Wallet\Message\SyncBalanceMessage;
 
-final readonly class SyncBalanceMessage extends AbstractMessage
-{
-    public function __construct(
-        public int $userId,
-        public ?string $currency = null,
-    ) {
-        parent::__construct();
-    }
-}
+class_alias(
+    SyncBalanceMessage::class,
+    __NAMESPACE__ . '\SyncBalanceMessage',
+);

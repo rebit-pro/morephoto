@@ -7,6 +7,7 @@ use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
+use Rebit\Share\Application\Contract\Wallet\BalanceSyncPublisherInterface;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
 use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
@@ -21,6 +22,7 @@ use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
 use Rebit\Wallet\Infrastructure\Adapter\BalanceQueryAdapter;
+use Rebit\Wallet\Infrastructure\Balance\Messenger\BalanceSyncPublisher;
 use Rebit\Wallet\Infrastructure\Balance\Messenger\WalletMessengerFactory;
 use Rebit\Wallet\Infrastructure\Bybit\BybitBalanceGateway;
 use Rebit\Wallet\Presentation\Command\Balance\BalanceSyncConsumerCommand;
@@ -44,10 +46,14 @@ return [
             Log::channel(LogChannelEnum::wallet),
         ],
     ],
-    'wallet.balance_sync.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => WalletMessengerFactory::createPublisher(
-            ServiceLocator::getInstance(),
+    BalanceSyncPublisherInterface::class => [
+        'constructor' => static fn(): BalanceSyncPublisherInterface => new BalanceSyncPublisher(
+            WalletMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
+    ],
+    'wallet.balance_sync.publisher' => [
+        'constructor' => static fn(): MessagePublisherInterface => ServiceLocator::getInstance()
+            ->get(BalanceSyncPublisherInterface::class),
     ],
     GetBalancesUseCase::class => [
         'className' => GetBalancesUseCase::class,
@@ -117,7 +123,7 @@ return [
     TestBalanceSyncCommand::class => [
         'className' => TestBalanceSyncCommand::class,
         'constructorParams' => static fn(): array => [
-            ServiceLocator::getInstance()->get('wallet.balance_sync.publisher'),
+            ServiceLocator::getInstance()->get(BalanceSyncPublisherInterface::class),
         ],
     ],
     BalanceQueryInterface::class => [

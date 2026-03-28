@@ -32,6 +32,7 @@ use Rebit\Exchange\Presentation\Controller\TradeController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
+use Rebit\Share\Application\Contract\Wallet\BalanceSyncPublisherInterface;
 use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
@@ -81,7 +82,7 @@ return [
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(TradeRepository::class),
             ServiceLocator::getInstance()->get(ChatScriptExecutionRepository::class),
-            ServiceLocator::getInstance()->get('wallet.balance_sync.publisher'),
+            ServiceLocator::getInstance()->get(BalanceSyncPublisherInterface::class),
             ServiceLocator::getInstance()->get(NotificationPublisherInterface::class),
             Log::channel(LogChannelEnum::exchange),
         ],

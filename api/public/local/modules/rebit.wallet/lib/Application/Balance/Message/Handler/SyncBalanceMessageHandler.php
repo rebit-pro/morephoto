@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Rebit\Wallet\Application\Balance\Message\Handler;
 
 use Psr\Log\LoggerInterface;
+use Rebit\Share\Application\Contract\Wallet\Message\SyncBalanceMessage;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
-use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
 use Rebit\Wallet\Application\Balance\UseCase\SyncBalancesUseCase;
 
 final readonly class SyncBalanceMessageHandler

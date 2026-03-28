@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Infrastructure\Balance\Messenger;
 
+use Rebit\Share\Application\Contract\Wallet\Message\SyncBalanceMessage;
 use Rebit\Share\Infrastructure\Messenger\AbstractMessengerFactory;
 use Rebit\Share\Infrastructure\Messenger\MessengerRouteDto;
 use Rebit\Share\Shared\Enum\MessengerQueueEnum;
 use Rebit\Wallet\Application\Balance\Message\Handler\SyncBalanceMessageHandler;
-use Rebit\Wallet\Application\Balance\Message\SyncBalanceMessage;
 
 final class WalletMessengerFactory extends AbstractMessengerFactory
 {
