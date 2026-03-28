@@ -66,7 +66,7 @@ final readonly class SyncOrderBookUseCase
         [$tokenId, $currencyId] = $parts;
 
         try {
-            $items = $this->orderBookGateway->fetchOrderBook(
+            $orderBook = $this->orderBookGateway->fetchOrderBook(
                 $userId,
                 $tokenId,
                 $currencyId,
@@ -83,21 +83,21 @@ final readonly class SyncOrderBookUseCase
         }
 
         $entries = [];
-        foreach ($items as $item) {
+        foreach ($orderBook->items as $item) {
             $entries[] = [
-                'bybitOrderId' => (string)($item['id'] ?? ''),
+                'bybitOrderId' => $item->id,
                 'currencyPairId' => $currencyPairId,
                 'side' => $side->value,
-                'price' => (float)($item['price'] ?? 0),
-                'quantity' => (float)($item['lastQuantity'] ?? 0),
-                'minAmount' => (float)($item['minAmount'] ?? 0),
-                'maxAmount' => (float)($item['maxAmount'] ?? 0),
-                'counterpartyName' => (string)($item['nickName'] ?? ''),
+                'price' => (float)$item->price,
+                'quantity' => (float)$item->lastQuantity,
+                'minAmount' => (float)$item->minAmount,
+                'maxAmount' => (float)$item->maxAmount,
+                'counterpartyName' => $item->nickName,
                 'counterpartyRating' => 0.0,
-                'counterpartyTrades' => (int)($item['recentOrderNum'] ?? 0),
-                'counterpartyCompletionRate' => (float)($item['recentExecuteRate'] ?? 0),
-                'paymentMethodIds' => json_encode($item['payments'] ?? [], JSON_THROW_ON_ERROR),
-                'paymentTimeLimit' => (int)($item['paymentPeriod'] ?? 15),
+                'counterpartyTrades' => $item->recentOrderNum,
+                'counterpartyCompletionRate' => $item->recentExecuteRate,
+                'paymentMethodIds' => json_encode($item->payments, JSON_THROW_ON_ERROR),
+                'paymentTimeLimit' => $item->paymentPeriod,
             ];
         }
 

@@ -45,7 +45,7 @@ final readonly class TradeDiscoveredMessageHandler
             return;
         }
 
-        $orderInfo = [];
+        $orderInfo = null;
 
         try {
             $orderInfo = $this->enrichTradeFromBybitUseCase->execute($trade);
@@ -58,7 +58,7 @@ final readonly class TradeDiscoveredMessageHandler
             ]);
         }
 
-        if ([] !== $orderInfo) {
+        if (null !== $orderInfo) {
             try {
                 $this->syncCounterpartyUseCase->execute($trade, $orderInfo);
             } catch (\Throwable $exception) {

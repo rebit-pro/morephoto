@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\OrderBook\Port;
 
+use Rebit\Exchange\Application\OrderBook\Dto\Bybit\BybitOrderBookListDto;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -13,20 +14,6 @@ use Rebit\Share\Shared\Exception\HttpException;
 interface BybitOrderBookGatewayInterface
 {
     /**
-     * @return array<int, array{
-     *     id: string,
-     *     price: string,
-     *     lastQuantity: string,
-     *     minAmount: string,
-     *     maxAmount: string,
-     *     nickName: string,
-     *     recentExecuteRate: int|string,
-     *     recentOrderNum: int|string,
-     *     payments: array<int, string>,
-     *     paymentPeriod: int,
-     *     side: int|string,
-     * }>
-     *
      * @throws HttpException
      */
     public function fetchOrderBook(
@@ -36,5 +23,5 @@ interface BybitOrderBookGatewayInterface
         string $side,
         int $page = 1,
         int $size = 30,
-    ): array;
+    ): BybitOrderBookListDto;
 }

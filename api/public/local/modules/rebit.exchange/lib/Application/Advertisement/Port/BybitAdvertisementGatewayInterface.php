@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\Advertisement\Port;
 
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitAdvertisementCreateResultDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitAdvertisementInfoDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitAdvertisementListDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitCreateAdvertisementDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitPersonalAdvertisementListRequestDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitUpdateAdvertisementDto;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -14,22 +20,16 @@ interface BybitAdvertisementGatewayInterface
     /**
      * Создать объявление. POST /v5/p2p/item/create
      *
-     * @param array<string, mixed> $params
-     *
-     * @return string ID созданного объявления (itemId)
-     *
      * @throws HttpException
      */
-    public function create(int $userId, array $params): string;
+    public function create(int $userId, BybitCreateAdvertisementDto $dto): BybitAdvertisementCreateResultDto;
 
     /**
      * Обновить объявление. POST /v5/p2p/item/update
      *
-     * @param array<string, mixed> $params
-     *
      * @throws HttpException
      */
-    public function update(int $userId, array $params): void;
+    public function update(int $userId, BybitUpdateAdvertisementDto $dto): void;
 
     /**
      * Удалить (отменить) объявление. POST /v5/p2p/item/cancel
@@ -41,20 +41,17 @@ interface BybitAdvertisementGatewayInterface
     /**
      * Получить список объявлений пользователя. POST /v5/p2p/item/personal/list
      *
-     * @param array<string, mixed> $params
-     *
-     * @return array<string, mixed>
-     *
      * @throws HttpException
      */
-    public function fetchPersonalList(int $userId, array $params = []): array;
+    public function fetchPersonalList(
+        int $userId,
+        BybitPersonalAdvertisementListRequestDto $dto = new BybitPersonalAdvertisementListRequestDto(),
+    ): BybitAdvertisementListDto;
 
     /**
      * Получить детали объявления. POST /v5/p2p/item/info
      *
-     * @return array<string, mixed>
-     *
      * @throws HttpException
      */
-    public function fetchInfo(int $userId, string $bybitAdId): array;
+    public function fetchInfo(int $userId, string $bybitAdId): BybitAdvertisementInfoDto;
 }

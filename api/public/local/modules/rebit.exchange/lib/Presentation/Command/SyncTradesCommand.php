@@ -88,13 +88,13 @@ final class SyncTradesCommand extends RebitCommand
     private function syncUserTrades(int $userId): array
     {
         $result = $this->bybitGateway->fetchActiveOrders($userId);
-        $items = $result['items'] ?? [];
+        $items = $result->items;
 
         $newCount = 0;
         $updatedCount = 0;
 
         foreach ($items as $item) {
-            $bybitOrderId = (string)($item['id'] ?? '');
+            $bybitOrderId = $item->id;
             if ('' === $bybitOrderId) {
                 continue;
             }
@@ -102,13 +102,13 @@ final class SyncTradesCommand extends RebitCommand
             $existing = $this->tradeRepository->findByBybitOrderId($bybitOrderId);
 
             if (null === $existing) {
-                $bybitStatus = (int)($item['status'] ?? 0);
-                $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
+                $bybitStatus = $item->status;
+                $side = (0 === $item->side) ? 'buy' : 'sell';
                 $buyerUserId = 'buy' === $side ? $userId : 0;
                 $sellerUserId = 'sell' === $side ? $userId : 0;
-                $fiatAmountRaw = (string)($item['amount'] ?? '0');
+                $fiatAmountRaw = $item->amount;
                 $fiatAmount = (float)$fiatAmountRaw;
-                $counterpartyName = (string)($item['targetNickName'] ?? '');
+                $counterpartyName = $item->targetNickName;
 
                 $trade = $this->tradeRepository->createFromBybit([
                     'bybitOrderId' => $bybitOrderId,
@@ -116,10 +116,10 @@ final class SyncTradesCommand extends RebitCommand
                     'buyerUserId' => $buyerUserId,
                     'sellerUserId' => $sellerUserId,
                     'side' => $side,
-                    'price' => (float)($item['price'] ?? 0),
+                    'price' => (float)$item->price,
                     'quantity' => 0.0,
                     'fiatAmount' => $fiatAmount,
-                    'fee' => (float)($item['fee'] ?? 0),
+                    'fee' => (float)$item->fee,
                     'status' => TradeStatusEnum::fromBybit($bybitStatus)->value,
                     'counterpartyName' => $counterpartyName,
                 ]);
@@ -147,7 +147,7 @@ final class SyncTradesCommand extends RebitCommand
 
                 ++$newCount;
             } else {
-                $bybitStatus = (int)($item['status'] ?? 0);
+                $bybitStatus = $item->status;
                 if ($bybitStatus !== $existing->getUfBybitStatus()) {
                     $oldStatus = (string)$existing->getUfStatus();
                     $newStatus = TradeStatusEnum::fromBybit($bybitStatus)->value;

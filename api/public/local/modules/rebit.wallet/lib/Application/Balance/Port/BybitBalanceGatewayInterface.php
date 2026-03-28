@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Wallet\Application\Balance\Port;
 
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Wallet\Application\Balance\Dto\Bybit\BybitBalanceListDto;
 
 /**
  * Порт для получения балансов из Bybit API.
@@ -15,14 +16,7 @@ interface BybitBalanceGatewayInterface
     /**
      * Получить список монет с балансами для указанного пользователя.
      *
-     * @return array<int, array{
-     *     coin: string,
-     *     available: float,
-     *     locked: float,
-     *     total: float,
-     * }>
-     *
      * @throws HttpException
      */
-    public function fetchBalances(int $userId): array;
+    public function fetchBalances(int $userId): BybitBalanceListDto;
 }

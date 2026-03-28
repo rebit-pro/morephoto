@@ -12,6 +12,7 @@ use Rebit\Wallet\Application\Balance\Port\BybitBalanceGatewayInterface;
 use Rebit\Wallet\Application\Balance\Dto\Result\BalanceListResultDto;
 use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
+use Rebit\Wallet\Application\Balance\Dto\Bybit\BybitBalanceListDto;
 
 /**
  * Синхронизация балансов пользователя с Bybit.
@@ -44,53 +45,46 @@ final readonly class SyncBalancesUseCase
     /**
      * Синхронизирует балансы по монетам с локальной базой.
      *
-     * @param array<int, array{
-     *     coin: string,
-     *     available: float,
-     *     locked: float,
-     *     total: float,
-     * }> $coins
-     *
      * @throws RepositoryException
      */
-    private function syncCoins(int $userId, array $coins): void
+    private function syncCoins(int $userId, BybitBalanceListDto $coins): void
     {
-        if ([] !== $coins) {
+        if ([] !== $coins->items) {
             $this->logger->info('Bybit coins received', [
                 'userId' => $userId,
-                'count' => count($coins),
-                'coins' => array_column($coins, 'coin'),
+                'count' => count($coins->items),
+                'coins' => array_map(static fn($coin): string => $coin->coin, $coins->items),
             ]);
         }
-        foreach ($coins as $coin) {
-            $currencyId = $this->currencyQuery->findIdByCode($coin['coin']);
+        foreach ($coins->items as $coin) {
+            $currencyId = $this->currencyQuery->findIdByCode($coin->coin);
             if (null === $currencyId) {
                 $this->logger->warning('Skipped unknown coin: currencyId not resolved', [
                     'userId' => $userId,
-                    'coin' => $coin['coin'],
-                    'total' => $coin['total'],
+                    'coin' => $coin->coin,
+                    'total' => $coin->total,
                 ]);
                 continue;
             }
             $existingBalance = $this->balanceRepository->findByUserIdAndCurrencyId($userId, $currencyId);
             if (null !== $existingBalance) {
                 $localTotal = $existingBalance->getUfTotal();
-                if ($this->balanceCalculator->detectDiscrepancy($localTotal, $coin['total'])) {
+                if ($this->balanceCalculator->detectDiscrepancy($localTotal, $coin->total)) {
                     $this->logger->warning('BalanceDiscrepancy', [
                         'userId' => $userId,
                         'currencyId' => $currencyId,
                         'localTotal' => $localTotal,
-                        'bybitTotal' => $coin['total'],
-                        'difference' => abs($localTotal - $coin['total']),
+                        'bybitTotal' => $coin->total,
+                        'difference' => abs($localTotal - $coin->total),
                     ]);
                 }
             }
             $this->balanceRepository->upsertFromSync(
                 $userId,
                 $currencyId,
-                $coin['available'],
-                $coin['locked'],
-                $coin['total'],
+                $coin->available,
+                $coin->locked,
+                $coin->total,
             );
         }
     }

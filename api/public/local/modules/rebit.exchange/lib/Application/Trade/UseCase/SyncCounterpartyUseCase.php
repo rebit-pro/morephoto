@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Application\Trade\UseCase;
 
 use Psr\Log\LoggerInterface;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderInfoDto;
 use Rebit\Exchange\Application\Trade\Port\BybitCounterpartyGatewayInterface;
 use Rebit\Exchange\Domain\Counterparty\Repository\CounterpartyRepository;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
@@ -22,14 +23,12 @@ final readonly class SyncCounterpartyUseCase
     ) {}
 
     /**
-     * @param array<string, mixed> $orderInfo
-     *
      * @throws HttpException
      * @throws RepositoryException
      */
-    public function execute(Trade $trade, array $orderInfo): void
+    public function execute(Trade $trade, BybitTradeOrderInfoDto $orderInfo): void
     {
-        $targetUserId = (string)($orderInfo['targetUserId'] ?? '');
+        $targetUserId = $orderInfo->targetUserId;
         if ('' === $targetUserId) {
             $this->logger->warning('SyncCounterparty пропущен: targetUserId отсутствует в order info', [
                 'tradeId' => $trade->getId(),
@@ -67,8 +66,8 @@ final readonly class SyncCounterpartyUseCase
             $trade->setUfBuyerUserId($counterpartyUserId);
         }
 
-        if ('' === $trade->getUfCounterpartyName() && '' !== $profile['nickName']) {
-            $trade->setUfCounterpartyName((string)$profile['nickName']);
+        if ('' === $trade->getUfCounterpartyName() && '' !== $profile->nickName) {
+            $trade->setUfCounterpartyName($profile->nickName);
         }
 
         $this->tradeRepository->save($trade);

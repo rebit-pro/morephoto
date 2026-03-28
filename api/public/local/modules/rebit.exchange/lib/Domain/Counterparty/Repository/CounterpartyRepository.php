@@ -8,6 +8,7 @@ use Bitrix\Main\GroupTable;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\UserGroupTable;
 use Bitrix\Main\UserTable;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitCounterpartyProfileDto;
 use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
@@ -40,40 +41,11 @@ final readonly class CounterpartyRepository
     }
 
     /**
-     * @param array{
-     *     userId: string,
-     *     nickName: string,
-     *     realName?: string,
-     *     realNameEn?: string,
-     *     kycLevel?: int|string,
-     *     kycCountryCode?: string,
-     *     isOnline?: bool,
-     *     totalFinishCount?: int|string,
-     *     totalFinishBuyCount?: int|string,
-     *     totalFinishSellCount?: int|string,
-     *     recentRate?: int|string,
-     *     recentFinishCount?: int|string,
-     *     averageReleaseTime?: string,
-     *     averageTransferTime?: string,
-     *     accountCreateDays?: int|string,
-     *     firstTradeDays?: int|string,
-     *     totalTradeAmount?: string,
-     *     recentTradeAmount?: string,
-     *     goodAppraiseRate?: string,
-     *     goodAppraiseCount?: int|string,
-     *     badAppraiseCount?: int|string,
-     *     authStatus?: int|string,
-     *     vipLevel?: int|string,
-     *     userType?: string,
-     *     blocked?: string,
-     *     registerTime?: string,
-     * } $profile
-     *
      * @throws RepositoryException
      */
-    public function upsert(array $profile): int
+    public function upsert(BybitCounterpartyProfileDto $profile): int
     {
-        $existingUserId = $this->findIdByBybitUserId((string)$profile['userId']);
+        $existingUserId = $this->findIdByBybitUserId($profile->userId);
         $fields = $this->buildFields($profile);
 
         if (null !== $existingUserId) {
@@ -82,7 +54,7 @@ final readonly class CounterpartyRepository
             return $existingUserId;
         }
 
-        return $this->create($fields, (string)$profile['userId']);
+        return $this->create($fields, $profile->userId);
     }
 
     /**
@@ -143,42 +115,40 @@ final readonly class CounterpartyRepository
     }
 
     /**
-     * @param array<string, mixed> $profile
-     *
      * @return array<string, int|string>
      */
-    private function buildFields(array $profile): array
+    private function buildFields(BybitCounterpartyProfileDto $profile): array
     {
         $now = new DateTime();
 
         return [
-            'NAME' => (string)($profile['nickName'] ?? ('bybit_' . (string)$profile['userId'])),
-            'UF_BYBIT_USER_ID' => (string)$profile['userId'],
-            'UF_BYBIT_NICKNAME' => (string)($profile['nickName'] ?? ''),
-            'UF_BYBIT_REAL_NAME' => (string)($profile['realName'] ?? ''),
-            'UF_BYBIT_REAL_NAME_EN' => (string)($profile['realNameEn'] ?? ''),
-            'UF_BYBIT_KYC_LEVEL' => (int)($profile['kycLevel'] ?? 0),
-            'UF_BYBIT_KYC_COUNTRY' => (string)($profile['kycCountryCode'] ?? ''),
-            'UF_BYBIT_IS_ONLINE' => (isset($profile['isOnline']) && true === (bool)$profile['isOnline']) ? 1 : 0,
-            'UF_BYBIT_TOTAL_TRADES' => (int)($profile['totalFinishCount'] ?? 0),
-            'UF_BYBIT_TOTAL_BUY_TRADES' => (int)($profile['totalFinishBuyCount'] ?? 0),
-            'UF_BYBIT_TOTAL_SELL_TRADES' => (int)($profile['totalFinishSellCount'] ?? 0),
-            'UF_BYBIT_RECENT_RATE' => (string)($profile['recentRate'] ?? ''),
-            'UF_BYBIT_RECENT_TRADES' => (int)($profile['recentFinishCount'] ?? 0),
-            'UF_BYBIT_AVG_RELEASE_TIME' => (string)($profile['averageReleaseTime'] ?? ''),
-            'UF_BYBIT_AVG_TRANSFER_TIME' => (string)($profile['averageTransferTime'] ?? ''),
-            'UF_BYBIT_ACCOUNT_DAYS' => (int)($profile['accountCreateDays'] ?? 0),
-            'UF_BYBIT_FIRST_TRADE_DAYS' => (int)($profile['firstTradeDays'] ?? 0),
-            'UF_BYBIT_TRADE_AMOUNT' => (string)($profile['totalTradeAmount'] ?? ''),
-            'UF_BYBIT_RECENT_TRADE_AMOUNT' => (string)($profile['recentTradeAmount'] ?? ''),
-            'UF_BYBIT_GOOD_RATE' => (string)($profile['goodAppraiseRate'] ?? ''),
-            'UF_BYBIT_GOOD_COUNT' => (int)($profile['goodAppraiseCount'] ?? 0),
-            'UF_BYBIT_BAD_COUNT' => (int)($profile['badAppraiseCount'] ?? 0),
-            'UF_BYBIT_AUTH_STATUS' => (int)($profile['authStatus'] ?? 0),
-            'UF_BYBIT_VIP_LEVEL' => (int)($profile['vipLevel'] ?? 0),
-            'UF_BYBIT_USER_TYPE' => (string)($profile['userType'] ?? ''),
-            'UF_BYBIT_BLOCKED' => (string)($profile['blocked'] ?? ''),
-            'UF_BYBIT_REGISTER_TIME' => (string)($profile['registerTime'] ?? ''),
+            'NAME' => '' !== $profile->nickName ? $profile->nickName : 'bybit_' . $profile->userId,
+            'UF_BYBIT_USER_ID' => $profile->userId,
+            'UF_BYBIT_NICKNAME' => $profile->nickName,
+            'UF_BYBIT_REAL_NAME' => $profile->realName,
+            'UF_BYBIT_REAL_NAME_EN' => $profile->realNameEn,
+            'UF_BYBIT_KYC_LEVEL' => $profile->kycLevel,
+            'UF_BYBIT_KYC_COUNTRY' => $profile->kycCountryCode,
+            'UF_BYBIT_IS_ONLINE' => $profile->isOnline ? 1 : 0,
+            'UF_BYBIT_TOTAL_TRADES' => $profile->totalFinishCount,
+            'UF_BYBIT_TOTAL_BUY_TRADES' => $profile->totalFinishBuyCount,
+            'UF_BYBIT_TOTAL_SELL_TRADES' => $profile->totalFinishSellCount,
+            'UF_BYBIT_RECENT_RATE' => $profile->recentRate,
+            'UF_BYBIT_RECENT_TRADES' => $profile->recentFinishCount,
+            'UF_BYBIT_AVG_RELEASE_TIME' => $profile->averageReleaseTime,
+            'UF_BYBIT_AVG_TRANSFER_TIME' => $profile->averageTransferTime,
+            'UF_BYBIT_ACCOUNT_DAYS' => $profile->accountCreateDays,
+            'UF_BYBIT_FIRST_TRADE_DAYS' => $profile->firstTradeDays,
+            'UF_BYBIT_TRADE_AMOUNT' => $profile->totalTradeAmount,
+            'UF_BYBIT_RECENT_TRADE_AMOUNT' => $profile->recentTradeAmount,
+            'UF_BYBIT_GOOD_RATE' => $profile->goodAppraiseRate,
+            'UF_BYBIT_GOOD_COUNT' => $profile->goodAppraiseCount,
+            'UF_BYBIT_BAD_COUNT' => $profile->badAppraiseCount,
+            'UF_BYBIT_AUTH_STATUS' => $profile->authStatus,
+            'UF_BYBIT_VIP_LEVEL' => $profile->vipLevel,
+            'UF_BYBIT_USER_TYPE' => $profile->userType,
+            'UF_BYBIT_BLOCKED' => $profile->blocked,
+            'UF_BYBIT_REGISTER_TIME' => $profile->registerTime,
             'UF_BYBIT_LAST_SYNCED_AT' => $now->toString(),
         ];
     }

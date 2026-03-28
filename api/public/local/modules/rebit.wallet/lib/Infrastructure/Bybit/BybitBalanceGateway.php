@@ -8,6 +8,8 @@ use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Wallet\Application\Balance\Dto\Bybit\BybitBalanceDto;
+use Rebit\Wallet\Application\Balance\Dto\Bybit\BybitBalanceListDto;
 use Rebit\Wallet\Application\Balance\Port\BybitBalanceGatewayInterface;
 
 /**
@@ -30,7 +32,7 @@ final readonly class BybitBalanceGateway implements BybitBalanceGatewayInterface
     /**
      * {@inheritDoc}
      */
-    public function fetchBalances(int $userId): array
+    public function fetchBalances(int $userId): BybitBalanceListDto
     {
         $connection = $this->connectionResolver->resolve($userId);
         try {
@@ -59,29 +61,29 @@ final readonly class BybitBalanceGateway implements BybitBalanceGatewayInterface
      * locked = walletBalance - transferBalance
      *
      * @param array<string, mixed> $result
-     *
-     * @return array<int, array{
-     *     coin: string,
-     *     available: float,
-     *     locked: float,
-     *     total: float,
-     * }>
      */
-    private function extractCoins(array $result): array
+    private function extractCoins(array $result): BybitBalanceListDto
     {
         $coins = [];
-        foreach ($result['balance'] ?? [] as $coinData) {
+
+        /** @var array<int, array<string, mixed>> $balances */
+        $balances = is_array($result['balance'] ?? null)
+            ? $result['balance']
+            : [];
+
+        foreach ($balances as $coinData) {
             $total = (float)($coinData['walletBalance'] ?? 0);
             $available = (float)($coinData['transferBalance'] ?? 0);
             $locked = $total - $available;
-            $coins[] = [
-                'coin' => (string)($coinData['coin'] ?? ''),
-                'available' => $available,
-                'locked' => $locked,
-                'total' => $total,
-            ];
+
+            $coins[] = new BybitBalanceDto(
+                coin: (string)($coinData['coin'] ?? ''),
+                available: $available,
+                locked: $locked,
+                total: $total,
+            );
         }
 
-        return $coins;
+        return new BybitBalanceListDto(items: $coins);
     }
 }

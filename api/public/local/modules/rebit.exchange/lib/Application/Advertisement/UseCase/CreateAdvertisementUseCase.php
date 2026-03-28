@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\Advertisement\UseCase;
 
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitCreateAdvertisementDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitTradingPreferenceSetDto;
 use Rebit\Exchange\Application\Advertisement\Dto\Request\CreateAdvertisementRequestDto;
 use Rebit\Exchange\Application\Advertisement\Dto\Result\AdvertisementResultDto;
 use Rebit\Exchange\Application\Advertisement\Port\BybitAdvertisementGatewayInterface;
@@ -61,22 +63,38 @@ final readonly class CreateAdvertisementUseCase
             }
         }
 
-        $bybitAdId = $this->bybitGateway->create($userId, [
-            'tokenId' => $tokenId,
-            'currencyId' => $currencyId,
-            'side' => $side->toBybit(),
-            'priceType' => $priceType->toBybit(),
-            'premium' => $dto->premium ?? '',
-            'price' => $dto->price,
-            'minAmount' => $dto->minAmount,
-            'maxAmount' => $dto->maxAmount,
-            'paymentIds' => $dto->paymentMethodIds,
-            'remark' => $dto->conditions,
-            'tradingPreferenceSet' => $dto->tradingPreferenceSet,
-            'quantity' => $dto->quantity,
-            'paymentPeriod' => (string)$dto->paymentPeriod,
-            'itemType' => 'ORIGIN',
-        ]);
+        $bybitAdId = $this->bybitGateway->create(
+            $userId,
+            new BybitCreateAdvertisementDto(
+                tokenId: $tokenId,
+                currencyId: $currencyId,
+                side: $side->toBybit(),
+                priceType: $priceType->toBybit(),
+                premium: $dto->premium ?? '',
+                price: $dto->price,
+                minAmount: $dto->minAmount,
+                maxAmount: $dto->maxAmount,
+                paymentIds: $dto->paymentMethodIds,
+                remark: $dto->conditions,
+                tradingPreferenceSet: new BybitTradingPreferenceSetDto(
+                    hasUnPostAd: (string)($dto->tradingPreferenceSet['hasUnPostAd'] ?? ''),
+                    isKyc: (string)($dto->tradingPreferenceSet['isKyc'] ?? ''),
+                    isEmail: (string)($dto->tradingPreferenceSet['isEmail'] ?? ''),
+                    isMobile: (string)($dto->tradingPreferenceSet['isMobile'] ?? ''),
+                    hasRegisterTime: (string)($dto->tradingPreferenceSet['hasRegisterTime'] ?? ''),
+                    registerTimeThreshold: (string)($dto->tradingPreferenceSet['registerTimeThreshold'] ?? ''),
+                    orderFinishNumberDay30: (string)($dto->tradingPreferenceSet['orderFinishNumberDay30'] ?? ''),
+                    completeRateDay30: (string)($dto->tradingPreferenceSet['completeRateDay30'] ?? ''),
+                    nationalLimit: (string)($dto->tradingPreferenceSet['nationalLimit'] ?? ''),
+                    hasOrderFinishNumberDay30: (string)($dto->tradingPreferenceSet['hasOrderFinishNumberDay30'] ?? ''),
+                    hasCompleteRateDay30: (string)($dto->tradingPreferenceSet['hasCompleteRateDay30'] ?? ''),
+                    hasNationalLimit: (string)($dto->tradingPreferenceSet['hasNationalLimit'] ?? ''),
+                ),
+                quantity: $dto->quantity,
+                paymentPeriod: (string)$dto->paymentPeriod,
+                itemType: 'ORIGIN',
+            ),
+        )->itemId;
 
         $ad = $this->advertisementRepository->create(
             userId: $userId,

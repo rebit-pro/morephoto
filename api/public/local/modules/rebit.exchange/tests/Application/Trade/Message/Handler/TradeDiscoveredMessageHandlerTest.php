@@ -7,6 +7,7 @@ namespace Rebit\Exchange\Tests\Application\Trade\Message\Handler;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderInfoDto;
 use Rebit\Exchange\Application\Trade\Message\Handler\TradeDiscoveredMessageHandler;
 use Rebit\Exchange\Application\Trade\Message\TradeDiscoveredMessage;
 use Rebit\Exchange\Application\Trade\UseCase\EnrichTradeFromBybitUseCase;
@@ -56,23 +57,46 @@ final class TradeDiscoveredMessageHandlerTest extends TestCase
 
         $enrichCalled = 0;
         $enrichUseCase = $this->createStub(EnrichTradeFromBybitUseCase::class);
-        $enrichUseCase->method('execute')->willReturnCallback(function(Trade $actualTrade) use ($trade, &$enrichCalled): array {
+        $orderInfo = new BybitTradeOrderInfoDto(
+            id: 'order-1',
+            side: 0,
+            itemId: '',
+            userId: '',
+            nickName: '',
+            makerUserId: '',
+            targetUserId: '100',
+            targetNickName: '',
+            tokenId: '',
+            currencyId: '',
+            price: '',
+            quantity: '',
+            amount: '',
+            paymentType: 0,
+            transferDate: '',
+            status: 0,
+            createDate: '',
+            paymentTermList: [],
+            remark: '',
+            transferLastSeconds: '',
+        );
+
+        $enrichUseCase->method('execute')->willReturnCallback(function(Trade $actualTrade) use ($trade, &$enrichCalled, $orderInfo): BybitTradeOrderInfoDto {
             ++$enrichCalled;
             if ($actualTrade !== $trade) {
                 throw new AssertionFailedError('Unexpected trade in enrich use case');
             }
 
-            return ['targetUserId' => '100'];
+            return $orderInfo;
         });
 
         $syncCalled = 0;
         $syncUseCase = $this->createStub(SyncCounterpartyUseCase::class);
-        $syncUseCase->method('execute')->willReturnCallback(function(Trade $actualTrade, array $orderInfo) use ($trade, &$syncCalled): void {
+        $syncUseCase->method('execute')->willReturnCallback(function(Trade $actualTrade, BybitTradeOrderInfoDto $actualOrderInfo) use ($trade, &$syncCalled, $orderInfo): void {
             ++$syncCalled;
             if ($actualTrade !== $trade) {
                 throw new AssertionFailedError('Unexpected trade in sync use case');
             }
-            if (['targetUserId' => '100'] !== $orderInfo) {
+            if ($orderInfo !== $actualOrderInfo) {
                 throw new AssertionFailedError('Unexpected order info in sync use case');
             }
         });

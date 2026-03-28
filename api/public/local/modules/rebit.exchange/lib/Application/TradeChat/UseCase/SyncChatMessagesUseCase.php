@@ -38,14 +38,14 @@ final readonly class SyncChatMessagesUseCase
 
         $messages = $this->chatGateway->fetchMessages($userId, $orderId);
 
-        if ([] === $messages) {
+        if ([] === $messages->messages) {
             return 0;
         }
 
         $importedCount = 0;
 
-        foreach ($messages as $msg) {
-            $bybitMsgId = $msg['id'];
+        foreach ($messages->messages as $msg) {
+            $bybitMsgId = $msg->id;
 
             if ('' === $bybitMsgId) {
                 continue;
@@ -55,17 +55,17 @@ final readonly class SyncChatMessagesUseCase
                 continue;
             }
 
-            $contentType = ContentTypeEnum::tryFrom($msg['contentType']) ?? ContentTypeEnum::Str;
-            $createdAt = $this->resolveCreatedAt($msg['createDate']);
+            $contentType = ContentTypeEnum::tryFrom($msg->contentType) ?? ContentTypeEnum::Str;
+            $createdAt = $this->resolveCreatedAt($msg->createDate);
 
             $this->messageRepository->create(
                 tradeId: $trade->getId(),
                 userId: 0,
-                message: $msg['message'],
+                message: $msg->message,
                 messageType: MessageTypeEnum::User,
                 contentType: $contentType,
                 bybitMsgUuid: $bybitMsgId,
-                fileName: '' !== $msg['fileName'] ? $msg['fileName'] : null,
+                fileName: '' !== $msg->fileName ? $msg->fileName : null,
                 createdAt: $createdAt,
             );
 

@@ -6,6 +6,7 @@ namespace Rebit\Exchange\Tests\Application\Trade\UseCase;
 
 use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\TestCase;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderInfoDto;
 use Rebit\Exchange\Application\Trade\Dto\Result\TradeResultDto;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Application\Trade\UseCase\GetTradeUseCase;
@@ -34,7 +35,7 @@ final class GetTradeUseCaseTest extends TestCase
             ->expects($this->once())
             ->method('fetchOrderInfo')
             ->with(self::BUYER_ID, 'bybit-order-1')
-            ->willReturn(['status' => 10])
+            ->willReturn($this->createOrderInfoDto(status: 10))
         ;
 
         $result = (new GetTradeUseCase($repo, $gateway))->execute(1, self::BUYER_ID);
@@ -63,7 +64,7 @@ final class GetTradeUseCaseTest extends TestCase
         $repo->expects($this->once())->method('save')->with($trade);
 
         $gateway = $this->createStub(BybitTradeGatewayInterface::class);
-        $gateway->method('fetchOrderInfo')->willReturn(['status' => 20]);
+        $gateway->method('fetchOrderInfo')->willReturn($this->createOrderInfoDto(status: 20));
 
         (new GetTradeUseCase($repo, $gateway))->execute(1, self::BUYER_ID);
     }
@@ -182,5 +183,31 @@ final class GetTradeUseCaseTest extends TestCase
         $trade->method('getUfUpdatedAt')->willReturn($now);
 
         return $trade;
+    }
+
+    private function createOrderInfoDto(int $status): BybitTradeOrderInfoDto
+    {
+        return new BybitTradeOrderInfoDto(
+            id: 'bybit-order-1',
+            side: 0,
+            itemId: '',
+            userId: '',
+            nickName: '',
+            makerUserId: '',
+            targetUserId: '',
+            targetNickName: '',
+            tokenId: '',
+            currencyId: '',
+            price: '',
+            quantity: '',
+            amount: '',
+            paymentType: 0,
+            transferDate: '',
+            status: $status,
+            createDate: '',
+            paymentTermList: [],
+            remark: '',
+            transferLastSeconds: '',
+        );
     }
 }

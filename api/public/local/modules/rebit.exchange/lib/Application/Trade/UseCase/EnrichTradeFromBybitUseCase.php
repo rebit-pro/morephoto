@@ -6,6 +6,7 @@ namespace Rebit\Exchange\Application\Trade\UseCase;
 
 use Bitrix\Main\Type\DateTime;
 use Psr\Log\LoggerInterface;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderInfoDto;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\PaymentMethod\Repository\PaymentMethodRepository;
@@ -28,7 +29,7 @@ final readonly class EnrichTradeFromBybitUseCase
      * @throws HttpException
      * @throws RepositoryException
      */
-    public function execute(Trade $trade): array
+    public function execute(Trade $trade): ?BybitTradeOrderInfoDto
     {
         $userId = match ($trade->getUfSide()) {
             'buy' => 0 < $trade->getUfBuyerUserId() ? $trade->getUfBuyerUserId() : $trade->getUfSellerUserId(),
@@ -42,12 +43,12 @@ final readonly class EnrichTradeFromBybitUseCase
                 'bybitOrderId' => $trade->getUfBybitOrderId(),
             ]);
 
-            return [];
+            return null;
         }
 
         $orderInfo = $this->bybitTradeGateway->fetchOrderInfo($userId, $trade->getUfBybitOrderId());
 
-        $bybitAdId = (string)($orderInfo['itemId'] ?? '');
+        $bybitAdId = $orderInfo->itemId;
         if ('' !== $bybitAdId) {
             $advertisement = $this->advertisementRepository->findByBybitAdId($bybitAdId);
             if (null !== $advertisement) {
@@ -55,7 +56,7 @@ final readonly class EnrichTradeFromBybitUseCase
             }
         }
 
-        $paymentType = (int)($orderInfo['paymentType'] ?? 0);
+        $paymentType = $orderInfo->paymentType;
         if (0 < $paymentType) {
             $paymentMethod = $this->paymentMethodRepository->findByBybitId($paymentType);
             if (null !== $paymentMethod) {
@@ -63,22 +64,22 @@ final readonly class EnrichTradeFromBybitUseCase
             }
         }
 
-        $quantity = (float)($orderInfo['quantity'] ?? 0);
+        $quantity = (float)$orderInfo->quantity;
         if (0.0 < $quantity) {
             $trade->setUfQuantity($quantity);
         }
 
-        $remark = (string)($orderInfo['remark'] ?? '');
+        $remark = $orderInfo->remark;
         if ('' !== $remark) {
             $trade->setUfComment($remark);
         }
 
-        $paymentDeadlineSeconds = (int)($orderInfo['transferLastSeconds'] ?? 0);
+        $paymentDeadlineSeconds = (int)$orderInfo->transferLastSeconds;
         if (0 < $paymentDeadlineSeconds) {
             $trade->setUfPaymentDeadline((new DateTime())->add('+' . $paymentDeadlineSeconds . ' seconds'));
         }
 
-        $counterpartyName = (string)($orderInfo['targetNickName'] ?? '');
+        $counterpartyName = $orderInfo->targetNickName;
         if ('' !== $counterpartyName) {
             $trade->setUfCounterpartyName($counterpartyName);
         }

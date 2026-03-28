@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Infrastructure\Bybit;
 
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitCounterpartyProfileDto;
 use Rebit\Exchange\Application\Trade\Port\BybitCounterpartyGatewayInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
@@ -19,7 +20,7 @@ final readonly class BybitCounterpartyGateway implements BybitCounterpartyGatewa
         private BybitClientInterface $bybitClient,
     ) {}
 
-    public function fetchProfile(int $userId, string $originalUid, string $orderId): array
+    public function fetchProfile(int $userId, string $originalUid, string $orderId): BybitCounterpartyProfileDto
     {
         $connection = $this->connectionResolver->resolve($userId);
 
@@ -43,79 +44,33 @@ final readonly class BybitCounterpartyGateway implements BybitCounterpartyGatewa
         /** @var array<string, mixed> $profile */
         $profile = $response->result;
 
-        /** @var array{
-         *     userId: string,
-         *     nickName: string,
-         *     defaultNickName?: bool,
-         *     isOnline?: bool,
-         *     kycLevel?: int|string,
-         *     email?: string,
-         *     mobile?: string,
-         *     lastLogoutTime?: string,
-         *     recentRate?: int|string,
-         *     totalFinishCount?: int|string,
-         *     totalFinishSellCount?: int|string,
-         *     totalFinishBuyCount?: int|string,
-         *     recentFinishCount?: int|string,
-         *     averageReleaseTime?: string,
-         *     averageTransferTime?: string,
-         *     accountCreateDays?: int|string,
-         *     firstTradeDays?: int|string,
-         *     realName?: string,
-         *     recentTradeAmount?: string,
-         *     totalTradeAmount?: string,
-         *     registerTime?: string,
-         *     authStatus?: int|string,
-         *     kycCountryCode?: string,
-         *     blocked?: string,
-         *     goodAppraiseRate?: string,
-         *     goodAppraiseCount?: int|string,
-         *     badAppraiseCount?: int|string,
-         *     vipLevel?: int|string,
-         *     realNameEn?: string,
-         *     userType?: string,
-         * } $normalizedProfile
-         */
-        $normalizedProfile = [
-            'userId' => (string)($profile['userId'] ?? ''),
-            'nickName' => (string)($profile['nickName'] ?? ''),
-        ];
-
-        foreach ([
-            'defaultNickName',
-            'isOnline',
-            'kycLevel',
-            'email',
-            'mobile',
-            'lastLogoutTime',
-            'recentRate',
-            'totalFinishCount',
-            'totalFinishSellCount',
-            'totalFinishBuyCount',
-            'recentFinishCount',
-            'averageReleaseTime',
-            'averageTransferTime',
-            'accountCreateDays',
-            'firstTradeDays',
-            'realName',
-            'recentTradeAmount',
-            'totalTradeAmount',
-            'registerTime',
-            'authStatus',
-            'kycCountryCode',
-            'blocked',
-            'goodAppraiseRate',
-            'goodAppraiseCount',
-            'badAppraiseCount',
-            'vipLevel',
-            'realNameEn',
-            'userType',
-        ] as $field) {
-            if (array_key_exists($field, $profile)) {
-                $normalizedProfile[$field] = $profile[$field];
-            }
-        }
-
-        return $normalizedProfile;
+        return new BybitCounterpartyProfileDto(
+            userId: (string)($profile['userId'] ?? ''),
+            nickName: (string)($profile['nickName'] ?? ''),
+            realName: (string)($profile['realName'] ?? ''),
+            realNameEn: (string)($profile['realNameEn'] ?? ''),
+            kycLevel: (int)($profile['kycLevel'] ?? 0),
+            kycCountryCode: (string)($profile['kycCountryCode'] ?? ''),
+            isOnline: (bool)($profile['isOnline'] ?? false),
+            totalFinishCount: (int)($profile['totalFinishCount'] ?? 0),
+            totalFinishBuyCount: (int)($profile['totalFinishBuyCount'] ?? 0),
+            totalFinishSellCount: (int)($profile['totalFinishSellCount'] ?? 0),
+            recentRate: (string)($profile['recentRate'] ?? ''),
+            recentFinishCount: (int)($profile['recentFinishCount'] ?? 0),
+            averageReleaseTime: (string)($profile['averageReleaseTime'] ?? ''),
+            averageTransferTime: (string)($profile['averageTransferTime'] ?? ''),
+            accountCreateDays: (int)($profile['accountCreateDays'] ?? 0),
+            firstTradeDays: (int)($profile['firstTradeDays'] ?? 0),
+            totalTradeAmount: (string)($profile['totalTradeAmount'] ?? ''),
+            recentTradeAmount: (string)($profile['recentTradeAmount'] ?? ''),
+            goodAppraiseRate: (string)($profile['goodAppraiseRate'] ?? ''),
+            goodAppraiseCount: (int)($profile['goodAppraiseCount'] ?? 0),
+            badAppraiseCount: (int)($profile['badAppraiseCount'] ?? 0),
+            authStatus: (int)($profile['authStatus'] ?? 0),
+            vipLevel: (int)($profile['vipLevel'] ?? 0),
+            userType: (string)($profile['userType'] ?? ''),
+            blocked: (string)($profile['blocked'] ?? ''),
+            registerTime: (string)($profile['registerTime'] ?? ''),
+        );
     }
 }

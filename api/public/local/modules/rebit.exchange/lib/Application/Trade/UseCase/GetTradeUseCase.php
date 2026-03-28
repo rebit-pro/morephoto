@@ -44,7 +44,7 @@ final readonly class GetTradeUseCase
         if ('' !== $bybitOrderId && $this->isActiveStatus($trade->getUfStatus())) {
             try {
                 $bybitData = $this->bybitGateway->fetchOrderInfo($userId, $bybitOrderId);
-                $bybitStatus = (int)($bybitData['status'] ?? 0);
+                $bybitStatus = $bybitData->status;
 
                 if (0 !== $bybitStatus && $bybitStatus !== $trade->getUfBybitStatus()) {
                     $trade->setUfBybitStatus($bybitStatus);
