@@ -9,7 +9,10 @@ const props = defineProps<{
 const now = ref(Date.now());
 let timer: ReturnType<typeof setInterval> | null = null;
 
-const deadlineMs = computed(() => new Date(props.deadline).getTime());
+const deadlineMs = computed(() => {
+  const ms = new Date(props.deadline).getTime();
+  return Number.isFinite(ms) ? ms : 0;
+});
 const total = computed(() => (props.totalSeconds ?? 900) * 1000);
 const remaining = computed(() => Math.max(0, deadlineMs.value - now.value));
 const isExpired = computed(() => 0 === remaining.value);

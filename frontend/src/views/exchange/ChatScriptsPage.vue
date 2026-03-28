@@ -5,7 +5,6 @@ import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
 import type { ChatScriptStep, ChatScriptPayload, ChatContentType } from '@/api/exchange';
 import { isMockApiEnabled } from '@/mocks/config';
 import UiTableCard from '@/components/shared/UiTableCard.vue';
-import UiFormCard from '@/components/shared/UiFormCard.vue';
 
 interface FormStep extends ChatScriptStep {
   _uid: number;

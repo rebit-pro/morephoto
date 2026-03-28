@@ -245,6 +245,8 @@ onUnmounted(() => {
                 v-if="msg.fileUrl"
                 :href="msg.fileUrl"
                 :download="msg.fileName ?? 'file'"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="trade-chat__attachment-link d-block"
               >
                 <v-chip size="small" variant="outlined" color="white" prepend-icon="mdi-download">
@@ -285,6 +287,8 @@ onUnmounted(() => {
                 v-if="msg.fileUrl"
                 :href="msg.fileUrl"
                 :download="msg.fileName ?? 'file'"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="trade-chat__attachment-link d-block"
               >
                 <v-chip size="small" variant="tonal" color="secondary" prepend-icon="mdi-download">
