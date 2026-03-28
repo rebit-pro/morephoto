@@ -14,6 +14,7 @@ use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Enum\MessengerQueueEnum;
 use Rebit\Share\Shared\Facade\Log;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
+use Symfony\Component\Messenger\Transport\TransportInterface;
 
 return [
     AmqpConnectionFactory::class => [
@@ -36,11 +37,16 @@ return [
     DedupCacheInterface::class => [
         'className' => BitrixDedupCache::class,
     ],
+    MessengerQueueEnum::AUDIT->transportKey() => [
+        'constructor' => static fn(): TransportInterface => ServiceLocator::getInstance()
+            ->get(AmqpConnectionFactory::class)
+            ->create(MessengerQueueEnum::AUDIT),
+    ],
     /**
      * Fallback: NullPublisher используется, если rebit.notification не установлен.
      * Модуль rebit.notification перезаписывает этот ключ реальной реализацией.
      */
     NotificationPublisherInterface::class => [
-        'className' => NullNotificationPublisher::class,
+        'constructor' => static fn(): NotificationPublisherInterface => new NullNotificationPublisher(),
     ],
 ];

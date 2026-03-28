@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Presentation\Command;
 
 use Psr\Log\LoggerInterface;
+use Rebit\Exchange\Application\Trade\Message\TradeDiscoveredMessage;
+use Rebit\Exchange\Application\Trade\Message\TradeStatusChangedMessage;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
 use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
@@ -36,6 +39,7 @@ final class SyncTradesCommand extends RebitCommand
         private readonly BybitTradeGatewayInterface $bybitGateway,
         private readonly BybitConnectionResolverInterface $connectionResolver,
         private readonly NotificationPublisherInterface $notificationPublisher,
+        private readonly MessagePublisherInterface $tradeEventPublisher,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
@@ -123,6 +127,26 @@ final class SyncTradesCommand extends RebitCommand
                 ]);
 
                 try {
+                    $this->tradeEventPublisher->dispatch(
+                        new TradeDiscoveredMessage(
+                            tradeId: $trade->getId(),
+                            bybitOrderId: $bybitOrderId,
+                        ),
+                    );
+                } catch (\Throwable $exception) {
+                    $this->logger->error(
+                        'Не удалось опубликовать событие новой сделки',
+                        [
+                            'userId' => $userId,
+                            'tradeId' => $trade->getId(),
+                            'bybitOrderId' => $bybitOrderId,
+                            'error' => $exception->getMessage(),
+                            'exceptionClass' => $exception::class,
+                        ],
+                    );
+                }
+
+                try {
                     $this->notificationPublisher->publish(
                         new SendNotificationDto(
                             type: NotificationTypeEnum::TRADE_DISCOVERED->value,
@@ -140,6 +164,7 @@ final class SyncTradesCommand extends RebitCommand
                         'Не удалось опубликовать уведомление tradeDiscovered',
                         [
                             'userId' => $userId,
+                            'tradeId' => $trade->getId(),
                             'bybitOrderId' => $bybitOrderId,
                             'error' => $exception->getMessage(),
                             'exceptionClass' => $exception::class,
@@ -151,9 +176,36 @@ final class SyncTradesCommand extends RebitCommand
             } else {
                 $bybitStatus = (int)($item['status'] ?? 0);
                 if ($bybitStatus !== $existing->getUfBybitStatus()) {
+                    $oldStatus = (string)$existing->getUfStatus();
+                    $newStatus = TradeStatusEnum::fromBybit($bybitStatus)->value;
+
                     $existing->setUfBybitStatus($bybitStatus);
-                    $existing->setUfStatus(TradeStatusEnum::fromBybit($bybitStatus)->value);
+                    $existing->setUfStatus($newStatus);
                     $this->tradeRepository->save($existing);
+
+                    try {
+                        $this->tradeEventPublisher->dispatch(
+                            new TradeStatusChangedMessage(
+                                tradeId: $existing->getId(),
+                                oldStatus: $oldStatus,
+                                newStatus: $newStatus,
+                            ),
+                        );
+                    } catch (\Throwable $exception) {
+                        $this->logger->error(
+                            'Не удалось опубликовать событие смены статуса сделки',
+                            [
+                                'userId' => $userId,
+                                'tradeId' => $existing->getId(),
+                                'bybitOrderId' => $bybitOrderId,
+                                'oldStatus' => $oldStatus,
+                                'newStatus' => $newStatus,
+                                'error' => $exception->getMessage(),
+                                'exceptionClass' => $exception::class,
+                            ],
+                        );
+                    }
+
                     ++$updatedCount;
                 }
             }

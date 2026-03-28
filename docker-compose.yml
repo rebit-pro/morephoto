@@ -198,6 +198,111 @@ services:
         depends_on:
             - rabbitmq
 
+    api-trade-event-consumer:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["php", "public/local/bin/bitrix-console", "app:exchange:trade-event:consume"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
+        depends_on:
+            - rabbitmq
+
+    api-chat-script-consumer:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["php", "public/local/bin/bitrix-console", "app:exchange:chat-script:consume"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
+        depends_on:
+            - rabbitmq
+
+    api-balance-sync-consumer:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["php", "public/local/bin/bitrix-console", "app:wallet:balance-sync:consume"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
+        depends_on:
+            - rabbitmq
+
+    api-identity-sync-consumer:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["php", "public/local/bin/bitrix-console", "app:identity:sync:consume"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
+        depends_on:
+            - rabbitmq
+
+    api-audit-consumer:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["php", "public/local/bin/bitrix-console", "app:audit:consume"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
+        depends_on:
+            - rabbitmq
+
     api-mysql:
         build:
             context: api/docker

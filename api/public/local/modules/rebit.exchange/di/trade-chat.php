@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
+use Rebit\Exchange\Application\TradeChat\Message\Handler\ExecuteChatScriptStepMessageHandler;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
+use Rebit\Exchange\Application\TradeChat\UseCase\ConsumeChatScriptStepsUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\ExecuteChatScriptUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\GetChatHistoryUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\ProcessPendingChatScriptsUseCase;
@@ -17,11 +19,17 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
 use Rebit\Exchange\Infrastructure\Bitrix\TradeChatUploadFileLocator;
 use Rebit\Exchange\Infrastructure\Bybit\BybitChatGateway;
+use Rebit\Exchange\Infrastructure\TradeChat\Messenger\ChatScriptMessengerFactory;
 use Rebit\Exchange\Presentation\Command\ExecuteChatScriptsCommand;
+use Rebit\Exchange\Presentation\Command\TradeChat\ChatScriptStepConsumerCommand;
+use Rebit\Exchange\Presentation\Command\TradeChat\TestChatScriptStepCommand;
 use Rebit\Exchange\Presentation\Controller\TradeChatController;
+use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Domain\File\Service\UploadedFileOwnershipService;
+use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
+use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Facade\Log;
 
@@ -45,6 +53,17 @@ return [
                 $sl->get(BybitClientInterface::class),
             );
         },
+    ],
+    ExecuteChatScriptStepMessageHandler::class => [
+        'className' => ExecuteChatScriptStepMessageHandler::class,
+        'constructorParams' => static fn(): array => [
+            Log::channel(LogChannelEnum::exchange),
+        ],
+    ],
+    'exchange.chat_script_step.publisher' => [
+        'constructor' => static fn(): MessagePublisherInterface => ChatScriptMessengerFactory::createPublisher(
+            ServiceLocator::getInstance(),
+        ),
     ],
     SyncChatMessagesUseCase::class => [
         'className' => SyncChatMessagesUseCase::class,
@@ -106,6 +125,26 @@ return [
         'className' => ExecuteChatScriptsCommand::class,
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(ProcessPendingChatScriptsUseCase::class),
+        ],
+    ],
+    ConsumeChatScriptStepsUseCase::class => [
+        'className' => ConsumeChatScriptStepsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConsumerRunnerInterface::class),
+            ServiceLocator::getInstance()->get(AmqpConnectionFactory::class),
+            ChatScriptMessengerFactory::createBus(ServiceLocator::getInstance()),
+        ],
+    ],
+    ChatScriptStepConsumerCommand::class => [
+        'className' => ChatScriptStepConsumerCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConsumeChatScriptStepsUseCase::class),
+        ],
+    ],
+    TestChatScriptStepCommand::class => [
+        'className' => TestChatScriptStepCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get('exchange.chat_script_step.publisher'),
         ],
     ],
     TradeChatController::class => [

@@ -7,10 +7,15 @@ use Rebit\Exchange\Presentation\Command\ExecuteChatScriptsCommand;
 use Rebit\Exchange\Presentation\Command\SyncOrderBookCommand;
 use Rebit\Exchange\Presentation\Command\SyncTradeHistoryCommand;
 use Rebit\Exchange\Presentation\Command\SyncTradesCommand;
+use Rebit\Exchange\Presentation\Command\Trade\TestTradeEventCommand;
+use Rebit\Exchange\Presentation\Command\Trade\TradeEventConsumerCommand;
+use Rebit\Exchange\Presentation\Command\TradeChat\ChatScriptStepConsumerCommand;
+use Rebit\Exchange\Presentation\Command\TradeChat\TestChatScriptStepCommand;
 
 return [
     'services' => [
         'value' => array_merge(
+            require __DIR__ . '/di/Messenger.php',
             require __DIR__ . '/di/currency.php',
             require __DIR__ . '/di/payment-method.php',
             require __DIR__ . '/di/chat-script.php',
@@ -29,6 +34,10 @@ return [
                 SyncTradeHistoryCommand::class,
                 CleanStaleOrdersCommand::class,
                 ExecuteChatScriptsCommand::class,
+                TradeEventConsumerCommand::class,
+                TestTradeEventCommand::class,
+                ChatScriptStepConsumerCommand::class,
+                TestChatScriptStepCommand::class,
             ],
         ],
         'readonly' => true,

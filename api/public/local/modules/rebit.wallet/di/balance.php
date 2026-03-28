@@ -1,12 +1,18 @@
 <?php
 
 declare(strict_types=1);
+
 use Bitrix\Main\DI\ServiceLocator;
+use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
+use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
+use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Wallet\Application\Balance\Port\BybitBalanceGatewayInterface;
+use Rebit\Wallet\Application\Balance\Message\Handler\SyncBalanceMessageHandler;
+use Rebit\Wallet\Application\Balance\UseCase\ConsumeBalanceSyncUseCase;
 use Rebit\Wallet\Application\Balance\UseCase\GetBalancesUseCase;
 use Rebit\Wallet\Application\Balance\UseCase\LockFundsUseCase;
 use Rebit\Wallet\Application\Balance\UseCase\SyncBalancesUseCase;
@@ -15,7 +21,10 @@ use Rebit\Wallet\Domain\Balance\Repository\BalanceRepository;
 use Rebit\Wallet\Domain\Balance\Service\BalanceCalculator;
 use Rebit\Wallet\Domain\Transaction\Repository\TransactionRepository;
 use Rebit\Wallet\Infrastructure\Adapter\BalanceQueryAdapter;
+use Rebit\Wallet\Infrastructure\Balance\Messenger\WalletMessengerFactory;
 use Rebit\Wallet\Infrastructure\Bybit\BybitBalanceGateway;
+use Rebit\Wallet\Presentation\Command\Balance\BalanceSyncConsumerCommand;
+use Rebit\Wallet\Presentation\Command\Balance\TestBalanceSyncCommand;
 use Rebit\Wallet\Presentation\Command\SyncBalancesCommand;
 use Rebit\Wallet\Presentation\Controller\BalanceController;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
@@ -27,6 +36,17 @@ return [
     ],
     BalanceRepository::class => [
         'className' => BalanceRepository::class,
+    ],
+    SyncBalanceMessageHandler::class => [
+        'className' => SyncBalanceMessageHandler::class,
+        'constructorParams' => static fn(): array => [
+            Log::channel(LogChannelEnum::wallet),
+        ],
+    ],
+    'wallet.balance_sync.publisher' => [
+        'constructor' => static fn(): MessagePublisherInterface => WalletMessengerFactory::createPublisher(
+            ServiceLocator::getInstance(),
+        ),
     ],
     GetBalancesUseCase::class => [
         'className' => GetBalancesUseCase::class,
@@ -77,6 +97,26 @@ return [
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(SyncBalancesUseCase::class),
             ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
+        ],
+    ],
+    ConsumeBalanceSyncUseCase::class => [
+        'className' => ConsumeBalanceSyncUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConsumerRunnerInterface::class),
+            ServiceLocator::getInstance()->get(AmqpConnectionFactory::class),
+            WalletMessengerFactory::createBus(ServiceLocator::getInstance()),
+        ],
+    ],
+    BalanceSyncConsumerCommand::class => [
+        'className' => BalanceSyncConsumerCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConsumeBalanceSyncUseCase::class),
+        ],
+    ],
+    TestBalanceSyncCommand::class => [
+        'className' => TestBalanceSyncCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get('wallet.balance_sync.publisher'),
         ],
     ],
     BalanceQueryInterface::class => [
