@@ -19,9 +19,10 @@ load_runtime_env() {
     # Если secret отсутствует — DSN остаётся как есть (dev-окружение).
     if [ -f /run/secrets/rebit_rabbitmq_password ] && [ -n "${MESSENGER_TRANSPORT_DSN:-}" ]; then
         RABBITMQ_SECRET_PASSWORD="$(tr -d '\r' < /run/secrets/rebit_rabbitmq_password)"
-        MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN//__RABBITMQ_PASSWORD__/$RABBITMQ_SECRET_PASSWORD}"
+        RABBITMQ_SECRET_PASSWORD_ENCODED="$(php -r 'echo rawurlencode($argv[1]);' "$RABBITMQ_SECRET_PASSWORD")"
+        MESSENGER_TRANSPORT_DSN="${MESSENGER_TRANSPORT_DSN//__RABBITMQ_PASSWORD__/$RABBITMQ_SECRET_PASSWORD_ENCODED}"
         export MESSENGER_TRANSPORT_DSN
-        unset RABBITMQ_SECRET_PASSWORD
+        unset RABBITMQ_SECRET_PASSWORD RABBITMQ_SECRET_PASSWORD_ENCODED
     fi
 }
 

@@ -96,7 +96,7 @@ services:
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
-            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
             PHP_IDE_CONFIG: "serverName=API"
 
     api-php-cli:
@@ -131,7 +131,7 @@ services:
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
-            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
             XDEBUG_MODE: off
 
     api-cron:
@@ -166,7 +166,7 @@ services:
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
-            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
 
     api-notification-consumer:
         build:
@@ -194,7 +194,7 @@ services:
             REBIT_SMTP_FROM_EMAIL: ${REBIT_SMTP_FROM_EMAIL:-noreply@rebit-p2p.loc}
             REBIT_SMTP_FROM_NAME: ${REBIT_SMTP_FROM_NAME:-Rebit P2P}
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
-            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
+            MESSENGER_TRANSPORT_DSN: amqp://${RABBITMQ_USER:-rebit}:${RABBITMQ_PASSWORD:-rebit}@rabbitmq:5672/${RABBITMQ_VHOST:-rebit}
         depends_on:
             - rabbitmq
 
