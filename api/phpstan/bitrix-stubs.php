@@ -317,6 +317,11 @@ namespace {
         public function DoInstall(): void {}
         public function DoUninstall(): void {}
     }
+    class CDBResult
+    {
+        /** @return array<string, mixed>|false */
+        public function Fetch(): array|false {}
+    }
     class CUser
     {
         public string $LAST_ERROR;
@@ -325,9 +330,14 @@ namespace {
         public function Add(array $fields): int|false {}
         /** @param array<string, mixed> $fields */
         public function Update(int $id, array $fields): bool {}
+        public static function GetByID(int $id): CDBResult {}
     }
     class CEvent
     {
+        /** @var array{eventName: string, siteId: string|array, fields: array<string, mixed>}|null */
+        public static ?array $lastSendImmediateCall = null;
+        public static string|false $sendImmediateResult = 'Y';
+
         /** @param array<string, mixed> $fields */
         public static function SendImmediate(string $eventName, string|array $siteId, array $fields): string|false {}
     }

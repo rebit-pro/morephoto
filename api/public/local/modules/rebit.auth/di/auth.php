@@ -77,62 +77,49 @@ return [
         },
     ],
     LoginUseCase::class => [
-        'constructor' => static function(): LoginUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new LoginUseCase(
-                $sl->get(LoginUserRepositoryInterface::class),
-                $sl->get(TokenGeneratorInterface::class),
-                $sl->get(CaptchaVerifierInterface::class),
-                (int)(getenv('REBIT_TOKEN_TTL_HOURS') ?: 24),
-            );
-        },
+        'className' => LoginUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(LoginUserRepositoryInterface::class),
+            ServiceLocator::getInstance()->get(TokenGeneratorInterface::class),
+            ServiceLocator::getInstance()->get(CaptchaVerifierInterface::class),
+            (int)(getenv('REBIT_TOKEN_TTL_HOURS') ?: 24),
+        ],
     ],
     LogoutUseCase::class => [
-        'constructor' => static function(): LogoutUseCase {
-            return new LogoutUseCase(
-                ServiceLocator::getInstance()->get(UserRepository::class),
-            );
-        },
+        'className' => LogoutUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(UserRepository::class),
+        ],
     ],
     RequestRegistrationCodeUseCase::class => [
-        'constructor' => static function(): RequestRegistrationCodeUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new RequestRegistrationCodeUseCase(
-                userRepository: $sl->get(UserRepository::class),
-                registrationConfirmationRepository: $sl->get(RegistrationConfirmationRepository::class),
-                registrationCodeGenerator: $sl->get(RegistrationCodeGenerator::class),
-                registrationConfirmationMailer: $sl->get(RegistrationConfirmationMailerInterface::class),
-                codeTtlMinutes: (int)(getenv('REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES') ?: 15),
-                resendCooldownSeconds: (int)(getenv('REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS') ?: 60),
-            );
-        },
+        'className' => RequestRegistrationCodeUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(UserRepository::class),
+            ServiceLocator::getInstance()->get(RegistrationConfirmationRepository::class),
+            ServiceLocator::getInstance()->get(RegistrationCodeGenerator::class),
+            ServiceLocator::getInstance()->get(RegistrationConfirmationMailerInterface::class),
+            (int)(getenv('REBIT_AUTH_REGISTRATION_CODE_TTL_MINUTES') ?: 15),
+            (int)(getenv('REBIT_AUTH_REGISTRATION_RESEND_COOLDOWN_SECONDS') ?: 60),
+        ],
     ],
     ConfirmRegistrationUseCase::class => [
-        'constructor' => static function(): ConfirmRegistrationUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ConfirmRegistrationUseCase(
-                userRepository: $sl->get(UserRepository::class),
-                registrationConfirmationRepository: $sl->get(RegistrationConfirmationRepository::class),
-                tokenGenerator: $sl->get(TokenGeneratorInterface::class),
-                tokenTtlHours: (int)(getenv('REBIT_TOKEN_TTL_HOURS') ?: 24),
-                maxAttempts: (int)(getenv('REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS') ?: 5),
-            );
-        },
+        'className' => ConfirmRegistrationUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(UserRepository::class),
+            ServiceLocator::getInstance()->get(RegistrationConfirmationRepository::class),
+            ServiceLocator::getInstance()->get(TokenGeneratorInterface::class),
+            (int)(getenv('REBIT_TOKEN_TTL_HOURS') ?: 24),
+            (int)(getenv('REBIT_AUTH_REGISTRATION_MAX_ATTEMPTS') ?: 5),
+        ],
     ],
     AuthController::class => [
-        'constructor' => static function(): AuthController {
-            $sl = ServiceLocator::getInstance();
-
-            return new AuthController(
-                loginUseCase: $sl->get(LoginUseCase::class),
-                logoutUseCase: $sl->get(LogoutUseCase::class),
-                requestRegistrationCodeUseCase: $sl->get(RequestRegistrationCodeUseCase::class),
-                confirmRegistrationUseCase: $sl->get(ConfirmRegistrationUseCase::class),
-                tokenResolver: $sl->get(TokenResolverInterface::class),
-            );
-        },
+        'className' => AuthController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(LoginUseCase::class),
+            ServiceLocator::getInstance()->get(LogoutUseCase::class),
+            ServiceLocator::getInstance()->get(RequestRegistrationCodeUseCase::class),
+            ServiceLocator::getInstance()->get(ConfirmRegistrationUseCase::class),
+            ServiceLocator::getInstance()->get(TokenResolverInterface::class),
+        ],
     ],
 ];

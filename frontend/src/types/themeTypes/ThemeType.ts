@@ -1,7 +1,7 @@
-export type ThemeTypes = {
+import type { ThemeDefinition } from 'vuetify';
+
+export type ThemeTypes = ThemeDefinition & {
   name: string;
-  dark: boolean;
-  variables?: object;
   colors: {
     primary?: string;
     secondary?: string;

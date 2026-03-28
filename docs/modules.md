@@ -187,7 +187,8 @@ rebit.share/
 ├── routes.php
 ├── di/
 │   ├── Layers/
-│   │   └── Infrastructure.php
+│   │   ├── Infrastructure.php
+│   │   └── Messenger.php
 │   └── file.php
 └── lib/
     ├── Application/
@@ -208,6 +209,9 @@ rebit.share/
     │   │   │   └── CurrencyQueryInterface.php
     │   │   ├── File/
     │   │   │   └── FileServiceInterface.php
+    │   │   ├── Messenger/                     # Контракты очередей
+    │   │   │   ├── AbstractMessage.php
+    │   │   │   └── MessagePublisherInterface.php
     │   │   └── Wallet/
     │   │       └── BalanceQueryInterface.php
     │   ├── Interface/
@@ -302,6 +306,19 @@ rebit.share/
     │   ├── Logger/
     │   │   ├── CommonLoggerProcessor.php
     │   │   └── RequestIdGenerator.php
+    │   ├── Messenger/                         # Инфраструктура очередей (Symfony Messenger)
+    │   │   ├── AbstractMessengerFactory.php
+    │   │   ├── AmqpConnectionFactory.php
+    │   │   ├── BitrixDedupCache.php
+    │   │   ├── ConsumerRunner.php
+    │   │   ├── ConsumerRunnerInterface.php
+    │   │   ├── DedupCacheInterface.php
+    │   │   ├── MessengerBusConfigBuilder.php
+    │   │   ├── MessengerBusConfigDto.php
+    │   │   ├── MessengerBusFactory.php
+    │   │   ├── MessengerMessagePublisher.php
+    │   │   ├── MessengerRouteDto.php
+    │   │   └── SimpleServiceContainer.php
     │   ├── Repository/
     │   │   ├── AbstractHLBlockRepository.php
     │   │   ├── AbstractRepository.php
@@ -319,7 +336,8 @@ rebit.share/
     └── Shared/
         ├── Enum/
         │   ├── HttpMethodEnum.php
-        │   └── LogChannelEnum.php
+        │   ├── LogChannelEnum.php
+        │   └── MessengerQueueEnum.php
         ├── Exception/
         │   ├── HttpException.php
         │   ├── RebitException.php
@@ -357,6 +375,7 @@ rebit.share/
 | Хелперы | Маппинг, валидация, сериализация | `DtoMapper`, `ValidationHelper`, `ArrayToDtoMapper` |
 | Фасады | Логирование, кэширование | `Log`, `Cache` |
 | CLI-команды | Базовый класс команд + атрибут блокировки | `RebitCommand`, `WithLock` |
+| Очереди (Messenger) | AMQP-транспорт, publisher, consumer, дедупликация | `MessagePublisherInterface`, `ConsumerRunner`, `AbstractMessengerFactory` |
 | Value Objects | Общие объекты-значения | `Phone`, `Image`, `DateRange`, `CacheKey` |
 
 ---

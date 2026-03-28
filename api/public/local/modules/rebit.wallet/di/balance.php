@@ -29,36 +29,27 @@ return [
         'className' => BalanceRepository::class,
     ],
     GetBalancesUseCase::class => [
-        'constructor' => static function(): GetBalancesUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetBalancesUseCase(
-                $sl->get(BalanceRepository::class),
-                $sl->get(CurrencyQueryInterface::class),
-            );
-        },
+        'className' => GetBalancesUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(BalanceRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyQueryInterface::class),
+        ],
     ],
     LockFundsUseCase::class => [
-        'constructor' => static function(): LockFundsUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new LockFundsUseCase(
-                $sl->get(BalanceRepository::class),
-                $sl->get(TransactionRepository::class),
-                $sl->get(BalanceCalculator::class),
-            );
-        },
+        'className' => LockFundsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(BalanceRepository::class),
+            ServiceLocator::getInstance()->get(TransactionRepository::class),
+            ServiceLocator::getInstance()->get(BalanceCalculator::class),
+        ],
     ],
     UnlockFundsUseCase::class => [
-        'constructor' => static function(): UnlockFundsUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new UnlockFundsUseCase(
-                $sl->get(BalanceRepository::class),
-                $sl->get(TransactionRepository::class),
-                $sl->get(BalanceCalculator::class),
-            );
-        },
+        'className' => UnlockFundsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(BalanceRepository::class),
+            ServiceLocator::getInstance()->get(TransactionRepository::class),
+            ServiceLocator::getInstance()->get(BalanceCalculator::class),
+        ],
     ],
     BybitBalanceGatewayInterface::class => [
         'constructor' => static function(): BybitBalanceGatewayInterface {
@@ -71,28 +62,22 @@ return [
         },
     ],
     SyncBalancesUseCase::class => [
-        'constructor' => static function(): SyncBalancesUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncBalancesUseCase(
-                $sl->get(BalanceRepository::class),
-                $sl->get(BalanceCalculator::class),
-                $sl->get(BybitBalanceGatewayInterface::class),
-                $sl->get(CurrencyQueryInterface::class),
-                $sl->get(GetBalancesUseCase::class),
-                Log::getLogger(LogChannelEnum::wallet),
-            );
-        },
+        'className' => SyncBalancesUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(BalanceRepository::class),
+            ServiceLocator::getInstance()->get(BalanceCalculator::class),
+            ServiceLocator::getInstance()->get(BybitBalanceGatewayInterface::class),
+            ServiceLocator::getInstance()->get(CurrencyQueryInterface::class),
+            ServiceLocator::getInstance()->get(GetBalancesUseCase::class),
+            Log::getLogger(LogChannelEnum::wallet),
+        ],
     ],
     SyncBalancesCommand::class => [
-        'constructor' => static function(): SyncBalancesCommand {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncBalancesCommand(
-                $sl->get(SyncBalancesUseCase::class),
-                $sl->get(BybitConnectionResolverInterface::class),
-            );
-        },
+        'className' => SyncBalancesCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(SyncBalancesUseCase::class),
+            ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
+        ],
     ],
     BalanceQueryInterface::class => [
         'constructor' => static function(): BalanceQueryInterface {
@@ -102,13 +87,10 @@ return [
         },
     ],
     BalanceController::class => [
-        'constructor' => static function(): BalanceController {
-            $sl = ServiceLocator::getInstance();
-
-            return new BalanceController(
-                $sl->get(GetBalancesUseCase::class),
-                $sl->get(SyncBalancesUseCase::class),
-            );
-        },
+        'className' => BalanceController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(GetBalancesUseCase::class),
+            ServiceLocator::getInstance()->get(SyncBalancesUseCase::class),
+        ],
     ],
 ];

@@ -2,8 +2,6 @@ import { createVuetify } from 'vuetify';
 import '@mdi/font/css/materialdesignicons.css';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { icons } from './mdi-icon';
-import * as components from 'vuetify/components';
-import * as directives from 'vuetify/directives';
 import { PurpleTheme, GreenTheme, PinkTheme, YellowTheme, SeaGreenTheme, OliveGreenTheme, SpeechBlueTheme } from '@/theme/LightTheme';
 import {
   DarkPurpleTheme,
@@ -16,29 +14,24 @@ import {
 } from '@/theme/DarkTheme';
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n';
 import { createI18n, useI18n } from 'vue-i18n';
+import type { I18n } from 'vue-i18n';
 import { messages } from '@/utils/locales/messages';
 
-export const i18n = createI18n<
-  false,
-  {
-    legacy: false;
-    locale: string;
-    fallbackLocale: string;
-    messages: Record<string, unknown>;
-  }
->({
-  legacy: false,
+export const i18n = createI18n({
+  legacy: false as const,
   locale: 'ru',
   fallbackLocale: 'ru',
-  messages
+  messages,
 });
+
+// vue-i18n возвращает union I18n<..., true> | I18n<..., false> несмотря на legacy: false as const.
+// Точечный каст i18n для совместимости с VueI18nAdapterParams.
+const i18nInstance = i18n as unknown as I18n<Record<string, unknown>, {}, {}, string, false>;
 
 export default createVuetify({
   locale: {
-    adapter: createVueI18nAdapter({ i18n, useI18n })
+    adapter: createVueI18nAdapter({ i18n: i18nInstance, useI18n })
   },
-  components,
-  directives,
   icons: {
     defaultSet: 'mdi',
     aliases: {
@@ -77,7 +70,6 @@ export default createVuetify({
       rounded: 'lg'
     },
     VTooltip: {
-      // set v-tooltip default location to top
       location: 'top'
     }
   }

@@ -4,7 +4,7 @@ ifneq (,$(wildcard .env))
     export $(shell sed 's/=.*//' .env)
 endif
 
-init: api-clear docker-down-clear docker-pull docker-build docker-up
+init: api-clear docker-down-clear docker-pull docker-build docker-up cron-up queue-up
 up: docker-up
 down: docker-down
 restart: down up
@@ -111,6 +111,25 @@ cron-restart:
 cron-logs:
 	docker compose logs -f api-cron
 
+# --- Queue ---
+queue-up:
+	docker compose up -d api-notification-consumer
+
+queue-down:
+	docker compose stop api-notification-consumer
+
+queue-restart:
+	docker compose restart api-notification-consumer
+
+queue-logs:
+	docker compose logs -f api-notification-consumer
+
+consume-notification:
+	docker compose run --rm api-php-cli php public/local/bin/bitrix-console app:notification:consume
+
+consume-notification-once:
+	docker compose run --rm api-php-cli php public/local/bin/bitrix-console app:notification:consume --limit=10 --time-limit=30
+
 # ==============================================================================
 # PRODUCTION
 # ==============================================================================
@@ -137,6 +156,7 @@ REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME ?= rebit_geetest_captcha_key_$(BUILD_NUMBE
 REBIT_MYSQL_PASSWORD_SECRET_NAME ?= rebit_mysql_password_$(BUILD_NUMBER)
 REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME ?= rebit_mysql_root_password_$(BUILD_NUMBER)
 REBIT_SMTP_PASSWORD_SECRET_NAME ?= rebit_smtp_password_$(BUILD_NUMBER)
+REBIT_RABBITMQ_PASSWORD_SECRET_NAME ?= rebit_rabbitmq_password_$(BUILD_NUMBER)
 
 guard-%:
 	@if [ -z '$($*)' ]; then echo 'Required variable $* is not set'; exit 1; fi
@@ -201,7 +221,8 @@ push-api:
 # Опционально (если нужно переопределить versioned Swarm names):
 #   BACKEND_ENV_CONFIG_NAME, REBIT_ENCRYPTION_KEY_SECRET_NAME,
 #   REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME, REBIT_MYSQL_PASSWORD_SECRET_NAME,
-#   REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME, REBIT_SMTP_PASSWORD_SECRET_NAME
+#   REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME, REBIT_SMTP_PASSWORD_SECRET_NAME,
+#   REBIT_RABBITMQ_PASSWORD_SECRET_NAME
 #
 # Пример:
 #   HOST=1.2.3.4 PORT=22 DEPLOY_USER=deploy BUILD_NUMBER=42 \
@@ -218,7 +239,7 @@ deploy: deploy-check-env
 		&& mv ~/bitrix-settings-extra.php $(BITRIX_HOST_DIR)/.settings_extra.php \
 		&& mkdir -p $(LOGS_HOST_DIR)/logstash \
 		&& cd $(RELEASE_DIR) \
-		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nBACKEND_ENV_CONFIG_NAME=%s\nREBIT_ENCRYPTION_KEY_SECRET_NAME=%s\nREBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME=%s\nREBIT_MYSQL_PASSWORD_SECRET_NAME=%s\nREBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME=%s\nREBIT_SMTP_PASSWORD_SECRET_NAME=%s\n" \
+		&& printf "REGISTRY=%s\nIMAGE_TAG=%s\nBACKEND_ENV_CONFIG_NAME=%s\nREBIT_ENCRYPTION_KEY_SECRET_NAME=%s\nREBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME=%s\nREBIT_MYSQL_PASSWORD_SECRET_NAME=%s\nREBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME=%s\nREBIT_SMTP_PASSWORD_SECRET_NAME=%s\nREBIT_RABBITMQ_PASSWORD_SECRET_NAME=%s\n" \
 			"$(REGISTRY)" \
 			"$(IMAGE_TAG)" \
 			"$(BACKEND_ENV_CONFIG_NAME)" \
@@ -226,8 +247,9 @@ deploy: deploy-check-env
 			"$(REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME)" \
 			"$(REBIT_MYSQL_PASSWORD_SECRET_NAME)" \
 			"$(REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME)" \
-			"$(REBIT_SMTP_PASSWORD_SECRET_NAME)" > .env \
-		&& env | LC_ALL=C sort | grep -E "^[A-Z0-9_]+_(CONFIG|SECRET)_NAME=" | grep -Ev "^(BACKEND_ENV_CONFIG_NAME|REBIT_ENCRYPTION_KEY_SECRET_NAME|REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME|REBIT_MYSQL_PASSWORD_SECRET_NAME|REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME|REBIT_SMTP_PASSWORD_SECRET_NAME)=" >> .env || true \
+			"$(REBIT_SMTP_PASSWORD_SECRET_NAME)" \
+			"$(REBIT_RABBITMQ_PASSWORD_SECRET_NAME)" > .env \
+		&& env | LC_ALL=C sort | grep -E "^[A-Z0-9_]+_(CONFIG|SECRET)_NAME=" | grep -Ev "^(BACKEND_ENV_CONFIG_NAME|REBIT_ENCRYPTION_KEY_SECRET_NAME|REBIT_GEETEST_CAPTCHA_KEY_SECRET_NAME|REBIT_MYSQL_PASSWORD_SECRET_NAME|REBIT_MYSQL_ROOT_PASSWORD_SECRET_NAME|REBIT_SMTP_PASSWORD_SECRET_NAME|REBIT_RABBITMQ_PASSWORD_SECRET_NAME)=" >> .env || true \
 		&& cd ~ && ln -sfn $(RELEASE_DIR) $(LINK_DIR) \
 		&& if [ -n "$(TOKEN_GIT_HUB)" ]; then echo "$(TOKEN_GIT_HUB)" | docker login $(REGISTRY_HOST) -u $(REGISTRY_USER) --password-stdin; fi \
 		&& docker pull $(REGISTRY)/rebit-p2p-frontend:$(IMAGE_TAG) \

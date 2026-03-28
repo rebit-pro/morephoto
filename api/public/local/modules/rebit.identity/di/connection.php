@@ -34,46 +34,36 @@ return [
         'className' => ApiConnectionRepository::class,
     ],
     ConnectApiUseCase::class => [
-        'constructor' => static function(): ConnectApiUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ConnectApiUseCase(
-                $sl->get(ApiConnectionRepository::class),
-                $sl->get(ApiKeyEncryptor::class),
-                $sl->get(ApiKeyMasker::class),
-                $sl->get(BybitClientInterface::class),
-            );
-        },
+        'className' => ConnectApiUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ApiConnectionRepository::class),
+            ServiceLocator::getInstance()->get(ApiKeyEncryptor::class),
+            ServiceLocator::getInstance()->get(ApiKeyMasker::class),
+            ServiceLocator::getInstance()->get(BybitClientInterface::class),
+        ],
     ],
     DisconnectApiUseCase::class => [
-        'constructor' => static function(): DisconnectApiUseCase {
-            return new DisconnectApiUseCase(
-                ServiceLocator::getInstance()->get(ApiConnectionRepository::class),
-            );
-        },
+        'className' => DisconnectApiUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ApiConnectionRepository::class),
+        ],
     ],
     VerifyApiUseCase::class => [
-        'constructor' => static function(): VerifyApiUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new VerifyApiUseCase(
-                $sl->get(ApiConnectionRepository::class),
-                $sl->get(ApiKeyEncryptor::class),
-                $sl->get(ApiKeyMasker::class),
-                $sl->get(BybitClientInterface::class),
-            );
-        },
+        'className' => VerifyApiUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ApiConnectionRepository::class),
+            ServiceLocator::getInstance()->get(ApiKeyEncryptor::class),
+            ServiceLocator::getInstance()->get(ApiKeyMasker::class),
+            ServiceLocator::getInstance()->get(BybitClientInterface::class),
+        ],
     ],
     GetConnectionStatusUseCase::class => [
-        'constructor' => static function(): GetConnectionStatusUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetConnectionStatusUseCase(
-                $sl->get(ApiConnectionRepository::class),
-                $sl->get(ApiKeyEncryptor::class),
-                $sl->get(ApiKeyMasker::class),
-            );
-        },
+        'className' => GetConnectionStatusUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ApiConnectionRepository::class),
+            ServiceLocator::getInstance()->get(ApiKeyEncryptor::class),
+            ServiceLocator::getInstance()->get(ApiKeyMasker::class),
+        ],
     ],
     BybitConnectionResolverInterface::class => [
         'constructor' => static function(): BybitConnectionResolverInterface {
@@ -86,15 +76,12 @@ return [
         },
     ],
     ApiConnectionController::class => [
-        'constructor' => static function(): ApiConnectionController {
-            $sl = ServiceLocator::getInstance();
-
-            return new ApiConnectionController(
-                $sl->get(ConnectApiUseCase::class),
-                $sl->get(DisconnectApiUseCase::class),
-                $sl->get(VerifyApiUseCase::class),
-                $sl->get(GetConnectionStatusUseCase::class),
-            );
-        },
+        'className' => ApiConnectionController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConnectApiUseCase::class),
+            ServiceLocator::getInstance()->get(DisconnectApiUseCase::class),
+            ServiceLocator::getInstance()->get(VerifyApiUseCase::class),
+            ServiceLocator::getInstance()->get(GetConnectionStatusUseCase::class),
+        ],
     ],
 ];

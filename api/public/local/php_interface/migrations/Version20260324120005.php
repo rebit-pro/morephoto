@@ -63,7 +63,7 @@ class Version20260324120005 extends Version
             $tokenId = $currencyIds[$pair['token']] ?? null;
             $fiatId = $currencyIds[$pair['fiat']] ?? null;
             if (null === $tokenId || null === $fiatId) {
-                $this->log('⚠ Валюта не найдена, пара пропущена: ' . $pair['code']);
+                $this->outWarning('Валюта не найдена, пара пропущена: ' . $pair['code']);
                 continue;
             }
             $code = $helper->forSql($pair['code']);

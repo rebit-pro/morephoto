@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libxml2-dev \
     libpq-dev \
+    librabbitmq-dev \
     curl \
     libldap2-dev \
     unzip \
@@ -29,8 +30,8 @@ RUN apt-get update && apt-get install -y \
         soap \
         sockets \
         zip \
-    && pecl install memcache \
-    && docker-php-ext-enable memcache \
+    && pecl install memcache amqp \
+    && docker-php-ext-enable memcache amqp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 # Сменить UID/GID www-data на хостовый (1000) — чтобы CLI-процессы
 # могли писать в bind-mounted volume (миграции, симлинки модулей и т.д.)

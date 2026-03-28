@@ -16,6 +16,7 @@ use Rebit\Exchange\Presentation\Command\SyncTradesCommand;
 use Rebit\Exchange\Presentation\Controller\TradeController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Facade\Log;
 
@@ -34,84 +35,64 @@ return [
         },
     ],
     ListTradesUseCase::class => [
-        'constructor' => static function(): ListTradesUseCase {
-            return new ListTradesUseCase(
-                ServiceLocator::getInstance()->get(TradeRepository::class),
-            );
-        },
+        'className' => ListTradesUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+        ],
     ],
     GetTradeUseCase::class => [
-        'constructor' => static function(): GetTradeUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetTradeUseCase(
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitTradeGatewayInterface::class),
-            );
-        },
+        'className' => GetTradeUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
+        ],
     ],
     ConfirmPaymentUseCase::class => [
-        'constructor' => static function(): ConfirmPaymentUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ConfirmPaymentUseCase(
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitTradeGatewayInterface::class),
-            );
-        },
+        'className' => ConfirmPaymentUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
+        ],
     ],
     ConfirmReceiptUseCase::class => [
-        'constructor' => static function(): ConfirmReceiptUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ConfirmReceiptUseCase(
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitTradeGatewayInterface::class),
-            );
-        },
+        'className' => ConfirmReceiptUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
+        ],
     ],
     SyncTradesCommand::class => [
-        'constructor' => static function(): SyncTradesCommand {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncTradesCommand(
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitTradeGatewayInterface::class),
-                $sl->get(BybitConnectionResolverInterface::class),
-            );
-        },
+        'className' => SyncTradesCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
+            ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
+            ServiceLocator::getInstance()->get(NotificationPublisherInterface::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
     ],
     SyncTradeHistoryUseCase::class => [
-        'constructor' => static function(): SyncTradeHistoryUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncTradeHistoryUseCase(
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitTradeGatewayInterface::class),
-                Log::getLogger(LogChannelEnum::exchange),
-            );
-        },
+        'className' => SyncTradeHistoryUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
     ],
     SyncTradeHistoryCommand::class => [
-        'constructor' => static function(): SyncTradeHistoryCommand {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncTradeHistoryCommand(
-                $sl->get(SyncTradeHistoryUseCase::class),
-                $sl->get(BybitConnectionResolverInterface::class),
-            );
-        },
+        'className' => SyncTradeHistoryCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(SyncTradeHistoryUseCase::class),
+            ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
+        ],
     ],
     TradeController::class => [
-        'constructor' => static function(): TradeController {
-            $sl = ServiceLocator::getInstance();
-
-            return new TradeController(
-                $sl->get(ListTradesUseCase::class),
-                $sl->get(GetTradeUseCase::class),
-                $sl->get(ConfirmPaymentUseCase::class),
-                $sl->get(ConfirmReceiptUseCase::class),
-            );
-        },
+        'className' => TradeController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ListTradesUseCase::class),
+            ServiceLocator::getInstance()->get(GetTradeUseCase::class),
+            ServiceLocator::getInstance()->get(ConfirmPaymentUseCase::class),
+            ServiceLocator::getInstance()->get(ConfirmReceiptUseCase::class),
+        ],
     ],
 ];

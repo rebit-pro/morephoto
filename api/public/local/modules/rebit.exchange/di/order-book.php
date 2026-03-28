@@ -34,58 +34,46 @@ return [
         },
     ],
     GetOrderBookUseCase::class => [
-        'constructor' => static function(): GetOrderBookUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetOrderBookUseCase(
-                $sl->get(OrderBookRepository::class),
-                $sl->get(CurrencyPairRepository::class),
-                $sl->get(PaymentMethodRepository::class),
-            );
-        },
+        'className' => GetOrderBookUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(OrderBookRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            ServiceLocator::getInstance()->get(PaymentMethodRepository::class),
+        ],
     ],
     SyncOrderBookUseCase::class => [
-        'constructor' => static function(): SyncOrderBookUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncOrderBookUseCase(
-                $sl->get(OrderBookRepository::class),
-                $sl->get(CurrencyPairRepository::class),
-                $sl->get(BybitOrderBookGatewayInterface::class),
-                Log::getLogger(LogChannelEnum::exchange),
-            );
-        },
+        'className' => SyncOrderBookUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(OrderBookRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            ServiceLocator::getInstance()->get(BybitOrderBookGatewayInterface::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
     ],
     SyncOrderBookCommand::class => [
-        'constructor' => static function(): SyncOrderBookCommand {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncOrderBookCommand(
-                $sl->get(SyncOrderBookUseCase::class),
-                $sl->get(BybitConnectionResolverInterface::class),
-            );
-        },
+        'className' => SyncOrderBookCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(SyncOrderBookUseCase::class),
+            ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
+        ],
     ],
     CleanStaleOrdersUseCase::class => [
-        'constructor' => static function(): CleanStaleOrdersUseCase {
-            return new CleanStaleOrdersUseCase(
-                ServiceLocator::getInstance()->get(OrderBookRepository::class),
-                Log::getLogger(LogChannelEnum::exchange),
-            );
-        },
+        'className' => CleanStaleOrdersUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(OrderBookRepository::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
     ],
     CleanStaleOrdersCommand::class => [
-        'constructor' => static function(): CleanStaleOrdersCommand {
-            return new CleanStaleOrdersCommand(
-                ServiceLocator::getInstance()->get(CleanStaleOrdersUseCase::class),
-            );
-        },
+        'className' => CleanStaleOrdersCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(CleanStaleOrdersUseCase::class),
+        ],
     ],
     OrderBookController::class => [
-        'constructor' => static function(): OrderBookController {
-            return new OrderBookController(
-                ServiceLocator::getInstance()->get(GetOrderBookUseCase::class),
-            );
-        },
+        'className' => OrderBookController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(GetOrderBookUseCase::class),
+        ],
     ],
 ];

@@ -52,6 +52,15 @@ $application = new Application('Rebit Console', '1.0.0');
 
 $serviceLocator = ServiceLocator::getInstance();
 
+/**
+ * Двухпроходная загрузка:
+ * 1) includeModule для всех модулей с консольными командами — регистрируем DI-сервисы
+ * 2) Резолвим и добавляем команды — все межмодульные зависимости уже доступны
+ *
+ * @var array<string, list<class-string<Command>>> $moduleCommands
+ */
+$moduleCommands = [];
+
 foreach (ModuleManager::getInstalledModules() as $moduleId => $_) {
     $config = Configuration::getInstance($moduleId)->get('console');
 
@@ -63,7 +72,11 @@ foreach (ModuleManager::getInstalledModules() as $moduleId => $_) {
         continue;
     }
 
-    foreach ($config['commands'] as $commandClass) {
+    $moduleCommands[$moduleId] = $config['commands'];
+}
+
+foreach ($moduleCommands as $commands) {
+    foreach ($commands as $commandClass) {
         if (!is_a($commandClass, Command::class, true)) {
             continue;
         }
