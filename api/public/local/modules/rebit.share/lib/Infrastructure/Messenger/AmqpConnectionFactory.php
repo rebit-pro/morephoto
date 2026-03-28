@@ -7,7 +7,7 @@ namespace Rebit\Share\Infrastructure\Messenger;
 use Rebit\Share\Shared\Enum\MessengerQueueEnum;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\AmqpTransport;
 use Symfony\Component\Messenger\Bridge\Amqp\Transport\Connection;
-use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
+use Symfony\Component\Messenger\Transport\Serialization\Serializer;
 use Symfony\Component\Messenger\Transport\TransportInterface;
 
 /**
@@ -40,6 +40,6 @@ final readonly class AmqpConnectionFactory
 
         $connection = Connection::fromDsn($this->dsn, $amqpConfig);
 
-        return new AmqpTransport($connection, new PhpSerializer());
+        return new AmqpTransport($connection, Serializer::create());
     }
 }

@@ -18,7 +18,7 @@ final readonly class EmailNotificationChannel implements NotificationChannelInte
 {
     /** @var array<string, string> type value => Bitrix event code */
     private const array EVENT_MAP = [
-        'tradeDiscovered' => 'REBIT_NOTIFICATION_TRADE_DISCOVERED',
+        NotificationTypeEnum::TRADE_DISCOVERED->value => 'REBIT_NOTIFICATION_TRADE_DISCOVERED',
     ];
 
     public function __construct(

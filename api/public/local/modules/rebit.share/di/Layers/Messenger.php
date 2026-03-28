@@ -8,6 +8,8 @@ use Rebit\Share\Infrastructure\Messenger\BitrixDedupCache;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunner;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Infrastructure\Messenger\DedupCacheInterface;
+use Rebit\Share\Infrastructure\Notification\NullNotificationPublisher;
+use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Enum\MessengerQueueEnum;
 use Rebit\Share\Shared\Facade\Log;
@@ -44,5 +46,12 @@ return [
     ],
     DedupCacheInterface::class => [
         'className' => BitrixDedupCache::class,
+    ],
+    /**
+     * Fallback: NullPublisher используется, если rebit.notification не установлен.
+     * Модуль rebit.notification перезаписывает этот ключ реальной реализацией.
+     */
+    NotificationPublisherInterface::class => [
+        'className' => NullNotificationPublisher::class,
     ],
 ];

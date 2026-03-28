@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Notification\Presentation\Command\Notification;
 
 use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
+use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -57,14 +58,15 @@ final class TestSendNotificationCommand extends RebitCommand
 
         $this->publisher->publish(
             new SendNotificationDto(
-                type: 'tradeDiscovered',
+                type: NotificationTypeEnum::TRADE_DISCOVERED->value,
                 userId: $userId,
                 payload: $payload,
             ),
         );
 
         $io->success(sprintf(
-            'Уведомление tradeDiscovered опубликовано в очередь (userId=%d%s)',
+            'Уведомление %s опубликовано в очередь (userId=%d%s)',
+            NotificationTypeEnum::TRADE_DISCOVERED->value,
             $userId,
             null !== $email ? ', email=' . $email : '',
         ));
