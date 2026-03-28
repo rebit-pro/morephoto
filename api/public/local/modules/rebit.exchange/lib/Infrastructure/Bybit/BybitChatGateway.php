@@ -8,6 +8,7 @@ use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -17,6 +18,8 @@ use Rebit\Share\Shared\Exception\HttpException;
 final readonly class BybitChatGateway implements BybitChatGatewayInterface
 {
     private const string SEND_ENDPOINT = '/v5/p2p/order/message/send';
+    private const string UPLOAD_ENDPOINT = '/v5/p2p/oss/upload_file';
+    private const string QUERY_LIST_ENDPOINT = '/v5/p2p/order/message/queryList';
 
     public function __construct(
         private BybitConnectionResolverInterface $connectionResolver,
@@ -57,5 +60,106 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
                 502,
             );
         }
+    }
+
+    public function uploadFile(
+        int $userId,
+        string $filePath,
+        string $fileName,
+        string $mimeType,
+    ): array {
+        $connection = $this->connectionResolver->resolve($userId);
+
+        try {
+            $response = $this->bybitClient->postMultipart(
+                self::UPLOAD_ENDPOINT,
+                $connection->credentials,
+                $connection->environment,
+                [],
+                [
+                    'upload_file' => [
+                        'path' => $filePath,
+                        'name' => $fileName,
+                        'mimeType' => $mimeType,
+                    ],
+                ],
+            );
+        } catch (BybitApiException $e) {
+            throw new HttpException(
+                'Ошибка загрузки файла в Bybit: ' . $e->getMessage(),
+                502,
+            );
+        }
+
+        $url = (string)($response->result['url'] ?? '');
+
+        return [
+            'url' => $this->normalizeUploadedFileUrl($url, $connection->environment),
+            'type' => (string)($response->result['type'] ?? ''),
+        ];
+    }
+
+    public function fetchMessages(
+        int $userId,
+        string $orderId,
+        int $page = 1,
+        int $size = 50,
+    ): array {
+        $connection = $this->connectionResolver->resolve($userId);
+
+        try {
+            $response = $this->bybitClient->post(
+                self::QUERY_LIST_ENDPOINT,
+                $connection->credentials,
+                $connection->environment,
+                [
+                    'orderId' => $orderId,
+                    'page' => (string)$page,
+                    'size' => (string)$size,
+                ],
+            );
+        } catch (BybitApiException $e) {
+            throw new HttpException(
+                'Ошибка получения сообщений из Bybit: ' . $e->getMessage(),
+                502,
+            );
+        }
+
+        /** @var array<int, array{
+         *     id: string,
+         *     message: string,
+         *     contentType: string,
+         *     fileName: string,
+         *     userId: string,
+         *     nickName: string,
+         *     createDate: string,
+         * }> $messages */
+        $messages = $response->result['messages'] ?? [];
+
+        return $messages;
+    }
+
+    private function normalizeUploadedFileUrl(string $url, BybitEnvironmentEnum $environment): string
+    {
+        if ('' === $url || str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        $baseUrl = $environment->baseUrl();
+        $scheme = (string)parse_url($baseUrl, PHP_URL_SCHEME);
+        $host = (string)parse_url($baseUrl, PHP_URL_HOST);
+
+        if ('' === $scheme || '' === $host) {
+            return $url;
+        }
+
+        $port = parse_url($baseUrl, PHP_URL_PORT);
+        $origin = $scheme . '://' . $host;
+
+        if (null !== $port) {
+            $origin .= ':' . $port;
+        }
+
+        return $origin . $url;
     }
 }

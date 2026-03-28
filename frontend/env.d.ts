@@ -27,6 +27,7 @@ interface ImportMetaEnv {
   readonly VITE_API_URL: string;
   readonly VITE_APP_VERSION?: string;
   readonly VITE_GEETEST_CAPTCHA_ID?: string;
+  readonly VITE_API_MOCKS_ENABLED?: string;
 }
 
 interface Window {

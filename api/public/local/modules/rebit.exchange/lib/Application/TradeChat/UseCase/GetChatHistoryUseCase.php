@@ -13,13 +13,14 @@ use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 /**
- * Получение истории чата из локальной БД.
+ * Получение истории чата из локальной БД с предварительной синхронизацией из Bybit.
  */
 final readonly class GetChatHistoryUseCase
 {
     public function __construct(
         private TradeMessageRepository $messageRepository,
         private TradeRepository $tradeRepository,
+        private SyncChatMessagesUseCase $syncChatMessages,
     ) {}
 
     /**
@@ -37,6 +38,8 @@ final readonly class GetChatHistoryUseCase
         if ($trade->getUfBuyerUserId() !== $userId && $trade->getUfSellerUserId() !== $userId) {
             throw new HttpException('Нет доступа к чату этой сделки', 403);
         }
+
+        $this->syncChatMessages->execute($trade, $userId);
 
         $messages = $this->messageRepository->findByTradeId($tradeId);
 

@@ -5,6 +5,7 @@ import { useExchangeStore } from '@/stores/exchange';
 import { useAdvertisementsStore } from '@/stores/advertisements';
 import { useChatScriptsStore } from '@/stores/chatScripts';
 import type { CreateAdvertisementPayload, AdvertisementSide, PriceType } from '@/api/exchange';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const router = useRouter();
 const exchange = useExchangeStore();
@@ -27,6 +28,7 @@ const selectedPaymentMethodIds = ref<string[]>([]);
 const paymentPeriod = ref(15);
 const conditions = ref('');
 const chatScriptId = ref<number | null>(null);
+const createAsActive = ref(true);
 
 const sideOptions = [
   { title: 'Продать', value: 'sell' },
@@ -99,7 +101,12 @@ async function handleSubmit(): Promise<void> {
   };
 
   try {
-    await ads.createAdvertisement(payload);
+    const advertisement = await ads.createAdvertisement(payload);
+
+    if (!createAsActive.value) {
+      await ads.toggleAdvertisement(advertisement.id, 'paused');
+    }
+
     await router.push('/exchange/advertisements');
   } catch (e: unknown) {
     formError.value = e instanceof Error ? e.message : 'Ошибка создания объявления';
@@ -130,6 +137,11 @@ onMounted(async () => {
     </v-btn>
 
     <h2 class="text-h4 mb-6">Создать объявление</h2>
+
+    <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
+      В mock-режиме активное объявление автоматически получает новую сделку через несколько секунд.
+      Если выбрать сценарий с QR/файлом, первый шаг отправится в чат сделки автоматически.
+    </v-alert>
 
     <v-alert v-if="formError" type="error" variant="tonal" class="mb-4">{{ formError }}</v-alert>
     <v-alert v-if="ads.error" type="error" variant="tonal" class="mb-4">{{ ads.error }}</v-alert>
@@ -279,6 +291,15 @@ onMounted(async () => {
               label="Скрипт автосообщений"
               variant="outlined"
               density="compact"
+            />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-switch
+              v-model="createAsActive"
+              color="success"
+              inset
+              label="Включить объявление сразу после создания"
+              hide-details
             />
           </v-col>
         </v-row>

@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { Form } from 'vee-validate';
 import type { GeeTestCaptchaPayload } from '@/api/auth';
+import { isMockApiEnabled } from '@/mocks/config';
 
 const show1 = ref(false);
 const password = ref('');
@@ -14,7 +15,7 @@ const captchaError = ref('');
 const apiError = ref('');
 
 const authStore = useAuthStore();
-const geetestCaptchaId = import.meta.env.VITE_GEETEST_CAPTCHA_ID?.trim() ?? '';
+const geetestCaptchaId = isMockApiEnabled ? '' : import.meta.env.VITE_GEETEST_CAPTCHA_ID?.trim() ?? '';
 const geeTestScriptSrc = 'https://static.geetest.com/v4/gt4.js';
 
 let captchaInstance: GeeTestCaptchaInstance | null = null;
@@ -213,6 +214,10 @@ onUnmounted(() => {
 
 <template>
   <Form @submit="validate" class="mt-5 loginForm" v-slot="{ isSubmitting }">
+    <v-alert v-if="isMockApiEnabled" color="info" variant="tonal" class="mb-4">
+      Mock-режим активен. Для быстрого входа используйте <strong>owner@rebit.test</strong> / <strong>secret123</strong>.
+    </v-alert>
+
     <v-text-field
       v-model="email"
       :rules="emailRules"

@@ -8,11 +8,14 @@ use Rebit\Exchange\Application\TradeChat\UseCase\ExecuteChatScriptUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\GetChatHistoryUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\ProcessPendingChatScriptsUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\SendMessageUseCase;
+use Rebit\Exchange\Application\TradeChat\UseCase\SyncChatMessagesUseCase;
+use Rebit\Exchange\Application\TradeChat\UseCase\UploadTradeChatFileUseCase;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
+use Rebit\Exchange\Infrastructure\Bitrix\TradeChatUploadFileLocator;
 use Rebit\Exchange\Infrastructure\Bybit\BybitChatGateway;
 use Rebit\Exchange\Presentation\Command\ExecuteChatScriptsCommand;
 use Rebit\Exchange\Presentation\Controller\TradeChatController;
@@ -25,6 +28,9 @@ return [
     TradeMessageRepository::class => [
         'className' => TradeMessageRepository::class,
     ],
+    TradeChatUploadFileLocator::class => [
+        'className' => TradeChatUploadFileLocator::class,
+    ],
     BybitChatGatewayInterface::class => [
         'constructor' => static function(): BybitChatGatewayInterface {
             $sl = ServiceLocator::getInstance();
@@ -35,6 +41,16 @@ return [
             );
         },
     ],
+    SyncChatMessagesUseCase::class => [
+        'constructor' => static function(): SyncChatMessagesUseCase {
+            $sl = ServiceLocator::getInstance();
+
+            return new SyncChatMessagesUseCase(
+                $sl->get(TradeMessageRepository::class),
+                $sl->get(BybitChatGatewayInterface::class),
+            );
+        },
+    ],
     GetChatHistoryUseCase::class => [
         'constructor' => static function(): GetChatHistoryUseCase {
             $sl = ServiceLocator::getInstance();
@@ -42,6 +58,7 @@ return [
             return new GetChatHistoryUseCase(
                 $sl->get(TradeMessageRepository::class),
                 $sl->get(TradeRepository::class),
+                $sl->get(SyncChatMessagesUseCase::class),
             );
         },
     ],
@@ -53,6 +70,17 @@ return [
                 $sl->get(TradeMessageRepository::class),
                 $sl->get(TradeRepository::class),
                 $sl->get(BybitChatGatewayInterface::class),
+            );
+        },
+    ],
+    UploadTradeChatFileUseCase::class => [
+        'constructor' => static function(): UploadTradeChatFileUseCase {
+            $sl = ServiceLocator::getInstance();
+
+            return new UploadTradeChatFileUseCase(
+                $sl->get(TradeRepository::class),
+                $sl->get(BybitChatGatewayInterface::class),
+                $sl->get(TradeChatUploadFileLocator::class),
             );
         },
     ],
@@ -101,6 +129,7 @@ return [
             return new TradeChatController(
                 $sl->get(GetChatHistoryUseCase::class),
                 $sl->get(SendMessageUseCase::class),
+                $sl->get(UploadTradeChatFileUseCase::class),
             );
         },
     ],

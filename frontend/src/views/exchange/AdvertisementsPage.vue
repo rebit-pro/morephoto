@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted, computed, nextTick, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAdvertisementsStore } from '@/stores/advertisements';
 import type { AdvertisementStatus } from '@/api/exchange';
+import { isMockApiEnabled } from '@/mocks/config';
+import { createMockTradeScenario } from '@/mocks/runtime';
 
 const router = useRouter();
+const route = useRoute();
 const ads = useAdvertisementsStore();
 
 const statusFilter = ref<AdvertisementStatus | ''>('');
 const deleteDialog = ref(false);
 const deleteTargetId = ref<number | null>(null);
+const highlightedAdvertisementId = computed(() => {
+  const value = route.query.highlight;
+  const normalizedValue = 'string' === typeof value ? Number(value) : Number.NaN;
+
+  return Number.isNaN(normalizedValue) ? null : normalizedValue;
+});
 
 const statusOptions: { title: string; value: AdvertisementStatus | '' }[] = [
   { title: 'Все', value: '' },
@@ -40,6 +49,18 @@ function formatDate(iso: string): string {
 async function loadAds(): Promise<void> {
   const status = '' !== statusFilter.value ? statusFilter.value : undefined;
   await ads.fetchAdvertisements(status);
+  await scrollToHighlightedAdvertisement();
+}
+
+async function scrollToHighlightedAdvertisement(): Promise<void> {
+  if (null === highlightedAdvertisementId.value) {
+    return;
+  }
+
+  await nextTick();
+  document
+    .querySelector(`[data-advertisement-id="${highlightedAdvertisementId.value}"]`)
+    ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function confirmDelete(id: number): void {
@@ -66,8 +87,20 @@ async function handleToggle(id: number, status: 'active' | 'paused'): Promise<vo
   }
 }
 
+function handleCreateMockTrade(id: number): void {
+  const trade = createMockTradeScenario(id);
+
+  if (null !== trade) {
+    void router.push(`/exchange/trades/${trade.id}`);
+  }
+}
+
 onMounted(async () => {
   await loadAds();
+});
+
+watch(highlightedAdvertisementId, async () => {
+  await scrollToHighlightedAdvertisement();
 });
 </script>
 
@@ -97,6 +130,10 @@ onMounted(async () => {
         </v-btn>
       </div>
     </div>
+
+    <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
+      Для активного объявления можно вручную создать mock-сделку. Если ничего не нажимать, новая сделка тоже появится автоматически по polling.
+    </v-alert>
 
     <v-row v-if="ads.loading" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
@@ -132,7 +169,12 @@ onMounted(async () => {
               </v-btn>
             </td>
           </tr>
-          <tr v-for="ad in ads.advertisements" :key="ad.id">
+          <tr
+            v-for="ad in ads.advertisements"
+            :key="ad.id"
+            :data-advertisement-id="ad.id"
+            :class="{ 'advertisements-page__row--highlighted': ad.id === highlightedAdvertisementId }"
+          >
             <td>
               <v-chip size="small" variant="tonal" :color="'buy' === ad.side ? 'success' : 'error'">
                 {{ 'buy' === ad.side ? 'Покупка' : 'Продажа' }}
@@ -149,32 +191,51 @@ onMounted(async () => {
             </td>
             <td class="text-lightText text-body-2">{{ formatDate(ad.createdAt) }}</td>
             <td class="text-right">
-              <v-btn
-                v-if="'active' === ad.status"
-                icon="mdi-pause"
-                size="small"
-                variant="text"
-                color="warning"
-                :disabled="ads.actionLoading"
-                @click="handleToggle(ad.id, 'paused')"
-              />
-              <v-btn
-                v-if="'paused' === ad.status"
-                icon="mdi-play"
-                size="small"
-                variant="text"
-                color="success"
-                :disabled="ads.actionLoading"
-                @click="handleToggle(ad.id, 'active')"
-              />
-              <v-btn
-                icon="mdi-delete-outline"
-                size="small"
-                variant="text"
-                color="error"
-                :disabled="'cancelled' === ad.status || 'completed' === ad.status"
-                @click="confirmDelete(ad.id)"
-              />
+              <div class="d-flex justify-end flex-wrap ga-1">
+                <v-btn
+                  v-if="isMockApiEnabled && 'active' === ad.status"
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  prepend-icon="mdi-chat-plus-outline"
+                  :disabled="ads.actionLoading"
+                  @click.stop="handleCreateMockTrade(ad.id)"
+                >
+                  Сделка
+                </v-btn>
+                <v-btn
+                  v-if="'active' === ad.status"
+                  size="small"
+                  variant="text"
+                  color="warning"
+                  prepend-icon="mdi-pause"
+                  :disabled="ads.actionLoading"
+                  @click="handleToggle(ad.id, 'paused')"
+                >
+                  Отключить
+                </v-btn>
+                <v-btn
+                  v-if="'paused' === ad.status"
+                  size="small"
+                  variant="text"
+                  color="success"
+                  prepend-icon="mdi-play"
+                  :disabled="ads.actionLoading"
+                  @click="handleToggle(ad.id, 'active')"
+                >
+                  Включить
+                </v-btn>
+                <v-btn
+                  size="small"
+                  variant="text"
+                  color="error"
+                  prepend-icon="mdi-delete-outline"
+                  :disabled="'cancelled' === ad.status || 'completed' === ad.status"
+                  @click="confirmDelete(ad.id)"
+                >
+                  Удалить
+                </v-btn>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -197,3 +258,9 @@ onMounted(async () => {
     </v-dialog>
   </div>
 </template>
+
+<style scoped>
+.advertisements-page__row--highlighted {
+  background: rgba(33, 150, 243, 0.08);
+}
+</style>

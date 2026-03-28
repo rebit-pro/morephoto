@@ -9,10 +9,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class CreateAdvertisementRequestDto implements RequestDtoInterface
 {
-    /**
-     * @param array<int, string>    $paymentMethodIds
-     * @param array<string, string> $tradingPreferenceSet
-     */
     public function __construct(
         #[Assert\Positive(message: 'currencyPairId должен быть положительным числом.')]
         public int $currencyPairId,
@@ -31,6 +27,9 @@ final readonly class CreateAdvertisementRequestDto implements RequestDtoInterfac
         public string $minAmount,
         #[Assert\NotBlank(message: 'maxAmount обязателен.')]
         public string $maxAmount,
+        /**
+         * @var array<int, string>
+         */
         #[Assert\NotBlank(message: 'Необходимо указать хотя бы один способ оплаты.')]
         public array $paymentMethodIds,
         #[Assert\Positive(message: 'paymentPeriod должен быть положительным числом.')]
@@ -38,6 +37,9 @@ final readonly class CreateAdvertisementRequestDto implements RequestDtoInterfac
         public string $conditions = '',
         #[Assert\Positive(message: 'chatScriptId должен быть положительным числом.')]
         public ?int $chatScriptId = null,
+        /**
+         * @var array<string, string>
+         */
         public array $tradingPreferenceSet = [],
     ) {}
 }

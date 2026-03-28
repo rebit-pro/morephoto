@@ -264,6 +264,28 @@
               }
             },
             {
+              "name": "Toggle Advertisement",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"paused\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/exchange/advertisements/:id",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "exchange", "advertisements", ":id"],
+                  "variable": [
+                    { "key": "id", "value": "1", "description": "ID объявления" }
+                  ]
+                },
+                "description": "Включить или приостановить объявление.\n\nТело запроса:\n- `status` — `active` или `paused`"
+              }
+            },
+            {
               "name": "Delete Advertisement",
               "request": {
                 "method": "DELETE",

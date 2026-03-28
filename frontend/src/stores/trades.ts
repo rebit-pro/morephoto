@@ -19,6 +19,25 @@ export const useTradesStore = defineStore('trades', () => {
   const error = ref<string | null>(null);
   let tradeDetailRequestGeneration = 0;
 
+  function updateTradeInCollections(trade: Trade): void {
+    const index = trades.value.findIndex((item) => item.id === trade.id);
+    const currentTradeValue = currentTrade.value;
+
+    if (-1 !== index) {
+      trades.value[index] = {
+        ...trades.value[index],
+        ...trade,
+      };
+    }
+
+    if (null !== currentTradeValue && currentTradeValue['id'] === trade.id) {
+      currentTrade.value = {
+        ...currentTradeValue,
+        ...trade,
+      };
+    }
+  }
+
   async function fetchTrades(status?: TradeStatus): Promise<void> {
     loading.value = true;
     error.value = null;
@@ -45,7 +64,14 @@ export const useTradesStore = defineStore('trades', () => {
         return;
       }
 
-      currentTrade.value = trade;
+      currentTrade.value = {
+        ...trade,
+        isNew: false,
+      };
+      updateTradeInCollections({
+        ...trade,
+        isNew: false,
+      });
     } catch (e: unknown) {
       if (requestGeneration !== tradeDetailRequestGeneration) {
         return;
@@ -63,7 +89,9 @@ export const useTradesStore = defineStore('trades', () => {
     actionLoading.value = true;
     error.value = null;
     try {
-      currentTrade.value = await exchangeApi.confirmPayment(id, payload);
+      const trade = await exchangeApi.confirmPayment(id, payload);
+      updateTradeInCollections(trade);
+      currentTrade.value = trade;
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Ошибка подтверждения оплаты';
       throw e;
@@ -76,7 +104,9 @@ export const useTradesStore = defineStore('trades', () => {
     actionLoading.value = true;
     error.value = null;
     try {
-      currentTrade.value = await exchangeApi.releaseAssets(id);
+      const trade = await exchangeApi.releaseAssets(id);
+      updateTradeInCollections(trade);
+      currentTrade.value = trade;
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Ошибка подтверждения получения';
       throw e;

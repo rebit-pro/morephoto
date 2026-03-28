@@ -7,8 +7,7 @@ namespace Rebit\Exchange\Application\TradeChat\Port;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
- * Порт для отправки сообщений в чат сделки через Bybit API.
- * POST /v5/p2p/order/message/send
+ * Порт для работы с чатом сделки через Bybit API.
  */
 interface BybitChatGatewayInterface
 {
@@ -23,4 +22,38 @@ interface BybitChatGatewayInterface
         string $msgUuid,
         ?string $fileName = null,
     ): void;
+
+    /**
+     * @return array{url: string, type: string}
+     *
+     * @throws HttpException
+     */
+    public function uploadFile(
+        int $userId,
+        string $filePath,
+        string $fileName,
+        string $mimeType,
+    ): array;
+
+    /**
+     * Получение сообщений из чата сделки (POST /v5/p2p/order/message/queryList).
+     *
+     * @return array<int, array{
+     *     id: string,
+     *     message: string,
+     *     contentType: string,
+     *     fileName: string,
+     *     userId: string,
+     *     nickName: string,
+     *     createDate: string,
+     * }>
+     *
+     * @throws HttpException
+     */
+    public function fetchMessages(
+        int $userId,
+        string $orderId,
+        int $page = 1,
+        int $size = 50,
+    ): array;
 }

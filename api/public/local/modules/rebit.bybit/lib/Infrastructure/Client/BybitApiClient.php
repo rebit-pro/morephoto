@@ -13,6 +13,7 @@ use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitCredentials;
 use Rebit\Share\Application\Contract\Bybit\BybitEnvironmentEnum;
 use Rebit\Share\Application\Contract\Bybit\BybitResponseDto;
+use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
 use Rebit\Share\Infrastructure\HttpClient\RebitHttpClient;
 use Rebit\Share\Shared\Enum\HttpMethodEnum;
 use Rebit\Share\Shared\Helper\ArrayToDtoMapper;
@@ -65,6 +66,60 @@ final readonly class BybitApiClient implements BybitClientInterface
         $headers['Content-Type'] = 'application/json';
 
         return $this->executeRequest(HttpMethodEnum::POST, $url, $headers, $body);
+    }
+
+    /**
+     * @param array<string, string> $fields
+     * @param array<string, array{
+     *     path: string,
+     *     name: string,
+     *     mimeType: string,
+     * }> $files
+     *
+     * @throws BybitApiException|ValidationHttpException
+     */
+    public function postMultipart(
+        string $endpoint,
+        BybitCredentials $credentials,
+        BybitEnvironmentEnum $environment,
+        array $fields = [],
+        array $files = [],
+    ): BybitResponseDto {
+        $url = $environment->baseUrl() . $endpoint;
+        $headers = $this->buildAuthHeaders($credentials, self::DEFAULT_RECV_WINDOW, '');
+
+        try {
+            $rawResponse = $this->httpClient->postMultipart($url, $fields, $files, $headers);
+        } catch (\Exception $e) {
+            $this->logger->error('Bybit API multipart request failed', [
+                'method' => HttpMethodEnum::POST->value,
+                'url' => $url,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new BybitApiException(
+                message: sprintf('Bybit API request failed: %s', $e->getMessage()),
+                previous: $e,
+            );
+        }
+
+        $response = ArrayToDtoMapper::map($this->normalizeResponse($rawResponse), BybitResponseDto::class);
+
+        if (0 !== $response->retCode) {
+            $this->logger->warning('Bybit API returned error', [
+                'method' => HttpMethodEnum::POST->value,
+                'url' => $url,
+                'retCode' => $response->retCode,
+                'retMsg' => $response->retMsg,
+            ]);
+
+            throw new BybitApiException(
+                message: sprintf('Bybit API error [%d]: %s', $response->retCode, $response->retMsg),
+                bybitRetCode: $response->retCode,
+            );
+        }
+
+        return $response;
     }
 
     /**

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { useChatScriptsStore } from '@/stores/chatScripts';
-import type { ChatScriptStep, ChatScriptPayload } from '@/api/exchange';
+import type { ChatScriptStep, ChatScriptPayload, ChatContentType } from '@/api/exchange';
+import { isMockApiEnabled } from '@/mocks/config';
 
 interface FormStep extends ChatScriptStep {
   _uid: number;
@@ -15,8 +16,18 @@ function createFormStep(step?: Partial<ChatScriptStep>): FormStep {
     sort: step?.sort ?? 1,
     message: step?.message ?? '',
     delaySeconds: step?.delaySeconds ?? 0,
+    contentType: step?.contentType ?? 'str',
+    fileName: step?.fileName ?? null,
+    fileUrl: step?.fileUrl ?? null,
   };
 }
+
+const contentTypeOptions: { title: string; value: ChatContentType }[] = [
+  { title: 'Текст', value: 'str' },
+  { title: 'Изображение / QR', value: 'pic' },
+  { title: 'PDF', value: 'pdf' },
+  { title: 'Видео', value: 'video' },
+];
 
 const scripts = useChatScriptsStore();
 
@@ -45,6 +56,23 @@ const placeholders = [
   { tag: '{fiat_currency}', desc: 'Фиатная валюта (RUB)' },
   { tag: '{trade_id}', desc: 'Номер сделки' },
 ];
+
+const canSaveScript = computed(() => {
+  if ('' === form.name.trim()) {
+    return false;
+  }
+
+  return !form.steps.some((step) => {
+    const hasMessage = '' !== step.message.trim();
+    const hasFile = null !== step.fileUrl;
+
+    if ('str' === step.contentType) {
+      return !hasMessage;
+    }
+
+    return !hasMessage && !hasFile;
+  });
+});
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('ru-RU');
@@ -93,6 +121,70 @@ function moveStep(index: number, direction: -1 | 1): void {
   });
 }
 
+function isImageStep(step: Pick<FormStep, 'contentType'>): boolean {
+  return 'pic' === step.contentType;
+}
+
+function resolveFileContentType(file: File): ChatContentType {
+  if (file.type.startsWith('image/')) {
+    return 'pic';
+  }
+
+  if ('application/pdf' === file.type) {
+    return 'pdf';
+  }
+
+  if (file.type.startsWith('video/')) {
+    return 'video';
+  }
+
+  return 'str';
+}
+
+function clearStepFile(step: FormStep): void {
+  step.fileName = null;
+  step.fileUrl = null;
+
+  if ('str' !== step.contentType) {
+    step.contentType = 'str';
+  }
+}
+
+function onContentTypeChange(step: FormStep): void {
+  if ('str' === step.contentType) {
+    step.fileName = null;
+    step.fileUrl = null;
+  }
+}
+
+async function handleStepFileSelected(event: Event, step: FormStep): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+
+  if (undefined === file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  await new Promise<void>((resolve, reject) => {
+    reader.onload = () => {
+      step.fileName = file.name;
+      step.fileUrl = 'string' === typeof reader.result ? reader.result : null;
+      step.contentType = resolveFileContentType(file);
+      resolve();
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Не удалось прочитать файл сценария.'));
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  input.value = '';
+}
+
 async function handleSave(): Promise<void> {
   const payload: ChatScriptPayload = {
     name: form.name,
@@ -101,6 +193,9 @@ async function handleSave(): Promise<void> {
       sort: i + 1,
       message: s.message,
       delaySeconds: s.delaySeconds,
+      contentType: s.contentType,
+      fileName: s.fileName ?? null,
+      fileUrl: s.fileUrl ?? null,
     })),
   };
 
@@ -160,6 +255,11 @@ onMounted(async () => {
         Создать скрипт
       </v-btn>
     </div>
+
+    <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
+      В mock-режиме шаг сценария можно сохранить как текст, банковские реквизиты, QR-код, PDF или видео.
+      Вложение хранится локально в браузере и автоматически отправится первым сообщением новой сделки.
+    </v-alert>
 
     <v-row v-if="scripts.loading" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
@@ -277,12 +377,57 @@ onMounted(async () => {
             </div>
             <v-textarea
               v-model="step.message"
-              label="Текст сообщения"
+              :label="'str' === step.contentType ? 'Текст сообщения' : 'Комментарий к вложению'"
               variant="outlined"
               density="compact"
               rows="2"
               class="mb-2"
             />
+            <v-select
+              v-model="step.contentType"
+              :items="contentTypeOptions"
+              item-title="title"
+              item-value="value"
+              label="Тип шага"
+              variant="outlined"
+              density="compact"
+              class="mb-2"
+              @update:model-value="onContentTypeChange(step)"
+            />
+            <div class="d-flex flex-wrap align-center ga-3 mb-2">
+              <label class="d-inline-flex">
+                <input
+                  class="d-none"
+                  type="file"
+                  accept="image/*,application/pdf,video/*"
+                  @change="handleStepFileSelected($event, step)"
+                />
+                <v-btn
+                  variant="outlined"
+                  size="small"
+                  prepend-icon="mdi-paperclip"
+                  tag="span"
+                >
+                  {{ null === step.fileUrl ? 'Загрузить файл' : 'Заменить файл' }}
+                </v-btn>
+              </label>
+              <v-chip v-if="null !== step.fileName" size="small" color="primary" variant="tonal">
+                {{ step.fileName }}
+              </v-chip>
+              <v-btn
+                v-if="null !== step.fileUrl"
+                variant="text"
+                size="small"
+                color="error"
+                prepend-icon="mdi-close"
+                @click="clearStepFile(step)"
+              >
+                Удалить файл
+              </v-btn>
+            </div>
+            <div v-if="null !== step.fileUrl && isImageStep(step)" class="mb-2">
+              <img :src="step.fileUrl" :alt="step.fileName ?? 'preview'" class="chat-scripts-page__preview-image" />
+            </div>
             <v-text-field
               v-model.number="step.delaySeconds"
               label="Задержка (секунд)"
@@ -325,7 +470,7 @@ onMounted(async () => {
           <v-btn
             color="primary"
             :loading="scripts.actionLoading"
-            :disabled="'' === form.name.trim() || form.steps.some((s) => '' === s.message.trim())"
+            :disabled="!canSaveScript"
             @click="handleSave"
           >
             Сохранить
@@ -343,6 +488,21 @@ onMounted(async () => {
             <div v-for="(step, index) in previewSteps" :key="index" class="mb-3">
               <div class="d-flex justify-end">
                 <div class="pa-3 rounded-lg bg-primary text-white" style="max-width: 80%">
+                  <img
+                    v-if="step.fileUrl && 'pic' === step.contentType"
+                    :src="step.fileUrl"
+                    :alt="step.fileName ?? 'preview'"
+                    class="chat-scripts-page__preview-image mb-2"
+                  />
+                  <v-chip
+                    v-else-if="step.fileUrl && step.fileName"
+                    size="small"
+                    variant="tonal"
+                    prepend-icon="mdi-paperclip"
+                    class="mb-2"
+                  >
+                    {{ step.fileName }}
+                  </v-chip>
                   <div class="text-body-2" style="white-space: pre-wrap">{{ renderPreview(step.message) }}</div>
                   <div class="text-caption mt-1" style="opacity: 0.7">
                     {{ 0 < step.delaySeconds ? `+${step.delaySeconds} сек` : 'Сразу' }}
@@ -379,5 +539,13 @@ onMounted(async () => {
 <style scoped>
 .border {
   border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.chat-scripts-page__preview-image {
+  display: block;
+  max-width: 240px;
+  max-height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
 }
 </style>

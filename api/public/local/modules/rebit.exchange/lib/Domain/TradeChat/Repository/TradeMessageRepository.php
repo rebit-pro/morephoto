@@ -51,6 +51,26 @@ final class TradeMessageRepository
     }
 
     /**
+     * Проверяет, существует ли сообщение с данным Bybit UUID в рамках сделки.
+     *
+     * @throws RepositoryException
+     */
+    public function existsByBybitMsgUuid(int $tradeId, string $bybitMsgUuid): bool
+    {
+        if ('' === $bybitMsgUuid) {
+            return false;
+        }
+
+        return $this->query(
+            fn(): bool => 0 < TradeMessageTable::query()
+                ->where('UF_TRADE_ID', $tradeId)
+                ->where('UF_BYBIT_MSG_UUID', $bybitMsgUuid)
+                ->setLimit(1)
+                ->queryCountTotal(),
+        );
+    }
+
+    /**
      * @throws RepositoryException
      */
     public function create(

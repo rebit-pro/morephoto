@@ -85,10 +85,10 @@ watch(
         <v-chip
           v-for="method in exchange.paymentMethods"
           :key="method.id"
-          :color="selectedMethods.includes(method.id) ? 'primary' : undefined"
-          :variant="selectedMethods.includes(method.id) ? 'flat' : 'outlined'"
+          :color="selectedMethods.includes(method.code) ? 'primary' : undefined"
+          :variant="selectedMethods.includes(method.code) ? 'flat' : 'outlined'"
           size="small"
-          @click="toggleMethod(method.id)"
+          @click="toggleMethod(method.code)"
         >
           {{ method.name }}
         </v-chip>
