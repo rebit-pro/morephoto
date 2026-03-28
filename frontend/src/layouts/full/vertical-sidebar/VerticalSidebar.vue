@@ -7,7 +7,6 @@ import NavGroup from './NavGroup/NavGroup.vue';
 import NavItem from './NavItem/NavItem.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
 import ExtraBox from './extrabox/ExtraBox.vue';
-import Logo from '../logo/LogoMain.vue';
 
 // Access customizer store
 const customizer = useCustomizerStore();
@@ -30,14 +29,7 @@ const appVersion = import.meta.env.VITE_APP_VERSION;
     :rail="customizer.mini_sidebar"
     expand-on-hover
   >
-    <!---Logo part -->
-
-    <div class="pa-5">
-      <Logo />
-    </div>
-    <!-- ---------------------------------------------- -->
-    <!---Navigation -->
-    <!-- ---------------------------------------------- -->
+    <!-- Navigation -->
     <PerfectScrollbar class="scrollnavbar" :options="{ suppressScrollX: true }">
       <v-list class="pa-4">
         <!---Menu Loop -->

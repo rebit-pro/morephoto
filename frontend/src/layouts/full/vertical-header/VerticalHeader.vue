@@ -8,6 +8,7 @@ import ProfileDD from './ProfileDD.vue';
 import { useTradesStore } from '@/stores/trades';
 import { usePolling } from '@/composables/usePolling';
 import { useTradeNotifications } from '@/composables/useTradeNotifications';
+import Logo from '../logo/LogoMain.vue';
 
 const customizer = useCustomizerStore();
 const trades = useTradesStore();
@@ -73,6 +74,11 @@ onUnmounted(() => {
     >
       <Menu2Icon size="20" stroke-width="1.5" />
     </v-btn>
+
+    <v-spacer />
+
+    <!-- Logo centered -->
+    <Logo />
 
     <v-spacer />
 
