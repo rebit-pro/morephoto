@@ -46,13 +46,13 @@ final readonly class UploadTradeChatFileUseCase
             $file['name'],
             $file['mimeType'],
         );
-        $fileUrl = $uploadResult['url'];
+        $fileUrl = $uploadResult->url;
 
         if ('' === $fileUrl) {
             throw new HttpException('Bybit не вернул URL загруженного файла', 502);
         }
 
-        $providerType = $uploadResult['type'];
+        $providerType = $uploadResult->type;
 
         return new UploadTradeChatFileResultDto(
             fileName: $file['name'],

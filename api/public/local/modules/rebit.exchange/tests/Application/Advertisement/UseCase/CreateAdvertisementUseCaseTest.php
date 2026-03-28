@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Tests\Application\Advertisement\UseCase;
 
 use PHPUnit\Framework\TestCase;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitAdvertisementCreateResultDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitCreateAdvertisementDto;
 use Rebit\Exchange\Application\Advertisement\Dto\Request\CreateAdvertisementRequestDto;
 use Rebit\Exchange\Application\Advertisement\Dto\Result\AdvertisementResultDto;
 use Rebit\Exchange\Application\Advertisement\Port\BybitAdvertisementGatewayInterface;
@@ -76,8 +78,8 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $bybitGateway
             ->expects($this->once())
             ->method('create')
-            ->with(self::USER_ID, $this->isType('array'))
-            ->willReturn('bybit-ad-123')
+            ->with(self::USER_ID, $this->isInstanceOf(BybitCreateAdvertisementDto::class))
+            ->willReturn(new BybitAdvertisementCreateResultDto(itemId: 'bybit-ad-123'))
         ;
 
         $balanceQuery = $this->createStub(BalanceQueryInterface::class);
@@ -123,7 +125,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         ;
 
         $bybitGateway = $this->createStub(BybitAdvertisementGatewayInterface::class);
-        $bybitGateway->method('create')->willReturn('bybit-ad-456');
+        $bybitGateway->method('create')->willReturn(new BybitAdvertisementCreateResultDto(itemId: 'bybit-ad-456'));
 
         $ad = $this->createAdStub();
         $adRepo = $this->createStub(AdvertisementRepository::class);

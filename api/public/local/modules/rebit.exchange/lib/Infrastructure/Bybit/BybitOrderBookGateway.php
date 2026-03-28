@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Infrastructure\Bybit;
 
+use Rebit\Exchange\Application\OrderBook\Dto\Bybit\BybitOrderBookItemDto;
+use Rebit\Exchange\Application\OrderBook\Dto\Bybit\BybitOrderBookListDto;
 use Rebit\Exchange\Application\OrderBook\Port\BybitOrderBookGatewayInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
@@ -33,7 +35,7 @@ final readonly class BybitOrderBookGateway implements BybitOrderBookGatewayInter
         string $side,
         int $page = 1,
         int $size = 30,
-    ): array {
+    ): BybitOrderBookListDto {
         $connection = $this->connectionResolver->resolve($userId);
 
         try {
@@ -56,6 +58,40 @@ final readonly class BybitOrderBookGateway implements BybitOrderBookGatewayInter
             );
         }
 
-        return $response->result['items'] ?? [];
+        /** @var array<int, array<string, mixed>> $items */
+        $items = is_array($response->result['items'] ?? null)
+            ? $response->result['items']
+            : [];
+
+        return new BybitOrderBookListDto(
+            items: array_map(
+                static fn(array $item): BybitOrderBookItemDto => new BybitOrderBookItemDto(
+                    id: (string)($item['id'] ?? ''),
+                    price: (string)($item['price'] ?? ''),
+                    lastQuantity: (string)($item['lastQuantity'] ?? ''),
+                    minAmount: (string)($item['minAmount'] ?? ''),
+                    maxAmount: (string)($item['maxAmount'] ?? ''),
+                    nickName: (string)($item['nickName'] ?? ''),
+                    recentExecuteRate: (float)($item['recentExecuteRate'] ?? 0),
+                    recentOrderNum: (int)($item['recentOrderNum'] ?? 0),
+                    payments: self::normalizePayments($item['payments'] ?? []),
+                    paymentPeriod: (int)($item['paymentPeriod'] ?? 0),
+                    side: (int)($item['side'] ?? 0),
+                ),
+                $items,
+            ),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function normalizePayments(mixed $payments): array
+    {
+        if (!is_array($payments)) {
+            return [];
+        }
+
+        return array_values(array_map(static fn(mixed $payment): string => (string)$payment, $payments));
     }
 }

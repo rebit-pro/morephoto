@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\Trade\Port;
 
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderInfoDto;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderListDto;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -14,29 +16,23 @@ interface BybitTradeGatewayInterface
     /**
      * Получить активные ордера. POST /v5/p2p/order/pending/simplifyList
      *
-     * @return array<string, mixed>
-     *
      * @throws HttpException
      */
-    public function fetchActiveOrders(int $userId, int $page = 1, int $size = 30): array;
+    public function fetchActiveOrders(int $userId, int $page = 1, int $size = 30): BybitTradeOrderListDto;
 
     /**
      * Получить все ордера. POST /v5/p2p/order/simplifyList
      *
-     * @return array<string, mixed>
-     *
      * @throws HttpException
      */
-    public function fetchAllOrders(int $userId, int $page = 1, int $size = 30): array;
+    public function fetchAllOrders(int $userId, int $page = 1, int $size = 30): BybitTradeOrderListDto;
 
     /**
      * Получить детали ордера. POST /v5/p2p/order/info
      *
-     * @return array<string, mixed>
-     *
      * @throws HttpException
      */
-    public function fetchOrderInfo(int $userId, string $orderId): array;
+    public function fetchOrderInfo(int $userId, string $orderId): BybitTradeOrderInfoDto;
 
     /**
      * Отметить ордер как оплаченный. POST /v5/p2p/order/pay

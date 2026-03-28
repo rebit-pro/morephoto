@@ -180,9 +180,163 @@ services:
             delay: 10s
             order: stop-first
           restart_policy:
-            condition: on-failure
+            condition: any
             delay: 5s
-            max_attempts: 5
+    api-trade-event-consumer:
+        image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
+        command: ["php", "public/local/bin/bitrix-console", "app:exchange:trade-event:consume"]
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
+        volumes:
+          - type: bind
+            source: /srv/rebit-p2p/bitrix
+            target: /app/public/bitrix
+          - type: bind
+            source: /srv/rebit-p2p/upload
+            target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
+        deploy:
+          mode: replicated
+          replicas: 1
+          update_config:
+            parallelism: 1
+            delay: 10s
+            order: stop-first
+          restart_policy:
+            condition: any
+            delay: 5s
+    api-chat-script-consumer:
+        image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
+        command: ["php", "public/local/bin/bitrix-console", "app:exchange:chat-script:consume"]
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
+        volumes:
+          - type: bind
+            source: /srv/rebit-p2p/bitrix
+            target: /app/public/bitrix
+          - type: bind
+            source: /srv/rebit-p2p/upload
+            target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
+        deploy:
+          mode: replicated
+          replicas: 1
+          update_config:
+            parallelism: 1
+            delay: 10s
+            order: stop-first
+          restart_policy:
+            condition: any
+            delay: 5s
+    api-balance-sync-consumer:
+        image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
+        command: ["php", "public/local/bin/bitrix-console", "app:wallet:balance-sync:consume"]
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
+        volumes:
+          - type: bind
+            source: /srv/rebit-p2p/bitrix
+            target: /app/public/bitrix
+          - type: bind
+            source: /srv/rebit-p2p/upload
+            target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
+        deploy:
+          mode: replicated
+          replicas: 1
+          update_config:
+            parallelism: 1
+            delay: 10s
+            order: stop-first
+          restart_policy:
+            condition: any
+            delay: 5s
+    api-identity-sync-consumer:
+        image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
+        command: ["php", "public/local/bin/bitrix-console", "app:identity:sync:consume"]
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
+        volumes:
+          - type: bind
+            source: /srv/rebit-p2p/bitrix
+            target: /app/public/bitrix
+          - type: bind
+            source: /srv/rebit-p2p/upload
+            target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
+        deploy:
+          mode: replicated
+          replicas: 1
+          update_config:
+            parallelism: 1
+            delay: 10s
+            order: stop-first
+          restart_policy:
+            condition: any
+            delay: 5s
+    api-audit-consumer:
+        image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
+        command: ["php", "public/local/bin/bitrix-console", "app:audit:consume"]
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
+        volumes:
+          - type: bind
+            source: /srv/rebit-p2p/bitrix
+            target: /app/public/bitrix
+          - type: bind
+            source: /srv/rebit-p2p/upload
+            target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
+        deploy:
+          mode: replicated
+          replicas: 1
+          update_config:
+            parallelism: 1
+            delay: 10s
+            order: stop-first
+          restart_policy:
+            condition: any
+            delay: 5s
     rabbitmq:
         image: rabbitmq:3.13-management-alpine
         entrypoint:

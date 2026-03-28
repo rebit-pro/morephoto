@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\Advertisement\UseCase;
 
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitCreateAdvertisementDto;
+use Rebit\Exchange\Application\Advertisement\Dto\Bybit\BybitTradingPreferenceSetDto;
 use Rebit\Exchange\Application\Advertisement\Dto\Request\ToggleAdvertisementRequestDto;
 use Rebit\Exchange\Application\Advertisement\Dto\Result\AdvertisementResultDto;
 use Rebit\Exchange\Application\Advertisement\Port\BybitAdvertisementGatewayInterface;
@@ -121,22 +123,25 @@ final readonly class ToggleAdvertisementUseCase
         $side = SideEnum::from($ad->getUfSide());
         $priceType = PriceTypeEnum::from($ad->getUfPriceType());
 
-        $bybitAdId = $this->bybitGateway->create($userId, [
-            'tokenId' => $tokenId,
-            'currencyId' => $currencyId,
-            'side' => $side->toBybit(),
-            'priceType' => $priceType->toBybit(),
-            'premium' => 0.0 !== $ad->getUfPremium() ? (string)$ad->getUfPremium() : '',
-            'price' => (string)$ad->getUfPrice(),
-            'minAmount' => (string)$ad->getUfMinAmount(),
-            'maxAmount' => (string)$ad->getUfMaxAmount(),
-            'paymentIds' => $paymentIds,
-            'remark' => $ad->getUfConditions(),
-            'tradingPreferenceSet' => [],
-            'quantity' => (string)$ad->getUfQuantityRemaining(),
-            'paymentPeriod' => (string)$ad->getUfPaymentPeriod(),
-            'itemType' => 'ORIGIN',
-        ]);
+        $bybitAdId = $this->bybitGateway->create(
+            $userId,
+            new BybitCreateAdvertisementDto(
+                tokenId: $tokenId,
+                currencyId: $currencyId,
+                side: $side->toBybit(),
+                priceType: $priceType->toBybit(),
+                premium: 0.0 !== $ad->getUfPremium() ? (string)$ad->getUfPremium() : '',
+                price: (string)$ad->getUfPrice(),
+                minAmount: (string)$ad->getUfMinAmount(),
+                maxAmount: (string)$ad->getUfMaxAmount(),
+                paymentIds: $paymentIds,
+                remark: $ad->getUfConditions(),
+                tradingPreferenceSet: new BybitTradingPreferenceSetDto(),
+                quantity: (string)$ad->getUfQuantityRemaining(),
+                paymentPeriod: (string)$ad->getUfPaymentPeriod(),
+                itemType: 'ORIGIN',
+            ),
+        )->itemId;
 
         $ad->setUfBybitAdId($bybitAdId);
     }

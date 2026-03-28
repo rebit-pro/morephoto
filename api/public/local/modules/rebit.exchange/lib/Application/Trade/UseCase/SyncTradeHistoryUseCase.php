@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\Trade\UseCase;
 
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderSummaryDto;
 use Psr\Log\LoggerInterface;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
@@ -39,10 +40,10 @@ final readonly class SyncTradeHistoryUseCase
 
         do {
             $result = $this->bybitGateway->fetchAllOrders($userId, $page);
-            $items = $result['items'] ?? [];
+            $items = $result->items;
 
             foreach ($items as $item) {
-                $bybitOrderId = (string)($item['id'] ?? '');
+                $bybitOrderId = $item->id;
                 if ('' === $bybitOrderId) {
                     continue;
                 }
@@ -53,7 +54,7 @@ final readonly class SyncTradeHistoryUseCase
                     $this->createTrade($item, $userId);
                     ++$newCount;
                 } else {
-                    $bybitStatus = (int)($item['status'] ?? 0);
+                    $bybitStatus = $item->status;
                     if ($bybitStatus !== $existing->getUfBybitStatus()) {
                         $existing->setUfBybitStatus($bybitStatus);
                         $existing->setUfStatus(TradeStatusEnum::fromBybit($bybitStatus)->value);
@@ -78,24 +79,25 @@ final readonly class SyncTradeHistoryUseCase
     }
 
     /**
-     * @param array<string, mixed> $item
+     * @throws RepositoryException
      */
-    private function createTrade(array $item, int $userId): void
+    private function createTrade(BybitTradeOrderSummaryDto $item, int $userId): void
     {
-        $bybitStatus = (int)($item['status'] ?? 0);
+        $bybitStatus = $item->status;
+        $side = (0 === $item->side) ? 'buy' : 'sell';
 
         $this->tradeRepository->createFromBybit([
-            'bybitOrderId' => (string)($item['id'] ?? ''),
+            'bybitOrderId' => $item->id,
             'bybitStatus' => $bybitStatus,
-            'buyerUserId' => $userId,
-            'sellerUserId' => 0,
-            'side' => (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell',
-            'price' => (float)($item['price'] ?? 0),
+            'buyerUserId' => 'buy' === $side ? $userId : 0,
+            'sellerUserId' => 'sell' === $side ? $userId : 0,
+            'side' => $side,
+            'price' => (float)$item->price,
             'quantity' => 0.0,
-            'fiatAmount' => (float)($item['amount'] ?? 0),
-            'fee' => (float)($item['fee'] ?? 0),
+            'fiatAmount' => (float)$item->amount,
+            'fee' => (float)$item->fee,
             'status' => TradeStatusEnum::fromBybit($bybitStatus)->value,
-            'counterpartyName' => (string)($item['targetNickName'] ?? ''),
+            'counterpartyName' => $item->targetNickName,
         ]);
     }
 }

@@ -6,6 +6,7 @@ namespace Rebit\Exchange\Tests\Application\TradeChat\UseCase;
 
 use Bitrix\Main\Data\ManagedCache;
 use PHPUnit\Framework\TestCase;
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatUploadResultDto;
 use Rebit\Exchange\Application\TradeChat\Dto\Request\UploadTradeChatFileRequestDto;
 use Rebit\Exchange\Application\TradeChat\Dto\Result\UploadTradeChatFileResultDto;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
@@ -69,10 +70,10 @@ final class UploadTradeChatFileUseCaseTest extends TestCase
             ->expects($this->once())
             ->method('uploadFile')
             ->with(self::BUYER_ID, $this->createdFiles[0], 'test.png', 'image/png')
-            ->willReturn([
-                'url' => 'https://api-testnet.bybit.com/fiat/p2p/oss/showObj/test.png',
-                'type' => 'IMAGE',
-            ])
+            ->willReturn(new BybitTradeChatUploadResultDto(
+                url: 'https://api-testnet.bybit.com/fiat/p2p/oss/showObj/test.png',
+                type: 'IMAGE',
+            ))
         ;
 
         $result = (new UploadTradeChatFileUseCase($tradeRepository, $chatGateway, $fileLocator))

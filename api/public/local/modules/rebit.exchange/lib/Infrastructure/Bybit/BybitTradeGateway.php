@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Infrastructure\Bybit;
 
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderInfoDto;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderListDto;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderSummaryDto;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradePaymentTermDto;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
@@ -26,27 +30,71 @@ final readonly class BybitTradeGateway implements BybitTradeGatewayInterface
         private BybitClientInterface $bybitClient,
     ) {}
 
-    public function fetchActiveOrders(int $userId, int $page = 1, int $size = 30): array
+    public function fetchActiveOrders(int $userId, int $page = 1, int $size = 30): BybitTradeOrderListDto
     {
-        return $this->post($userId, self::ACTIVE_ORDERS_ENDPOINT, [
-            'page' => $page,
-            'size' => $size,
-        ]);
+        return $this->mapOrderList(
+            $this->post($userId, self::ACTIVE_ORDERS_ENDPOINT, [
+                'page' => $page,
+                'size' => $size,
+            ]),
+        );
     }
 
-    public function fetchAllOrders(int $userId, int $page = 1, int $size = 30): array
+    public function fetchAllOrders(int $userId, int $page = 1, int $size = 30): BybitTradeOrderListDto
     {
-        return $this->post($userId, self::ALL_ORDERS_ENDPOINT, [
-            'page' => $page,
-            'size' => $size,
-        ]);
+        return $this->mapOrderList(
+            $this->post($userId, self::ALL_ORDERS_ENDPOINT, [
+                'page' => $page,
+                'size' => $size,
+            ]),
+        );
     }
 
-    public function fetchOrderInfo(int $userId, string $orderId): array
+    public function fetchOrderInfo(int $userId, string $orderId): BybitTradeOrderInfoDto
     {
-        return $this->post($userId, self::ORDER_INFO_ENDPOINT, [
+        /** @var array<string, mixed> $result */
+        $result = $this->post($userId, self::ORDER_INFO_ENDPOINT, [
             'orderId' => $orderId,
         ]);
+
+        /** @var array<int, array<string, mixed>> $paymentTermList */
+        $paymentTermList = is_array($result['paymentTermList'] ?? null)
+            ? $result['paymentTermList']
+            : [];
+
+        return new BybitTradeOrderInfoDto(
+            id: (string)($result['id'] ?? ''),
+            side: (int)($result['side'] ?? 0),
+            itemId: (string)($result['itemId'] ?? ''),
+            userId: (string)($result['userId'] ?? ''),
+            nickName: (string)($result['nickName'] ?? ''),
+            makerUserId: (string)($result['makerUserId'] ?? ''),
+            targetUserId: (string)($result['targetUserId'] ?? ''),
+            targetNickName: (string)($result['targetNickName'] ?? ''),
+            tokenId: (string)($result['tokenId'] ?? ''),
+            currencyId: (string)($result['currencyId'] ?? ''),
+            price: (string)($result['price'] ?? ''),
+            quantity: (string)($result['quantity'] ?? ''),
+            amount: (string)($result['amount'] ?? ''),
+            paymentType: (int)($result['paymentType'] ?? 0),
+            transferDate: (string)($result['transferDate'] ?? ''),
+            status: (int)($result['status'] ?? 0),
+            createDate: (string)($result['createDate'] ?? ''),
+            paymentTermList: array_map(
+                static fn(array $paymentTerm): BybitTradePaymentTermDto => new BybitTradePaymentTermDto(
+                    id: (string)($paymentTerm['id'] ?? ''),
+                    realName: (string)($paymentTerm['realName'] ?? ''),
+                    paymentType: (int)($paymentTerm['paymentType'] ?? 0),
+                    bankName: (string)($paymentTerm['bankName'] ?? ''),
+                    branchName: (string)($paymentTerm['branchName'] ?? ''),
+                    accountNo: (string)($paymentTerm['accountNo'] ?? ''),
+                    qrcode: (string)($paymentTerm['qrcode'] ?? ''),
+                ),
+                $paymentTermList,
+            ),
+            remark: (string)($result['remark'] ?? ''),
+            transferLastSeconds: (string)($result['transferLastSeconds'] ?? ''),
+        );
     }
 
     public function confirmPayment(int $userId, string $orderId, string $paymentType, string $paymentId): void
@@ -91,5 +139,35 @@ final readonly class BybitTradeGateway implements BybitTradeGatewayInterface
         }
 
         return $response->result;
+    }
+
+    /**
+     * @param array<string, mixed> $result
+     */
+    private function mapOrderList(array $result): BybitTradeOrderListDto
+    {
+        /** @var array<int, array<string, mixed>> $items */
+        $items = is_array($result['items'] ?? null)
+            ? $result['items']
+            : [];
+
+        return new BybitTradeOrderListDto(
+            count: (int)($result['count'] ?? count($items)),
+            items: array_map(
+                static fn(array $item): BybitTradeOrderSummaryDto => new BybitTradeOrderSummaryDto(
+                    id: (string)($item['id'] ?? ''),
+                    side: (int)($item['side'] ?? 0),
+                    amount: (string)($item['amount'] ?? ''),
+                    price: (string)($item['price'] ?? ''),
+                    fee: (string)($item['fee'] ?? ''),
+                    targetNickName: (string)($item['targetNickName'] ?? ''),
+                    targetUserId: (string)($item['targetUserId'] ?? ''),
+                    status: (int)($item['status'] ?? 0),
+                    createDate: (string)($item['createDate'] ?? ''),
+                    transferLastSeconds: (string)($item['transferLastSeconds'] ?? ''),
+                ),
+                $items,
+            ),
+        );
     }
 }

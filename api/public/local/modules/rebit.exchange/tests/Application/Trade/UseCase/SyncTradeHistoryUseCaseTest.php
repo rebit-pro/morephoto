@@ -6,6 +6,8 @@ namespace Rebit\Exchange\Tests\Application\Trade\UseCase;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderListDto;
+use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitTradeOrderSummaryDto;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Application\Trade\UseCase\SyncTradeHistoryUseCase;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
@@ -24,12 +26,12 @@ final class SyncTradeHistoryUseCaseTest extends TestCase
         $gateway
             ->expects($this->exactly(2))
             ->method('fetchAllOrders')
-            ->willReturnCallback(static fn(int $userId, int $page): array => match ($page) {
-                1 => ['items' => [
-                    ['id' => 'bybit-100', 'status' => 50, 'side' => 0, 'price' => '95.5', 'amount' => '1000', 'fee' => '0.5', 'targetNickName' => 'Bob'],
-                    ['id' => 'bybit-101', 'status' => 40, 'side' => 1, 'price' => '96.0', 'amount' => '2000', 'fee' => '1.0', 'targetNickName' => 'Alice'],
-                ]],
-                default => ['items' => []],
+            ->willReturnCallback(static fn(int $userId, int $page): BybitTradeOrderListDto => match ($page) {
+                1 => new BybitTradeOrderListDto(count: 2, items: [
+                    new BybitTradeOrderSummaryDto('bybit-100', 0, '1000', '95.5', '0.5', 'Bob', '', 50, '', ''),
+                    new BybitTradeOrderSummaryDto('bybit-101', 1, '2000', '96.0', '1.0', 'Alice', '', 40, '', ''),
+                ]),
+                default => new BybitTradeOrderListDto(count: 0, items: []),
             })
         ;
 
@@ -52,11 +54,11 @@ final class SyncTradeHistoryUseCaseTest extends TestCase
     {
         $gateway = $this->createStub(BybitTradeGatewayInterface::class);
         $gateway->method('fetchAllOrders')->willReturnCallback(
-            static fn(int $userId, int $page): array => match ($page) {
-                1 => ['items' => [
-                    ['id' => 'bybit-200', 'status' => 50, 'side' => 0, 'price' => '95', 'amount' => '500', 'fee' => '0', 'targetNickName' => 'Eve'],
-                ]],
-                default => ['items' => []],
+            static fn(int $userId, int $page): BybitTradeOrderListDto => match ($page) {
+                1 => new BybitTradeOrderListDto(count: 1, items: [
+                    new BybitTradeOrderSummaryDto('bybit-200', 0, '500', '95', '0', 'Eve', '', 50, '', ''),
+                ]),
+                default => new BybitTradeOrderListDto(count: 0, items: []),
             },
         );
 
@@ -82,11 +84,11 @@ final class SyncTradeHistoryUseCaseTest extends TestCase
     {
         $gateway = $this->createStub(BybitTradeGatewayInterface::class);
         $gateway->method('fetchAllOrders')->willReturnCallback(
-            static fn(int $userId, int $page): array => match ($page) {
-                1 => ['items' => [
-                    ['id' => 'bybit-300', 'status' => 50, 'side' => 0, 'price' => '95', 'amount' => '500', 'fee' => '0', 'targetNickName' => 'Eve'],
-                ]],
-                default => ['items' => []],
+            static fn(int $userId, int $page): BybitTradeOrderListDto => match ($page) {
+                1 => new BybitTradeOrderListDto(count: 1, items: [
+                    new BybitTradeOrderSummaryDto('bybit-300', 0, '500', '95', '0', 'Eve', '', 50, '', ''),
+                ]),
+                default => new BybitTradeOrderListDto(count: 0, items: []),
             },
         );
 
@@ -110,12 +112,12 @@ final class SyncTradeHistoryUseCaseTest extends TestCase
     {
         $gateway = $this->createStub(BybitTradeGatewayInterface::class);
         $gateway->method('fetchAllOrders')->willReturnCallback(
-            static fn(int $userId, int $page): array => match ($page) {
-                1 => ['items' => [
-                    ['id' => '', 'status' => 50],
-                    ['status' => 50],
-                ]],
-                default => ['items' => []],
+            static fn(int $userId, int $page): BybitTradeOrderListDto => match ($page) {
+                1 => new BybitTradeOrderListDto(count: 2, items: [
+                    new BybitTradeOrderSummaryDto('', 0, '', '', '', '', '', 50, '', ''),
+                    new BybitTradeOrderSummaryDto('', 0, '', '', '', '', '', 50, '', ''),
+                ]),
+                default => new BybitTradeOrderListDto(count: 0, items: []),
             },
         );
 
@@ -138,13 +140,17 @@ final class SyncTradeHistoryUseCaseTest extends TestCase
         $gateway
             ->expects($this->exactly(3))
             ->method('fetchAllOrders')
-            ->willReturnCallback(static function(int $userId, int $page) use (&$callCount): array {
+            ->willReturnCallback(static function(int $userId, int $page) use (&$callCount): BybitTradeOrderListDto {
                 ++$callCount;
 
                 return match ($page) {
-                    1 => ['items' => [['id' => 'a', 'status' => 50, 'side' => 0, 'price' => '1', 'amount' => '1', 'fee' => '0', 'targetNickName' => '']]],
-                    2 => ['items' => [['id' => 'b', 'status' => 50, 'side' => 0, 'price' => '1', 'amount' => '1', 'fee' => '0', 'targetNickName' => '']]],
-                    default => ['items' => []],
+                    1 => new BybitTradeOrderListDto(count: 1, items: [
+                        new BybitTradeOrderSummaryDto('a', 0, '1', '1', '0', '', '', 50, '', ''),
+                    ]),
+                    2 => new BybitTradeOrderListDto(count: 1, items: [
+                        new BybitTradeOrderSummaryDto('b', 0, '1', '1', '0', '', '', 50, '', ''),
+                    ]),
+                    default => new BybitTradeOrderListDto(count: 0, items: []),
                 };
             })
         ;

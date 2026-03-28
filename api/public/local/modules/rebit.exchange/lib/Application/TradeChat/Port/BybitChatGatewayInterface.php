@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Application\TradeChat\Port;
 
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatMessageListDto;
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatUploadResultDto;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
@@ -24,8 +26,6 @@ interface BybitChatGatewayInterface
     ): void;
 
     /**
-     * @return array{url: string, type: string}
-     *
      * @throws HttpException
      */
     public function uploadFile(
@@ -33,20 +33,10 @@ interface BybitChatGatewayInterface
         string $filePath,
         string $fileName,
         string $mimeType,
-    ): array;
+    ): BybitTradeChatUploadResultDto;
 
     /**
      * Получение сообщений из чата сделки (POST /v5/p2p/order/message/queryList).
-     *
-     * @return array<int, array{
-     *     id: string,
-     *     message: string,
-     *     contentType: string,
-     *     fileName: string,
-     *     userId: string,
-     *     nickName: string,
-     *     createDate: string,
-     * }>
      *
      * @throws HttpException
      */
@@ -55,5 +45,5 @@ interface BybitChatGatewayInterface
         string $orderId,
         int $page = 1,
         int $size = 50,
-    ): array;
+    ): BybitTradeChatMessageListDto;
 }

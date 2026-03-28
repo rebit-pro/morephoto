@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Infrastructure\Bybit;
 
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatMessageDto;
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatMessageListDto;
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatUploadResultDto;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
@@ -67,7 +70,7 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
         string $filePath,
         string $fileName,
         string $mimeType,
-    ): array {
+    ): BybitTradeChatUploadResultDto {
         $connection = $this->connectionResolver->resolve($userId);
 
         try {
@@ -93,29 +96,18 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
 
         $url = (string)($response->result['url'] ?? '');
 
-        return [
-            'url' => $this->normalizeUploadedFileUrl($url, $connection->environment),
-            'type' => (string)($response->result['type'] ?? ''),
-        ];
+        return new BybitTradeChatUploadResultDto(
+            url: $this->normalizeUploadedFileUrl($url, $connection->environment),
+            type: (string)($response->result['type'] ?? ''),
+        );
     }
 
-    /**
-     * @return array<int, array{
-     *     id: string,
-     *     message: string,
-     *     contentType: string,
-     *     fileName: string,
-     *     userId: string,
-     *     nickName: string,
-     *     createDate: string,
-     * }>
-     */
     public function fetchMessages(
         int $userId,
         string $orderId,
         int $page = 1,
         int $size = 50,
-    ): array {
+    ): BybitTradeChatMessageListDto {
         $connection = $this->connectionResolver->resolve($userId);
 
         try {
@@ -136,7 +128,25 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
             );
         }
 
-        return $response->result['messages'] ?? [];
+        /** @var array<int, array<string, mixed>> $messages */
+        $messages = is_array($response->result['messages'] ?? null)
+            ? $response->result['messages']
+            : [];
+
+        return new BybitTradeChatMessageListDto(
+            messages: array_map(
+                static fn(array $message): BybitTradeChatMessageDto => new BybitTradeChatMessageDto(
+                    id: (string)($message['id'] ?? ''),
+                    message: (string)($message['message'] ?? ''),
+                    contentType: (string)($message['contentType'] ?? ''),
+                    fileName: (string)($message['fileName'] ?? ''),
+                    userId: (string)($message['userId'] ?? ''),
+                    nickName: (string)($message['nickName'] ?? ''),
+                    createDate: (string)($message['createDate'] ?? ''),
+                ),
+                $messages,
+            ),
+        );
     }
 
     private function normalizeUploadedFileUrl(string $url, BybitEnvironmentEnum $environment): string

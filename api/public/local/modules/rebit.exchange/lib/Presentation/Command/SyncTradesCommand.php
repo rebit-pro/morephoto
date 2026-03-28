@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Presentation\Command;
 
 use Psr\Log\LoggerInterface;
+use Rebit\Exchange\Application\Trade\Message\TradeDiscoveredMessage;
+use Rebit\Exchange\Application\Trade\Message\TradeStatusChangedMessage;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
-use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
-use Rebit\Share\Application\Contract\Notification\Enum\NotificationTypeEnum;
-use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
+use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Presentation\Command\Attribute\WithLock;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Rebit\Share\Shared\Exception\HttpException;
@@ -35,7 +35,7 @@ final class SyncTradesCommand extends RebitCommand
         private readonly TradeRepository $tradeRepository,
         private readonly BybitTradeGatewayInterface $bybitGateway,
         private readonly BybitConnectionResolverInterface $connectionResolver,
-        private readonly NotificationPublisherInterface $notificationPublisher,
+        private readonly MessagePublisherInterface $tradeEventPublisher,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
@@ -88,13 +88,13 @@ final class SyncTradesCommand extends RebitCommand
     private function syncUserTrades(int $userId): array
     {
         $result = $this->bybitGateway->fetchActiveOrders($userId);
-        $items = $result['items'] ?? [];
+        $items = $result->items;
 
         $newCount = 0;
         $updatedCount = 0;
 
         foreach ($items as $item) {
-            $bybitOrderId = (string)($item['id'] ?? '');
+            $bybitOrderId = $item->id;
             if ('' === $bybitOrderId) {
                 continue;
             }
@@ -102,44 +102,42 @@ final class SyncTradesCommand extends RebitCommand
             $existing = $this->tradeRepository->findByBybitOrderId($bybitOrderId);
 
             if (null === $existing) {
-                $bybitStatus = (int)($item['status'] ?? 0);
-                $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
-                $fiatAmount = (float)($item['amount'] ?? 0);
-                $rawFiatAmount = (string)($item['amount'] ?? '0');
-                $counterpartyName = (string)($item['targetNickName'] ?? '');
+                $bybitStatus = $item->status;
+                $side = (0 === $item->side) ? 'buy' : 'sell';
+                $buyerUserId = 'buy' === $side ? $userId : 0;
+                $sellerUserId = 'sell' === $side ? $userId : 0;
+                $fiatAmountRaw = $item->amount;
+                $fiatAmount = (float)$fiatAmountRaw;
+                $counterpartyName = $item->targetNickName;
 
                 $trade = $this->tradeRepository->createFromBybit([
                     'bybitOrderId' => $bybitOrderId,
                     'bybitStatus' => $bybitStatus,
-                    'buyerUserId' => $userId,
-                    'sellerUserId' => 0,
+                    'buyerUserId' => $buyerUserId,
+                    'sellerUserId' => $sellerUserId,
                     'side' => $side,
-                    'price' => (float)($item['price'] ?? 0),
+                    'price' => (float)$item->price,
                     'quantity' => 0.0,
                     'fiatAmount' => $fiatAmount,
-                    'fee' => (float)($item['fee'] ?? 0),
+                    'fee' => (float)$item->fee,
                     'status' => TradeStatusEnum::fromBybit($bybitStatus)->value,
                     'counterpartyName' => $counterpartyName,
                 ]);
 
                 try {
-                    $this->notificationPublisher->publish(
-                        new SendNotificationDto(
-                            type: NotificationTypeEnum::TRADE_DISCOVERED->value,
-                            userId: $userId,
-                            payload: [
-                                'tradeId' => (string)$trade->getId(),
-                                'side' => $side,
-                                'fiatAmount' => $rawFiatAmount,
-                                'counterpartyName' => $counterpartyName,
-                            ],
+                    $this->tradeEventPublisher->dispatch(
+                        new TradeDiscoveredMessage(
+                            tradeId: $trade->getId(),
+                            bybitOrderId: $bybitOrderId,
+                            fiatAmount: $fiatAmountRaw,
                         ),
                     );
                 } catch (\Throwable $exception) {
                     $this->logger->error(
-                        'Не удалось опубликовать уведомление tradeDiscovered',
+                        'Не удалось опубликовать событие новой сделки',
                         [
                             'userId' => $userId,
+                            'tradeId' => $trade->getId(),
                             'bybitOrderId' => $bybitOrderId,
                             'error' => $exception->getMessage(),
                             'exceptionClass' => $exception::class,
@@ -149,11 +147,38 @@ final class SyncTradesCommand extends RebitCommand
 
                 ++$newCount;
             } else {
-                $bybitStatus = (int)($item['status'] ?? 0);
+                $bybitStatus = $item->status;
                 if ($bybitStatus !== $existing->getUfBybitStatus()) {
+                    $oldStatus = (string)$existing->getUfStatus();
+                    $newStatus = TradeStatusEnum::fromBybit($bybitStatus)->value;
+
                     $existing->setUfBybitStatus($bybitStatus);
-                    $existing->setUfStatus(TradeStatusEnum::fromBybit($bybitStatus)->value);
+                    $existing->setUfStatus($newStatus);
                     $this->tradeRepository->save($existing);
+
+                    try {
+                        $this->tradeEventPublisher->dispatch(
+                            new TradeStatusChangedMessage(
+                                tradeId: $existing->getId(),
+                                oldStatus: $oldStatus,
+                                newStatus: $newStatus,
+                            ),
+                        );
+                    } catch (\Throwable $exception) {
+                        $this->logger->error(
+                            'Не удалось опубликовать событие смены статуса сделки',
+                            [
+                                'userId' => $userId,
+                                'tradeId' => $existing->getId(),
+                                'bybitOrderId' => $bybitOrderId,
+                                'oldStatus' => $oldStatus,
+                                'newStatus' => $newStatus,
+                                'error' => $exception->getMessage(),
+                                'exceptionClass' => $exception::class,
+                            ],
+                        );
+                    }
+
                     ++$updatedCount;
                 }
             }

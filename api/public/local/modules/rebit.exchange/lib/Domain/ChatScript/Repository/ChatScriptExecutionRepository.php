@@ -17,6 +17,30 @@ final class ChatScriptExecutionRepository
     use RepositoryExceptionTrait;
 
     /**
+     * @throws RepositoryException
+     */
+    public function findById(int $id): ?ChatScriptExecution
+    {
+        return $this->query(
+            static function() use ($id): ?ChatScriptExecution {
+                $execution = ChatScriptExecutionTable::query()
+                    ->setSelect(['*'])
+                    ->where('ID', $id)
+                    ->exec()
+                    ->fetchObject()
+                ;
+
+                if (null === $execution) {
+                    return null;
+                }
+
+                /** @var ChatScriptExecution $execution */
+                return $execution;
+            },
+        );
+    }
+
+    /**
      * Получить все pending-исполнения, у которых наступило время следующего шага.
      *
      * @throws RepositoryException

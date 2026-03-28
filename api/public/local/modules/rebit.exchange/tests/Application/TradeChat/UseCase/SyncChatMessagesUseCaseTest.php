@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Tests\Application\TradeChat\UseCase;
 
+use Bitrix\Main\Type\DateTime;
 use PHPUnit\Framework\TestCase;
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatMessageDto;
+use Rebit\Exchange\Application\TradeChat\Dto\Bybit\BybitTradeChatMessageListDto;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
 use Rebit\Exchange\Application\TradeChat\UseCase\SyncChatMessagesUseCase;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\TradeChat\Enum\ContentTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Enum\MessageTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
-use Bitrix\Main\Type\DateTime;
 
 /**
  * @internal
@@ -57,7 +59,7 @@ final class SyncChatMessagesUseCaseTest extends TestCase
             ->expects($this->once())
             ->method('fetchMessages')
             ->with(self::USER_ID, 'bybit-order-123', 1, 50)
-            ->willReturn([])
+            ->willReturn(new BybitTradeChatMessageListDto(messages: []))
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
@@ -86,17 +88,17 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         $chatGateway
             ->expects($this->once())
             ->method('fetchMessages')
-            ->willReturn([
-                [
-                    'id' => 'msg-1',
-                    'message' => 'duplicate',
-                    'contentType' => 'str',
-                    'fileName' => '',
-                    'userId' => 'bybit-user-1',
-                    'nickName' => 'Trader',
-                    'createDate' => '2026-03-28T09:00:00+00:00',
-                ],
-            ])
+            ->willReturn(new BybitTradeChatMessageListDto(messages: [
+                new BybitTradeChatMessageDto(
+                    id: 'msg-1',
+                    message: 'duplicate',
+                    contentType: 'str',
+                    fileName: '',
+                    userId: 'bybit-user-1',
+                    nickName: 'Trader',
+                    createDate: '2026-03-28T09:00:00+00:00',
+                ),
+            ]))
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
@@ -139,17 +141,17 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         $chatGateway
             ->expects($this->once())
             ->method('fetchMessages')
-            ->willReturn([
-                [
-                    'id' => 'msg-2',
-                    'message' => 'https://cdn.bybit.test/file.png',
-                    'contentType' => 'pic',
-                    'fileName' => 'receipt.png',
-                    'userId' => 'bybit-user-2',
-                    'nickName' => 'Trader',
-                    'createDate' => '2026-03-28T09:01:00+00:00',
-                ],
-            ])
+            ->willReturn(new BybitTradeChatMessageListDto(messages: [
+                new BybitTradeChatMessageDto(
+                    id: 'msg-2',
+                    message: 'https://cdn.bybit.test/file.png',
+                    contentType: 'pic',
+                    fileName: 'receipt.png',
+                    userId: 'bybit-user-2',
+                    nickName: 'Trader',
+                    createDate: '2026-03-28T09:01:00+00:00',
+                ),
+            ]))
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))
@@ -192,17 +194,17 @@ final class SyncChatMessagesUseCaseTest extends TestCase
         $chatGateway
             ->expects($this->once())
             ->method('fetchMessages')
-            ->willReturn([
-                [
-                    'id' => 'msg-3',
-                    'message' => 'text message',
-                    'contentType' => 'str',
-                    'fileName' => '',
-                    'userId' => 'bybit-user-3',
-                    'nickName' => 'Trader',
-                    'createDate' => 'not-a-date',
-                ],
-            ])
+            ->willReturn(new BybitTradeChatMessageListDto(messages: [
+                new BybitTradeChatMessageDto(
+                    id: 'msg-3',
+                    message: 'text message',
+                    contentType: 'str',
+                    fileName: '',
+                    userId: 'bybit-user-3',
+                    nickName: 'Trader',
+                    createDate: 'not-a-date',
+                ),
+            ]))
         ;
 
         $result = (new SyncChatMessagesUseCase($messageRepository, $chatGateway))

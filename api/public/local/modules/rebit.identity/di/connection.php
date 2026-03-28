@@ -3,17 +3,27 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
+use Rebit\Identity\Application\ApiConnection\Message\Handler\SyncIdentityMessageHandler;
+use Rebit\Identity\Application\ApiConnection\UseCase\ConsumeIdentitySyncUseCase;
 use Rebit\Identity\Infrastructure\Adapter\BybitConnectionResolver;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\VerifyApiUseCase;
+use Rebit\Identity\Infrastructure\ApiConnection\Messenger\IdentityMessengerFactory;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
+use Rebit\Identity\Presentation\Command\ApiConnection\IdentitySyncConsumerCommand;
+use Rebit\Identity\Presentation\Command\ApiConnection\TestIdentitySyncCommand;
 use Rebit\Identity\Presentation\Controller\ApiConnectionController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
+use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
+use Rebit\Share\Shared\Enum\LogChannelEnum;
+use Rebit\Share\Shared\Facade\Log;
 
 return [
     ApiKeyEncryptor::class => [
@@ -32,6 +42,18 @@ return [
     ],
     ApiConnectionRepository::class => [
         'className' => ApiConnectionRepository::class,
+    ],
+    SyncIdentityMessageHandler::class => [
+        'className' => SyncIdentityMessageHandler::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(VerifyApiUseCase::class),
+            Log::channel(LogChannelEnum::identity),
+        ],
+    ],
+    'identity.sync.publisher' => [
+        'constructor' => static fn(): MessagePublisherInterface => IdentityMessengerFactory::createPublisher(
+            ServiceLocator::getInstance(),
+        ),
     ],
     ConnectApiUseCase::class => [
         'className' => ConnectApiUseCase::class,
@@ -65,6 +87,14 @@ return [
             ServiceLocator::getInstance()->get(ApiKeyMasker::class),
         ],
     ],
+    ConsumeIdentitySyncUseCase::class => [
+        'className' => ConsumeIdentitySyncUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConsumerRunnerInterface::class),
+            ServiceLocator::getInstance()->get(AmqpConnectionFactory::class),
+            IdentityMessengerFactory::createBus(ServiceLocator::getInstance()),
+        ],
+    ],
     BybitConnectionResolverInterface::class => [
         'constructor' => static function(): BybitConnectionResolverInterface {
             $sl = ServiceLocator::getInstance();
@@ -74,6 +104,18 @@ return [
                 $sl->get(ApiKeyEncryptor::class),
             );
         },
+    ],
+    IdentitySyncConsumerCommand::class => [
+        'className' => IdentitySyncConsumerCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ConsumeIdentitySyncUseCase::class),
+        ],
+    ],
+    TestIdentitySyncCommand::class => [
+        'className' => TestIdentitySyncCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get('identity.sync.publisher'),
+        ],
     ],
     ApiConnectionController::class => [
         'className' => ApiConnectionController::class,
