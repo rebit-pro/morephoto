@@ -67,11 +67,14 @@ namespace Bitrix\Main {
 
 namespace Bitrix\Main\Engine {
 
+    use Bitrix\Main\Request;
+
     class Controller
     {
         public const SCOPE_AJAX = 'ajax';
         /** @var \Bitrix\Main\HttpRequest */
         public $request;
+        public function __construct(?Request $request = null) {}
         public function setScope(string $scope): void {}
         public function setCurrentUser(CurrentUser $user): void {}
         public function getRequest(): \Bitrix\Main\HttpRequest {}

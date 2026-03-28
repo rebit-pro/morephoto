@@ -99,6 +99,17 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
         ];
     }
 
+    /**
+     * @return array<int, array{
+     *     id: string,
+     *     message: string,
+     *     contentType: string,
+     *     fileName: string,
+     *     userId: string,
+     *     nickName: string,
+     *     createDate: string,
+     * }>
+     */
     public function fetchMessages(
         int $userId,
         string $orderId,
@@ -125,15 +136,6 @@ final readonly class BybitChatGateway implements BybitChatGatewayInterface
             );
         }
 
-        /** @var array<int, array{
-         *     id: string,
-         *     message: string,
-         *     contentType: string,
-         *     fileName: string,
-         *     userId: string,
-         *     nickName: string,
-         *     createDate: string,
-         * }> $messages */
         return $response->result['messages'] ?? [];
     }
 
