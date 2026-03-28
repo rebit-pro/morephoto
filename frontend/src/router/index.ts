@@ -8,7 +8,11 @@ export const router = createRouter({
   routes: [
     {
       path: '/:pathMatch(.*)*',
-      component: () => import('@/views/pages/maintenance/error/Error404Page.vue')
+      component: () => import('@/views/pages/maintenance/error/Error404Page.vue'),
+      meta: {
+        title: 'Страница не найдена',
+        description: 'Запрашиваемая страница не найдена на Rebit P2P.'
+      }
     },
     MainRoutes,
     PublicRoutes

@@ -153,7 +153,7 @@ async function sendMessage(): Promise<void> {
 
       await trades.sendMessage(props.tradeId, {
         tradeId: props.tradeId,
-        message: '' !== text ? '' : uploadedFile.fileName,
+        message: uploadedFile.fileUrl,
         contentType: uploadedFile.contentType,
         fileName: uploadedFile.fileName,
         fileUrl: uploadedFile.fileUrl

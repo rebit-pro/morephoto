@@ -25,7 +25,6 @@ const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['m
 const USDT_LIKE_CURRENCIES = new Set(['USDT', 'USDC']);
 
 const latestTransactions = computed(() => wallet.transactions.slice(0, 4));
-const balancesWithFundsCount = computed(() => wallet.balances.filter((balance) => parseAmount(balance.total) > 0).length);
 const lockedBalancesCount = computed(() => wallet.balances.filter((balance) => parseAmount(balance.locked) > 0).length);
 const sortedBalances = computed(() => {
   return [...wallet.balances].sort((left, right) => parseAmount(right.total) - parseAmount(left.total));
