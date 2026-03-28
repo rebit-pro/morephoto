@@ -145,6 +145,63 @@ services:
             condition: on-failure
             delay: 5s
             max_attempts: 3
+    api-notification-consumer:
+        image: ${REGISTRY}/rebit-p2p-api-php-cli:${IMAGE_TAG}
+        command: ["php", "public/local/bin/bitrix-console", "app:notification:consume"]
+        configs:
+          - source: rebit_backend_env
+            target: /app/public/.env
+        secrets:
+          - source: rebit_encryption_key
+            target: rebit_encryption_key
+          - source: rebit_smtp_password
+            target: rebit_smtp_password
+        volumes:
+          - type: bind
+            source: /srv/rebit-p2p/bitrix
+            target: /app/public/bitrix
+          - type: bind
+            source: /srv/rebit-p2p/upload
+            target: /app/public/upload
+          - type: bind
+            source: /srv/rebit-p2p/logs
+            target: /app/logs
+        deploy:
+          mode: replicated
+          replicas: 1
+          update_config:
+            parallelism: 1
+            delay: 10s
+            order: stop-first
+          restart_policy:
+            condition: on-failure
+            delay: 5s
+            max_attempts: 5
+    rabbitmq:
+        image: rabbitmq:3.13-management-alpine
+        entrypoint:
+          - /bin/sh
+          - -c
+          - |
+            export RABBITMQ_DEFAULT_PASS=$$(cat /run/secrets/rebit_rabbitmq_password)
+            exec docker-entrypoint.sh rabbitmq-server
+        environment:
+          RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-rebit}
+          RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-rebit}
+        secrets:
+          - source: rebit_rabbitmq_password
+            target: rebit_rabbitmq_password
+        volumes:
+          - rabbitmq-data:/var/lib/rabbitmq
+        deploy:
+          mode: replicated
+          replicas: 1
+          placement:
+            constraints: [node.labels.db == db]
+          restart_policy:
+            condition: on-failure
+            delay: 10s
+            max_attempts: 3
     api-memcached:
         image: memcached:1.6-alpine
         command: memcached -m 64
@@ -171,6 +228,7 @@ services:
             endpoint_mode: dnsrr
 volumes:
     api-mysql:
+    rabbitmq-data:
 configs:
     rebit_backend_env:
         external: true
@@ -191,6 +249,9 @@ secrets:
     rebit_smtp_password:
         external: true
         name: ${REBIT_SMTP_PASSWORD_SECRET_NAME}
+    rebit_rabbitmq_password:
+        external: true
+        name: ${REBIT_RABBITMQ_PASSWORD_SECRET_NAME}
 networks:
     traefik-public:
         external: true

@@ -8,8 +8,12 @@ use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
+use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
 use Rebit\Share\Presentation\Command\Attribute\WithLock;
 use Rebit\Share\Presentation\Command\RebitCommand;
+use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\RepositoryException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,6 +33,7 @@ final class SyncTradesCommand extends RebitCommand
         private readonly TradeRepository $tradeRepository,
         private readonly BybitTradeGatewayInterface $bybitGateway,
         private readonly BybitConnectionResolverInterface $connectionResolver,
+        private readonly NotificationPublisherInterface $notificationPublisher,
     ) {
         parent::__construct();
     }
@@ -74,6 +79,8 @@ final class SyncTradesCommand extends RebitCommand
 
     /**
      * @return array{int, int} [newCount, updatedCount]
+     *
+     * @throws HttpException|RepositoryException
      */
     private function syncUserTrades(int $userId): array
     {
@@ -93,19 +100,37 @@ final class SyncTradesCommand extends RebitCommand
 
             if (null === $existing) {
                 $bybitStatus = (int)($item['status'] ?? 0);
-                $this->tradeRepository->createFromBybit([
+                $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
+                $fiatAmount = (float)($item['amount'] ?? 0);
+                $counterpartyName = (string)($item['targetNickName'] ?? '');
+
+                $trade = $this->tradeRepository->createFromBybit([
                     'bybitOrderId' => $bybitOrderId,
                     'bybitStatus' => $bybitStatus,
                     'buyerUserId' => $userId,
                     'sellerUserId' => 0,
-                    'side' => (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell',
+                    'side' => $side,
                     'price' => (float)($item['price'] ?? 0),
                     'quantity' => 0.0,
-                    'fiatAmount' => (float)($item['amount'] ?? 0),
+                    'fiatAmount' => $fiatAmount,
                     'fee' => (float)($item['fee'] ?? 0),
                     'status' => TradeStatusEnum::fromBybit($bybitStatus)->value,
-                    'counterpartyName' => (string)($item['targetNickName'] ?? ''),
+                    'counterpartyName' => $counterpartyName,
                 ]);
+
+                $this->notificationPublisher->publish(
+                    new SendNotificationDto(
+                        type: 'tradeDiscovered',
+                        userId: $userId,
+                        payload: [
+                            'tradeId' => (string)$trade->getId(),
+                            'side' => $side,
+                            'fiatAmount' => (string)$fiatAmount,
+                            'counterpartyName' => $counterpartyName,
+                        ],
+                    ),
+                );
+
                 ++$newCount;
             } else {
                 $bybitStatus = (int)($item['status'] ?? 0);

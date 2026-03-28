@@ -25,30 +25,23 @@ return [
         },
     ],
     GetCurrenciesUseCase::class => [
-        'constructor' => static function(): GetCurrenciesUseCase {
-            return new GetCurrenciesUseCase(
-                ServiceLocator::getInstance()->get(CurrencyRepository::class),
-            );
-        },
+        'className' => GetCurrenciesUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(CurrencyRepository::class),
+        ],
     ],
     GetCurrencyPairsUseCase::class => [
-        'constructor' => static function(): GetCurrencyPairsUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetCurrencyPairsUseCase(
-                $sl->get(CurrencyPairRepository::class),
-                $sl->get(CurrencyRepository::class),
-            );
-        },
+        'className' => GetCurrencyPairsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyRepository::class),
+        ],
     ],
     CurrencyController::class => [
-        'constructor' => static function(): CurrencyController {
-            $sl = ServiceLocator::getInstance();
-
-            return new CurrencyController(
-                $sl->get(GetCurrenciesUseCase::class),
-                $sl->get(GetCurrencyPairsUseCase::class),
-            );
-        },
+        'className' => CurrencyController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(GetCurrenciesUseCase::class),
+            ServiceLocator::getInstance()->get(GetCurrencyPairsUseCase::class),
+        ],
     ],
 ];

@@ -12,17 +12,15 @@ return [
         'className' => PaymentMethodRepository::class,
     ],
     GetPaymentMethodsUseCase::class => [
-        'constructor' => static function(): GetPaymentMethodsUseCase {
-            return new GetPaymentMethodsUseCase(
-                ServiceLocator::getInstance()->get(PaymentMethodRepository::class),
-            );
-        },
+        'className' => GetPaymentMethodsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(PaymentMethodRepository::class),
+        ],
     ],
     PaymentMethodController::class => [
-        'constructor' => static function(): PaymentMethodController {
-            return new PaymentMethodController(
-                ServiceLocator::getInstance()->get(GetPaymentMethodsUseCase::class),
-            );
-        },
+        'className' => PaymentMethodController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(GetPaymentMethodsUseCase::class),
+        ],
     ],
 ];

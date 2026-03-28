@@ -14,30 +14,23 @@ return [
         'className' => TransactionRepository::class,
     ],
     ListTransactionsUseCase::class => [
-        'constructor' => static function(): ListTransactionsUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ListTransactionsUseCase(
-                $sl->get(TransactionRepository::class),
-                $sl->get(CurrencyQueryInterface::class),
-            );
-        },
+        'className' => ListTransactionsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TransactionRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyQueryInterface::class),
+        ],
     ],
     ExportTransactionsUseCase::class => [
-        'constructor' => static function(): ExportTransactionsUseCase {
-            return new ExportTransactionsUseCase(
-                ServiceLocator::getInstance()->get(ListTransactionsUseCase::class),
-            );
-        },
+        'className' => ExportTransactionsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ListTransactionsUseCase::class),
+        ],
     ],
     TransactionController::class => [
-        'constructor' => static function(): TransactionController {
-            $sl = ServiceLocator::getInstance();
-
-            return new TransactionController(
-                $sl->get(ListTransactionsUseCase::class),
-                $sl->get(ExportTransactionsUseCase::class),
-            );
-        },
+        'className' => TransactionController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ListTransactionsUseCase::class),
+            ServiceLocator::getInstance()->get(ExportTransactionsUseCase::class),
+        ],
     ],
 ];

@@ -18,24 +18,21 @@ return [
         },
     ],
     FileUploadService::class => [
-        'constructor' => static function(): FileUploadService {
-            return new FileUploadService(
-                ServiceLocator::getInstance()->get(UploadedFileOwnershipService::class),
-            );
-        },
+        'className' => FileUploadService::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(UploadedFileOwnershipService::class),
+        ],
     ],
     UploadFileUseCase::class => [
-        'constructor' => static function(): UploadFileUseCase {
-            return new UploadFileUseCase(
-                ServiceLocator::getInstance()->get(FileUploadService::class),
-            );
-        },
+        'className' => UploadFileUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(FileUploadService::class),
+        ],
     ],
     FileController::class => [
-        'constructor' => static function(): FileController {
-            return new FileController(
-                ServiceLocator::getInstance()->get(UploadFileUseCase::class),
-            );
-        },
+        'className' => FileController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(UploadFileUseCase::class),
+        ],
     ],
 ];

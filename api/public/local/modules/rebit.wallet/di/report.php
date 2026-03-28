@@ -10,20 +10,16 @@ use Rebit\Wallet\Presentation\Controller\ReportController;
 
 return [
     GetCashFlowReportUseCase::class => [
-        'constructor' => static function(): GetCashFlowReportUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetCashFlowReportUseCase(
-                $sl->get(TransactionRepository::class),
-                $sl->get(CurrencyQueryInterface::class),
-            );
-        },
+        'className' => GetCashFlowReportUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TransactionRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyQueryInterface::class),
+        ],
     ],
     ReportController::class => [
-        'constructor' => static function(): ReportController {
-            return new ReportController(
-                ServiceLocator::getInstance()->get(GetCashFlowReportUseCase::class),
-            );
-        },
+        'className' => ReportController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(GetCashFlowReportUseCase::class),
+        ],
     ],
 ];

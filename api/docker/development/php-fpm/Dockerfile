@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libxml2-dev \
     libpq-dev \
+    librabbitmq-dev \
     curl \
     libldap2-dev \
     unzip \
@@ -29,8 +30,8 @@ RUN apt-get update && apt-get install -y \
         soap \
         sockets \
         zip \
-    && pecl install memcache xdebug \
-    && docker-php-ext-enable memcache xdebug \
+    && pecl install memcache xdebug amqp \
+    && docker-php-ext-enable memcache xdebug amqp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN apt update && apt install -y iputils-ping

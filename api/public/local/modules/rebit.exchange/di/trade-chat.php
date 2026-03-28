@@ -47,95 +47,73 @@ return [
         },
     ],
     SyncChatMessagesUseCase::class => [
-        'constructor' => static function(): SyncChatMessagesUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new SyncChatMessagesUseCase(
-                $sl->get(TradeMessageRepository::class),
-                $sl->get(BybitChatGatewayInterface::class),
-            );
-        },
+        'className' => SyncChatMessagesUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeMessageRepository::class),
+            ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
+        ],
     ],
     GetChatHistoryUseCase::class => [
-        'constructor' => static function(): GetChatHistoryUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new GetChatHistoryUseCase(
-                $sl->get(TradeMessageRepository::class),
-                $sl->get(TradeRepository::class),
-                $sl->get(SyncChatMessagesUseCase::class),
-            );
-        },
+        'className' => GetChatHistoryUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeMessageRepository::class),
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(SyncChatMessagesUseCase::class),
+        ],
     ],
     SendMessageUseCase::class => [
-        'constructor' => static function(): SendMessageUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new SendMessageUseCase(
-                $sl->get(TradeMessageRepository::class),
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitChatGatewayInterface::class),
-            );
-        },
+        'className' => SendMessageUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeMessageRepository::class),
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
+        ],
     ],
     UploadTradeChatFileUseCase::class => [
-        'constructor' => static function(): UploadTradeChatFileUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new UploadTradeChatFileUseCase(
-                $sl->get(TradeRepository::class),
-                $sl->get(BybitChatGatewayInterface::class),
-                $sl->get(TradeChatUploadFileLocator::class),
-            );
-        },
+        'className' => UploadTradeChatFileUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
+            ServiceLocator::getInstance()->get(TradeChatUploadFileLocator::class),
+        ],
     ],
     ExecuteChatScriptUseCase::class => [
-        'constructor' => static function(): ExecuteChatScriptUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ExecuteChatScriptUseCase(
-                $sl->get(ChatScriptRepository::class),
-                $sl->get(ChatScriptStepRepository::class),
-                $sl->get(TradeRepository::class),
-                $sl->get(TradeMessageRepository::class),
-                $sl->get(BybitChatGatewayInterface::class),
-                Log::getLogger(LogChannelEnum::exchange),
-            );
-        },
+        'className' => ExecuteChatScriptUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ChatScriptRepository::class),
+            ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(TradeMessageRepository::class),
+            ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
     ],
     ChatScriptExecutionRepository::class => [
         'className' => ChatScriptExecutionRepository::class,
     ],
     ProcessPendingChatScriptsUseCase::class => [
-        'constructor' => static function(): ProcessPendingChatScriptsUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ProcessPendingChatScriptsUseCase(
-                $sl->get(ChatScriptExecutionRepository::class),
-                $sl->get(ChatScriptStepRepository::class),
-                $sl->get(TradeRepository::class),
-                $sl->get(TradeMessageRepository::class),
-                $sl->get(BybitChatGatewayInterface::class),
-                Log::getLogger(LogChannelEnum::exchange),
-            );
-        },
+        'className' => ProcessPendingChatScriptsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ChatScriptExecutionRepository::class),
+            ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            ServiceLocator::getInstance()->get(TradeMessageRepository::class),
+            ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
     ],
     ExecuteChatScriptsCommand::class => [
-        'constructor' => static function(): ExecuteChatScriptsCommand {
-            return new ExecuteChatScriptsCommand(
-                ServiceLocator::getInstance()->get(ProcessPendingChatScriptsUseCase::class),
-            );
-        },
+        'className' => ExecuteChatScriptsCommand::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ProcessPendingChatScriptsUseCase::class),
+        ],
     ],
     TradeChatController::class => [
-        'constructor' => static function(): TradeChatController {
-            $sl = ServiceLocator::getInstance();
-
-            return new TradeChatController(
-                $sl->get(GetChatHistoryUseCase::class),
-                $sl->get(SendMessageUseCase::class),
-                $sl->get(UploadTradeChatFileUseCase::class),
-            );
-        },
+        'className' => TradeChatController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(GetChatHistoryUseCase::class),
+            ServiceLocator::getInstance()->get(SendMessageUseCase::class),
+            ServiceLocator::getInstance()->get(UploadTradeChatFileUseCase::class),
+        ],
     ],
 ];

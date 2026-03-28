@@ -11,6 +11,7 @@ RUN apt-get update \
         libicu-dev \
         libxml2-dev \
         libpq-dev \
+        librabbitmq-dev \
         curl \
         libldap2-dev \
         unzip \
@@ -33,8 +34,8 @@ RUN apt-get update \
         soap \
         sockets \
         zip \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
+    && pecl install xdebug amqp \
+    && docker-php-ext-enable xdebug amqp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y netcat-openbsd

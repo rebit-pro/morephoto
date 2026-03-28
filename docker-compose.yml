@@ -96,6 +96,7 @@ services:
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
+            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
             PHP_IDE_CONFIG: "serverName=API"
 
     api-php-cli:
@@ -130,6 +131,7 @@ services:
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
+            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
             XDEBUG_MODE: off
 
     api-cron:
@@ -164,6 +166,37 @@ services:
             REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
             BYBIT_TESTNET_BASE_URL: ${BYBIT_TESTNET_BASE_URL:-https://api-testnet.bybit.com}
             BYBIT_MAINNET_BASE_URL: ${BYBIT_MAINNET_BASE_URL:-https://api.bybit.com}
+            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
+
+    api-notification-consumer:
+        build:
+            context: api/docker
+            dockerfile: development/php-cli/Dockerfile
+        restart: unless-stopped
+        command: ["php", "public/local/bin/bitrix-console", "app:notification:consume"]
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+            - "api.rebit-p2p.loc:host-gateway"
+            - "rebit-p2p.loc:host-gateway"
+        volumes:
+            - ./api:/app
+            - /home/user/traefik/certs/rebit-p2p.loc.pem:/usr/local/share/ca-certificates/rebit-p2p.loc.crt:ro
+        environment:
+            APP_DEBUG: ${APP_DEBUG:-1}
+            APP_ENV: ${APP_ENV:-local}
+            REBIT_ENCRYPTION_KEY: ${REBIT_ENCRYPTION_KEY}
+            REBIT_AUTH_MAIL_EVENT_SITE_ID: ${REBIT_AUTH_MAIL_EVENT_SITE_ID:-s1}
+            REBIT_SMTP_HOST: ${REBIT_SMTP_HOST:-mailpit}
+            REBIT_SMTP_PORT: ${REBIT_SMTP_PORT:-1025}
+            REBIT_SMTP_ENCRYPTION: ${REBIT_SMTP_ENCRYPTION:-none}
+            REBIT_SMTP_USERNAME: ${REBIT_SMTP_USERNAME:-}
+            REBIT_SMTP_PASSWORD: ${REBIT_SMTP_PASSWORD:-}
+            REBIT_SMTP_FROM_EMAIL: ${REBIT_SMTP_FROM_EMAIL:-noreply@rebit-p2p.loc}
+            REBIT_SMTP_FROM_NAME: ${REBIT_SMTP_FROM_NAME:-Rebit P2P}
+            REBIT_SMTP_TLS_CERTCHECK: ${REBIT_SMTP_TLS_CERTCHECK:-off}
+            MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-amqp://rebit:rebit@rabbitmq:5672/rebit}
+        depends_on:
+            - rabbitmq
 
     api-mysql:
         build:
@@ -196,8 +229,22 @@ services:
             - "1025:1025"
             - "8025:8025"
 
+    rabbitmq:
+        image: rabbitmq:3.13-management-alpine
+        restart: unless-stopped
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-rebit}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-rebit}
+            RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-rebit}
+        volumes:
+            - rabbitmq-data:/var/lib/rabbitmq
+
 volumes:
     api-mysql:
+    rabbitmq-data:
 
 networks:
     traefik-public:

@@ -1,0 +1,354 @@
+# Анализ применения очередей в Rebit P2P
+
+> Документ для ознакомления и принятия решений перед внедрением очередей (Symfony Messenger + RabbitMQ).
+
+---
+
+## 1. Текущая ситуация
+
+### Фоновые процессы
+
+Сейчас **все** фоновые процессы реализованы как cron-задачи через supercronic:
+
+| Команда | Интервал | Тип нагрузки |
+|---------|----------|--------------|
+| `sync-order-book` | 10 сек | Polling Bybit API → запись в БД |
+| `sync-trades` | 10 сек | Polling Bybit API → запись в БД + синхронизация контрагентов |
+| `execute-chat-scripts` | 5 сек | Чтение БД → вызов Bybit API |
+| `clean-stale-orders` | 1 мин | DELETE из БД |
+| `sync-balances` | 5 мин | Polling Bybit API → запись в БД |
+| `sync-trade-history` | 10 мин | Polling Bybit API → запись в БД |
+
+### Проблемы текущего подхода
+
+1. **Cron с эмуляцией секундных интервалов** — hack через `for`-циклы и `sleep`.
+2. **Нет разделения ответственности** — polling, обработка и реакция на события в одном потоке.
+3. **Нет retry/failure-обработки** — если команда упала, она повторится только при следующем cron-тике.
+4. **Нет масштабирования** — при росте числа пользователей нельзя добавить consumer'ов.
+5. **Связанность синхронных операций** — при обнаружении сделки cron синхронно выполняет: запись сделки → получение контрагента → сохранение контрагента → запуск чат-скрипта.
+
+### Инфраструктура
+
+| Компонент | Статус |
+|-----------|--------|
+| RabbitMQ | ❌ **Не развёрнут** (есть `php-amqplib/php-amqplib` в composer, но docker-сервиса нет) |
+| Redis | ✅ Есть (env `REDIS_HOST`, пакет `predis/predis`) |
+| Symfony Messenger | ❌ Не установлен |
+| Symfony AMQP Transport | ❌ Не установлен |
+
+---
+
+## 2. Где очереди полезны
+
+### 2.1. ✅ Рекомендовано — высокий приоритет
+
+#### A. Уведомления (`rebit.notification`)
+
+**Почему:** Модуль запланирован, но не реализован. Рассылка по каналам (in_app, email, push, telegram) — классический случай для очереди.
+
+**Сценарий:** Любой модуль публикует сообщение `SendNotificationMessage` → очередь → consumer разруливает по каналам.
+
+**Выигрыш:**
+- Асинхронная отправка — HTTP-ответ не ждёт Telegram API или SMTP
+- Retry при ошибках email/telegram
+- Разные приоритеты для торговых и маркетинговых уведомлений
+- Лёгкое масштабирование канальных consumer'ов
+
+**Примеры сообщений:**
+- `TradeDiscoveredNotification` — новая сделка обнаружена
+- `TradeStatusChangedNotification` — статус сделки изменился
+- `PaymentDeadlineWarningNotification` — осталось 5 мин до дедлайна
+- `SecurityAlertNotification` — подозрительная активность
+
+---
+
+#### B. Шаги чат-скриптов (`rebit.exchange`)
+
+**Текущая реализация:** `ExecuteChatScriptsCommand` — cron каждые 5 секунд, читает из таблицы `rebit_chat_script_execution`, отправляет через Bybit API.
+
+**Почему очередь лучше:**
+- Шаги скрипта имеют `delay_seconds` — идеально ложатся на delayed message (TTL в AMQP или `delay` в Messenger stamp)
+- При ошибке Bybit API → автоматический retry с backoff
+- Не нужен polling таблицы — шаги планируются при обнаружении сделки
+- Дедупликация: один шаг не будет отправлен дважды
+
+**Очередь:** `chatScriptStep`
+
+**Сообщение:**
+```
+ExecuteChatScriptStepMessage {
+    executionId: int     // ID записи rebit_chat_script_execution
+    tradeId: int
+    stepId: int
+}
+```
+
+---
+
+#### C. Реакции на обнаружение сделки (`rebit.exchange`)
+
+**Текущая реализация:** `SyncTradesCommand` (cron 10 сек) при обнаружении новой сделки **синхронно** делает:
+1. Сохраняет сделку в БД
+2. Вызывает `SyncCounterpartyUseCase` → запрос к Bybit `user/order/personal/info` → сохранение в `b_user`
+3. Запускает чат-скрипт (если привязан)
+4. (Планируется) Отправляет уведомление
+
+**Проблема:** Если запрос контрагента упал — вся итерация sync прерывается. Чем больше действий по цепочке — тем хрупче cron.
+
+**Решение с очередью:** `SyncTradesCommand` обнаруживает сделку, сохраняет в БД, публикует `TradeDiscoveredMessage` → consumer'ы:
+- Синхронизация контрагента
+- Запуск чат-скрипта
+- Отправка уведомления
+
+**Очередь:** `tradeEvent`
+
+**Сообщения:**
+```
+TradeDiscoveredMessage { tradeId: int, bybitOrderId: string }
+TradeStatusChangedMessage { tradeId: int, oldStatus: string, newStatus: string }
+```
+
+---
+
+### 2.2. ⚠️ Рекомендовано — средний приоритет
+
+#### D. Синхронизация балансов по событию
+
+**Текущая реализация:** cron каждые 5 мин для всех активных пользователей.
+
+**Улучшение:** При завершении сделки (`TradeCompleted`) → публикуем `SyncBalanceMessage` в очередь → целевая синхронизация баланса конкретного пользователя.
+
+Cron раз в 5 минут остаётся как fallback, но основная синхронизация — event-driven.
+
+**Очередь:** `balanceSync`
+
+---
+
+#### E. Синхронизация платёжных методов по событию
+
+**Текущая реализация:** Запланирован cron каждые 30 мин.
+
+**Улучшение:** Публикация `SyncPaymentMethodsMessage` при подключении API-ключей или при создании объявления. Cron — только fallback.
+
+**Очередь:** `identitySync`
+
+---
+
+#### F. Логирование и аудит (`rebit.security`)
+
+**Статус:** Модуль запланирован.
+
+**Почему очередь:** AuditLog — append-only журнал, запись не должна замедлять основной HTTP-запрос. Можно собирать в очередь и писать пачками.
+
+**Очередь:** `audit`
+
+---
+
+### 2.3. ❌ НЕ рекомендовано для очередей
+
+| Процесс | Почему НЕ очередь |
+|---------|-------------------|
+| `sync-order-book` (10 сек) | Регулярный polling — не event-driven. Стакан обновляется целиком, нет отдельных сообщений. Cron — правильный инструмент. |
+| `sync-trades` (10 сек, polling) | Сам **polling** остаётся cron. Очередь — для реакций на найденные изменения. |
+| `sync-trade-history` (10 мин) | Массовая дозагрузка — проще через cron. |
+| `clean-stale-orders` (1 мин) | Простой `DELETE WHERE date < ...` — не имеет смысла переносить в очередь. |
+
+---
+
+## 3. Предлагаемые очереди
+
+| Очередь | Enum-значение | Назначение | Модуль-publisher | Модуль-consumer |
+|---------|---------------|------------|------------------|-----------------|
+| `tradeEvent` | `TRADE_EVENT` | Реакции на события сделок | `rebit.exchange` | `rebit.exchange`, `rebit.notification` |
+| `chatScriptStep` | `CHAT_SCRIPT_STEP` | Отложенные шаги скриптов | `rebit.exchange` | `rebit.exchange` |
+| `notification` | `NOTIFICATION` | Уведомления всех каналов | Все модули | `rebit.notification` |
+| `balanceSync` | `BALANCE_SYNC` | Синхронизация балансов по событию | `rebit.exchange` | `rebit.wallet` |
+| `identitySync` | `IDENTITY_SYNC` | Синхронизация identity по событию | `rebit.identity`, `rebit.exchange` | `rebit.identity` |
+| `audit` | `AUDIT` | Аудит действий пользователя | Все модули | `rebit.security` |
+| `messengerFailed` | `FAILED` | Failed transport (общий DLQ) | Messenger retry | — (ручной разбор) |
+
+> **На первом этапе** достаточно внедрить инфраструктуру + 2-3 очереди: `tradeEvent`, `notification`, `chatScriptStep`.
+> Остальные подключаются по мере реализации модулей.
+
+---
+
+## 4. Архитектура (из orteka.share, адаптированная)
+
+### Слои
+
+```
+rebit.share/
+├── Application/
+│   └── Contract/
+│       └── Messenger/
+│           ├── AbstractMessage.php              # Базовый класс всех сообщений
+│           └── MessagePublisherInterface.php     # Порт: dispatch(message, deduplicateTime)
+├── Infrastructure/
+│   └── Messenger/
+│       ├── AbstractMessengerFactory.php         # Абстрактная фабрика Bus + Publisher
+│       ├── AmqpConnectionFactory.php            # AMQP DSN → TransportInterface
+│       ├── BitrixDedupCache.php                 # Дедупликация через Bitrix cache
+│       ├── ConsumerRunner.php                   # Обёртка Worker с retry/failed
+│       ├── ConsumerRunnerInterface.php
+│       ├── DedupCacheInterface.php
+│       ├── MessengerBusConfigBuilder.php        # Маршрутизация message → handler + transport
+│       ├── MessengerBusConfigDto.php
+│       ├── MessengerBusFactory.php              # Сборка MessageBus без Symfony Framework
+│       ├── MessengerMessagePublisher.php        # Реализация MessagePublisherInterface
+│       ├── MessengerRouteDto.php                # value object: message ↔ handler ↔ queue
+│       └── SimpleServiceContainer.php           # PSR-11 контейнер для Messenger
+└── Shared/
+    └── Enum/
+        └── MessengerQueueEnum.php               # Реестр всех очередей
+```
+
+### Как работает
+
+1. **Модуль-publisher** получает через DI `MessagePublisherInterface` и вызывает `dispatch()`.
+2. `MessengerMessagePublisher` проверяет дедупликацию (если `deduplicateTime > 0`) и отправляет в Symfony Messenger `MessageBus`.
+3. `MessageBus` через `SendMessageMiddleware` направляет сообщение в нужный AMQP-транспорт по роутингу.
+4. RabbitMQ хранит сообщение в очереди.
+5. **Consumer-команда** запускает `ConsumerRunner::run()` → `Worker` слушает очередь и вызывает handler.
+6. При ошибке — retry с backoff (MultiplierRetryStrategy), после исчерпания попыток — в `FAILED` очередь.
+
+### Пример потока: обнаружение сделки
+
+```
+SyncTradesCommand (cron 10 сек)
+    │
+    ├─ Polling Bybit → находит новую сделку
+    ├─ Сохраняет в rebit_trade
+    └─ $publisher->dispatch(new TradeDiscoveredMessage(tradeId: 42))
+                        │
+                  ┌─────┴──────────────────────────┐
+                  │        RabbitMQ                 │
+                  │  queue: tradeEvent              │
+                  └─────┬──────────────────────────┘
+                        │
+              ┌─────────▼──────────┐
+              │  Consumer Worker   │
+              │  (отдельный процесс)│
+              └──┬─────────────────┘
+                 │
+                 ├─ SyncCounterpartyHandler → Bybit API → b_user
+                 ├─ StartChatScriptHandler → publish ExecuteChatScriptStepMessage
+                 └─ SendTradeNotificationHandler → publish SendNotificationMessage
+```
+
+---
+
+## 5. Необходимые инфраструктурные изменения
+
+### 5.1. Composer-пакеты
+
+```bash
+composer require symfony/messenger symfony/amqp-messenger
+```
+
+> `php-amqplib/php-amqplib` уже установлен. Symfony AMQP transport использует `ext-amqp` (C-расширение) ИЛИ может работать через `php-amqplib`. Нужно проверить, установлено ли расширение `ext-amqp` в Docker-образе. Если нет — можно добавить, или использовать Redis-транспорт (`symfony/redis-messenger`) как альтернативу.
+
+### 5.2. Docker: добавить RabbitMQ
+
+```yaml
+# docker-compose.yml
+rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    ports:
+        - "5672:5672"    # AMQP
+        - "15672:15672"  # Management UI
+    environment:
+        RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-rebit}
+        RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-rebit}
+        RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-rebit}
+    volumes:
+        - rabbitmq-data:/var/lib/rabbitmq
+```
+
+### 5.3. ENV-переменные
+
+```env
+MESSENGER_TRANSPORT_DSN=amqp://rebit:rebit@rabbitmq:5672/rebit
+```
+
+### 5.4. Docker: consumer-процесс
+
+```yaml
+api-consumer:
+    # Такой же образ, как api-php-cli
+    command: ["php", "/app/public/local/bin/bitrix-console", "app:messenger:consume", "--queue=tradeEvent", "--limit=100", "--time-limit=300"]
+    restart: unless-stopped
+    # ... те же volumes и environment, что у api-php-cli
+```
+
+> Один контейнер на каждую очередь (или по нагрузке).
+> `--limit=100 --time-limit=300` — worker обработает до 100 сообщений или 5 минут, затем перезапустится (предотвращает утечки памяти).
+
+### 5.5. Альтернатива: Redis транспорт
+
+Если RabbitMQ избыточен на текущем этапе, Symfony Messenger поддерживает **Redis транспорт** (Redis Streams). Redis уже есть в проекте.
+
+```bash
+composer require symfony/redis-messenger
+```
+
+```env
+MESSENGER_TRANSPORT_DSN=redis://redis:6379/messages
+```
+
+**Плюсы Redis:** не нужен дополнительный сервис, уже развёрнут.
+**Минусы Redis:** нет dead-letter queue из коробки, менее надёжен при перезапусках, нет Management UI.
+
+**Рекомендация:** Начать с RabbitMQ — он стандарт для Messenger и уже указан в стеке проекта (CLAUDE.md).
+
+---
+
+## 6. Этапность внедрения
+
+### Этап 1 — Инфраструктура (текущая задача)
+- [x] Интеграция Messenger-слоя в `rebit.share`
+- [ ] Добавление RabbitMQ в docker-compose
+- [ ] Добавление `symfony/messenger` + `symfony/amqp-messenger` в composer
+- [ ] ENV + проверка `ext-amqp`
+- [ ] Smoke-тест: publish + consume простого сообщения
+
+### Этап 2 — Первые очереди
+- [ ] `tradeEvent` — при обнаружении сделки публиковать `TradeDiscoveredMessage`
+- [ ] `chatScriptStep` — перенос `ExecuteChatScriptsCommand` на consumer
+- [ ] Consumer-контейнер в docker-compose
+
+### Этап 3 — Уведомления
+- [ ] Реализация `rebit.notification` с `notification` очередью
+- [ ] Контракт `NotificationDispatcherInterface` → publisher в `rebit.exchange`
+
+### Этап 4 — Event-driven синхронизация
+- [ ] `balanceSync` — синхронизация при завершении сделки
+- [ ] `identitySync` — синхронизация при подключении API-ключей
+
+### Этап 5 — Аудит и безопасность
+- [ ] `audit` — при реализации `rebit.security`
+
+---
+
+## 7. Вопросы для обсуждения
+
+1. **RabbitMQ vs Redis** — начинаем с RabbitMQ (как в стеке) или Redis (уже есть)?
+2. **Нужны ли delayed messages** для чат-скриптов на первом этапе, или оставляем cron-polling таблицы execution?
+3. **Consumer-контейнеры** — по одному на очередь или один универсальный?
+4. **Мониторинг** — нужен ли Prometheus-экспортёр для RabbitMQ сразу?
+5. **`MessengerQueueEnum`** — какие очереди включаем в Enum сразу, а какие оставляем на потом?
+6. **Есть ли `ext-amqp`** в текущем Docker-образе PHP? Если нет — добавлять расширение или использовать `php-amqplib` через bridge?
+
+---
+
+## 8. Резюме
+
+| Аспект | Текущее состояние | С очередями |
+|--------|-------------------|-------------|
+| Реакция на события | Синхронная цепочка в cron | Асинхронная, развязанная |
+| Retry при ошибках | Нет (повтор на следующем тике) | Автоматический с backoff |
+| Масштабирование | 1 cron-процесс | N consumer'ов на очередь |
+| Уведомления | Не реализованы | Готовая инфраструктура |
+| Чат-скрипты | Polling таблицы каждые 5 сек | Event-driven + delayed |
+| Мониторинг ошибок | Логи | Failed queue + логи |
+| Сложность инфраструктуры | Простая | +RabbitMQ (+management UI) |

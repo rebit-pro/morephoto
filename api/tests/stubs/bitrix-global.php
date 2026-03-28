@@ -109,6 +109,9 @@ namespace {
         {
             public string $LAST_ERROR = '';
 
+            /** @var array<int, array<string, mixed>> */
+            private static array $mockUsers = [];
+
             /**
              * @param array<string, mixed> $fields
              */
@@ -123,6 +126,55 @@ namespace {
             public function Update(int $id, array $fields): bool
             {
                 return true;
+            }
+
+            public static function GetByID(int $id): CDBResult
+            {
+                return new CDBResult(self::$mockUsers[$id] ?? null);
+            }
+
+            /**
+             * @param array<string, mixed> $userData
+             */
+            public static function setMockUser(int $id, array $userData): void
+            {
+                self::$mockUsers[$id] = $userData;
+            }
+
+            public static function resetMockUsers(): void
+            {
+                self::$mockUsers = [];
+            }
+        }
+    }
+
+    if (!class_exists(CDBResult::class)) {
+        class CDBResult
+        {
+            /** @var array<string, mixed>|null */
+            private ?array $row;
+            private bool $fetched = false;
+
+            /**
+             * @param array<string, mixed>|null $row
+             */
+            public function __construct(?array $row)
+            {
+                $this->row = $row;
+            }
+
+            /**
+             * @return array<string, mixed>|false
+             */
+            public function Fetch(): array|false
+            {
+                if ($this->fetched || null === $this->row) {
+                    return false;
+                }
+
+                $this->fetched = true;
+
+                return $this->row;
             }
         }
     }

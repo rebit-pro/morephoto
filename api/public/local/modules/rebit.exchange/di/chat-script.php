@@ -20,56 +20,41 @@ return [
         'className' => ChatScriptStepRepository::class,
     ],
     ListChatScriptsUseCase::class => [
-        'constructor' => static function(): ListChatScriptsUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ListChatScriptsUseCase(
-                $sl->get(ChatScriptRepository::class),
-                $sl->get(ChatScriptStepRepository::class),
-            );
-        },
+        'className' => ListChatScriptsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ChatScriptRepository::class),
+            ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
+        ],
     ],
     CreateChatScriptUseCase::class => [
-        'constructor' => static function(): CreateChatScriptUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new CreateChatScriptUseCase(
-                $sl->get(ChatScriptRepository::class),
-                $sl->get(ChatScriptStepRepository::class),
-            );
-        },
+        'className' => CreateChatScriptUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ChatScriptRepository::class),
+            ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
+        ],
     ],
     UpdateChatScriptUseCase::class => [
-        'constructor' => static function(): UpdateChatScriptUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new UpdateChatScriptUseCase(
-                $sl->get(ChatScriptRepository::class),
-                $sl->get(ChatScriptStepRepository::class),
-            );
-        },
+        'className' => UpdateChatScriptUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ChatScriptRepository::class),
+            ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
+        ],
     ],
     DeleteChatScriptUseCase::class => [
-        'constructor' => static function(): DeleteChatScriptUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new DeleteChatScriptUseCase(
-                $sl->get(ChatScriptRepository::class),
-                $sl->get(ChatScriptStepRepository::class),
-                $sl->get(AdvertisementRepository::class),
-            );
-        },
+        'className' => DeleteChatScriptUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ChatScriptRepository::class),
+            ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
+            ServiceLocator::getInstance()->get(AdvertisementRepository::class),
+        ],
     ],
     ChatScriptController::class => [
-        'constructor' => static function(): ChatScriptController {
-            $sl = ServiceLocator::getInstance();
-
-            return new ChatScriptController(
-                $sl->get(ListChatScriptsUseCase::class),
-                $sl->get(CreateChatScriptUseCase::class),
-                $sl->get(UpdateChatScriptUseCase::class),
-                $sl->get(DeleteChatScriptUseCase::class),
-            );
-        },
+        'className' => ChatScriptController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(ListChatScriptsUseCase::class),
+            ServiceLocator::getInstance()->get(CreateChatScriptUseCase::class),
+            ServiceLocator::getInstance()->get(UpdateChatScriptUseCase::class),
+            ServiceLocator::getInstance()->get(DeleteChatScriptUseCase::class),
+        ],
     ],
 ];

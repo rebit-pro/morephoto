@@ -31,55 +31,42 @@ return [
         },
     ],
     CreateAdvertisementUseCase::class => [
-        'constructor' => static function(): CreateAdvertisementUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new CreateAdvertisementUseCase(
-                $sl->get(AdvertisementRepository::class),
-                $sl->get(CurrencyPairRepository::class),
-                $sl->get(BybitAdvertisementGatewayInterface::class),
-                $sl->get(BalanceQueryInterface::class),
-            );
-        },
+        'className' => CreateAdvertisementUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(AdvertisementRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            ServiceLocator::getInstance()->get(BybitAdvertisementGatewayInterface::class),
+            ServiceLocator::getInstance()->get(BalanceQueryInterface::class),
+        ],
     ],
     ListAdvertisementsUseCase::class => [
-        'constructor' => static function(): ListAdvertisementsUseCase {
-            return new ListAdvertisementsUseCase(
-                ServiceLocator::getInstance()->get(AdvertisementRepository::class),
-            );
-        },
+        'className' => ListAdvertisementsUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(AdvertisementRepository::class),
+        ],
     ],
     DeactivateAdvertisementUseCase::class => [
-        'constructor' => static function(): DeactivateAdvertisementUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new DeactivateAdvertisementUseCase(
-                $sl->get(AdvertisementRepository::class),
-                $sl->get(BybitAdvertisementGatewayInterface::class),
-            );
-        },
+        'className' => DeactivateAdvertisementUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(AdvertisementRepository::class),
+            ServiceLocator::getInstance()->get(BybitAdvertisementGatewayInterface::class),
+        ],
     ],
     ToggleAdvertisementUseCase::class => [
-        'constructor' => static function(): ToggleAdvertisementUseCase {
-            $sl = ServiceLocator::getInstance();
-
-            return new ToggleAdvertisementUseCase(
-                $sl->get(AdvertisementRepository::class),
-                $sl->get(CurrencyPairRepository::class),
-                $sl->get(BybitAdvertisementGatewayInterface::class),
-            );
-        },
+        'className' => ToggleAdvertisementUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(AdvertisementRepository::class),
+            ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            ServiceLocator::getInstance()->get(BybitAdvertisementGatewayInterface::class),
+        ],
     ],
     AdvertisementController::class => [
-        'constructor' => static function(): AdvertisementController {
-            $sl = ServiceLocator::getInstance();
-
-            return new AdvertisementController(
-                $sl->get(CreateAdvertisementUseCase::class),
-                $sl->get(ListAdvertisementsUseCase::class),
-                $sl->get(DeactivateAdvertisementUseCase::class),
-                $sl->get(ToggleAdvertisementUseCase::class),
-            );
-        },
+        'className' => AdvertisementController::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(CreateAdvertisementUseCase::class),
+            ServiceLocator::getInstance()->get(ListAdvertisementsUseCase::class),
+            ServiceLocator::getInstance()->get(DeactivateAdvertisementUseCase::class),
+            ServiceLocator::getInstance()->get(ToggleAdvertisementUseCase::class),
+        ],
     ],
 ];

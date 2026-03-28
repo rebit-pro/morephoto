@@ -46,7 +46,10 @@
         "symfony/validator": "^6.4 || ^7.0",
         "symfony/yaml": "^7.2",
         "webmozart/assert": "^1.11",
-        "yandex/geo": "^1.1"
+        "yandex/geo": "^1.1",
+        "symfony/messenger": "^8.0",
+        "symfony/amqp-messenger": "^8.0",
+        "symfony/event-dispatcher": "^8.0"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -72,6 +75,7 @@
             "Rebit\\Bybit\\": "public/local/modules/rebit.bybit/lib/",
             "Rebit\\Identity\\": "public/local/modules/rebit.identity/lib/",
             "Rebit\\Exchange\\": "public/local/modules/rebit.exchange/lib/",
+            "Rebit\\Notification\\": "public/local/modules/rebit.notification/lib/",
             "Rebit\\Share\\": "public/local/modules/rebit.share/lib/",
             "Rebit\\Wallet\\": "public/local/modules/rebit.wallet/lib/"
         }
@@ -82,6 +86,7 @@
             "Rebit\\Bybit\\Tests\\": "public/local/modules/rebit.bybit/tests/",
             "Rebit\\Exchange\\Tests\\": "public/local/modules/rebit.exchange/tests/",
             "Rebit\\Identity\\Tests\\": "public/local/modules/rebit.identity/tests/",
+            "Rebit\\Notification\\Tests\\": "public/local/modules/rebit.notification/tests/",
             "Rebit\\Share\\Tests\\": "public/local/modules/rebit.share/tests/",
             "Rebit\\Dev\\": "public/local/modules/rebit.dev/lib/"
         }
