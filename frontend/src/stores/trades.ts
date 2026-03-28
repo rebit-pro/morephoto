@@ -6,12 +6,14 @@ import {
   type TradeStatus,
   type ConfirmPaymentPayload,
   type ChatMessage,
-  type SendMessagePayload
+  type SendMessagePayload,
+  type CounterpartyInfo
 } from '@/api/exchange';
 
 export const useTradesStore = defineStore('trades', () => {
   const trades = ref<Trade[]>([]);
   const currentTrade = ref<Trade | null>(null);
+  const counterpartyInfo = ref<CounterpartyInfo | null>(null);
   const chatMessages = ref<ChatMessage[]>([]);
   const loading = ref(false);
   const chatLoading = ref(false);
@@ -136,15 +138,25 @@ export const useTradesStore = defineStore('trades', () => {
     }
   }
 
+  async function fetchCounterpartyInfo(tradeId: number): Promise<void> {
+    try {
+      counterpartyInfo.value = await exchangeApi.getCounterpartyInfo(tradeId);
+    } catch {
+      counterpartyInfo.value = null;
+    }
+  }
+
   function clearCurrentTrade(): void {
     tradeDetailRequestGeneration += 1;
     currentTrade.value = null;
+    counterpartyInfo.value = null;
     chatMessages.value = [];
   }
 
   return {
     trades,
     currentTrade,
+    counterpartyInfo,
     chatMessages,
     loading,
     chatLoading,
@@ -152,6 +164,7 @@ export const useTradesStore = defineStore('trades', () => {
     error,
     fetchTrades,
     fetchTradeDetail,
+    fetchCounterpartyInfo,
     confirmPayment,
     releaseAssets,
     fetchChatHistory,

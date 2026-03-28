@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue';
 import { walletApi, type CashFlowReport, type CashFlowFilters } from '@/api/wallet';
 import { exchangeApi, type Currency } from '@/api/exchange';
+import UiParentCard from '@/components/shared/UiParentCard.vue';
+import UiTableCard from '@/components/shared/UiTableCard.vue';
 
 const dateFrom = ref('');
 const dateTo = ref('');
@@ -68,10 +70,10 @@ onMounted(async () => {
 
 <template>
   <div>
-    <h2 class="text-h4 mb-6">Обороты денежных средств</h2>
+    <h2 class="text-h4 font-weight-bold mb-6">Обороты денежных средств</h2>
 
     <!-- Фильтры -->
-    <v-card rounded="md" class="mb-4">
+    <UiParentCard title="Фильтры" icon="mdi-filter-outline" color="secondary" header-compact class="mb-4">
       <v-card-text>
         <v-row dense>
           <v-col cols="12" sm="3">
@@ -93,12 +95,12 @@ onMounted(async () => {
             />
           </v-col>
           <v-col cols="12" sm="3" class="d-flex align-center ga-2">
-            <v-btn color="primary" size="small" prepend-icon="mdi-filter" @click="handleApply"> Применить </v-btn>
+            <v-btn color="secondary" size="small" prepend-icon="mdi-filter" @click="handleApply"> Применить </v-btn>
             <v-btn variant="text" size="small" @click="handleReset"> Сбросить </v-btn>
           </v-col>
         </v-row>
       </v-card-text>
-    </v-card>
+    </UiParentCard>
 
     <v-row v-if="loading" justify="center" class="mt-8">
       <v-progress-circular indeterminate color="primary" />
@@ -107,7 +109,14 @@ onMounted(async () => {
     <v-alert v-if="error" type="error" variant="tonal" class="mb-4">{{ error }}</v-alert>
 
     <!-- Таблица отчёта -->
-    <v-card v-if="!loading && report" rounded="md">
+    <UiTableCard
+      v-if="!loading && report"
+      title="Отчёт по оборотам"
+      subtitle="Движение средств по валютам за выбранный период"
+      icon="mdi-chart-bar"
+      color="primary"
+      gradient="neutral"
+    >
       <v-table density="comfortable">
         <thead>
           <tr>
@@ -140,7 +149,7 @@ onMounted(async () => {
           </tr>
         </tfoot>
       </v-table>
-    </v-card>
+    </UiTableCard>
 
     <!-- Информационное сообщение -->
     <v-alert type="info" variant="tonal" class="mt-4" density="compact">

@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue';
 import { useChatScriptsStore } from '@/stores/chatScripts';
+import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
 import type { ChatScriptStep, ChatScriptPayload, ChatContentType } from '@/api/exchange';
 import { isMockApiEnabled } from '@/mocks/config';
+import UiTableCard from '@/components/shared/UiTableCard.vue';
+import UiFormCard from '@/components/shared/UiFormCard.vue';
 
 interface FormStep extends ChatScriptStep {
   _uid: number;
@@ -32,6 +35,7 @@ const contentTypeOptions: { title: string; value: ChatContentType }[] = [
 ];
 
 const scripts = useChatScriptsStore();
+const { formatDate } = useCurrencyFormat();
 
 const formDialog = ref(false);
 const deleteDialog = ref(false);
@@ -80,9 +84,6 @@ const canSaveScript = computed(() => {
   });
 });
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('ru-RU');
-}
 
 function openCreate(): void {
   editingId.value = null;
@@ -278,8 +279,8 @@ onMounted(async () => {
 <template>
   <div>
     <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
-      <h2 class="text-h4">Скрипты чата</h2>
-      <v-btn color="primary" prepend-icon="mdi-plus" @click="openCreate"> Создать скрипт </v-btn>
+      <h2 class="text-h4 font-weight-bold">Скрипты чата</h2>
+      <v-btn color="secondary" variant="flat" rounded="lg" prepend-icon="mdi-plus" @click="openCreate"> Создать скрипт </v-btn>
     </div>
 
     <v-alert v-if="isMockApiEnabled" type="info" variant="tonal" class="mb-4">
@@ -297,7 +298,14 @@ onMounted(async () => {
 
     <v-alert v-if="scripts.error" type="error" variant="tonal" class="mb-4">{{ scripts.error }}</v-alert>
 
-    <v-card v-if="!scripts.loading" rounded="md">
+    <UiTableCard
+      v-if="!scripts.loading"
+      title="Скрипты автосообщений"
+      subtitle="Автоматические сценарии для чатов сделок"
+      icon="mdi-script-text-outline"
+      color="secondary"
+      gradient="neutral"
+    >
       <v-table density="comfortable" hover>
         <thead>
           <tr>
@@ -332,14 +340,25 @@ onMounted(async () => {
           </tr>
         </tbody>
       </v-table>
-    </v-card>
+    </UiTableCard>
 
     <!-- Диалог создания/редактирования -->
-    <v-dialog v-model="formDialog" max-width="700" persistent>
-      <v-card>
-        <v-card-title>
-          {{ null !== editingId ? 'Редактировать скрипт' : 'Создать скрипт' }}
-        </v-card-title>
+    <v-dialog v-model="formDialog" max-width="700">
+      <v-card rounded="lg">
+        <v-card-item class="px-6 py-5">
+          <template #prepend>
+            <v-avatar size="48" color="primary" variant="tonal">
+              <v-icon>{{ null !== editingId ? 'mdi-pencil' : 'mdi-plus-circle-outline' }}</v-icon>
+            </v-avatar>
+          </template>
+          <v-card-title class="text-h6 font-weight-bold">
+            {{ null !== editingId ? 'Редактировать скрипт' : 'Создать скрипт' }}
+          </v-card-title>
+          <v-card-subtitle class="text-wrap">
+            {{ null !== editingId ? 'Измените настройки и шаги сценария' : 'Настройте автоматические сообщения для чата сделки' }}
+          </v-card-subtitle>
+        </v-card-item>
+        <v-divider />
         <v-card-text>
           <v-text-field v-model="form.name" label="Название скрипта" variant="outlined" density="compact" class="mb-2" />
           <v-switch v-model="form.isActive" label="Активен" color="primary" density="compact" hide-details class="mb-4" />
@@ -377,17 +396,33 @@ onMounted(async () => {
               class="mb-2"
             />
             <template v-if="isMockApiEnabled">
-              <v-select
-                v-model="step.contentType"
-                :items="contentTypeOptions"
-                item-title="title"
-                item-value="value"
-                label="Тип шага"
-                variant="outlined"
-                density="compact"
-                class="mb-2"
-                @update:model-value="onContentTypeChange(step)"
-              />
+              <v-row dense class="mb-2">
+                <v-col cols="7">
+                  <v-select
+                    v-model="step.contentType"
+                    :items="contentTypeOptions"
+                    item-title="title"
+                    item-value="value"
+                    label="Тип шага"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    @update:model-value="onContentTypeChange(step)"
+                  />
+                </v-col>
+                <v-col cols="5">
+                  <v-text-field
+                    v-model.number="step.delaySeconds"
+                    label="Задержка (сек)"
+                    variant="outlined"
+                    density="compact"
+                    type="number"
+                    min="0"
+                    max="300"
+                    hide-details
+                  />
+                </v-col>
+              </v-row>
               <div class="d-flex flex-wrap align-center ga-3 mb-2">
                 <label class="d-inline-flex">
                   <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleStepFileSelected($event, step)" />
@@ -414,6 +449,7 @@ onMounted(async () => {
               </div>
             </template>
             <v-text-field
+              v-if="!isMockApiEnabled"
               v-model.number="step.delaySeconds"
               label="Задержка (секунд)"
               variant="outlined"
@@ -443,18 +479,28 @@ onMounted(async () => {
             </v-expansion-panel>
           </v-expansion-panels>
         </v-card-text>
-        <v-card-actions>
+        <v-divider />
+        <v-card-actions class="px-6 py-4">
           <v-spacer />
-          <v-btn variant="text" @click="formDialog = false">Отмена</v-btn>
-          <v-btn color="primary" :loading="scripts.actionLoading" :disabled="!canSaveScript" @click="handleSave"> Сохранить </v-btn>
+          <v-btn variant="outlined" rounded="lg" @click="formDialog = false">Отмена</v-btn>
+          <v-btn color="secondary" variant="flat" rounded="lg" :loading="scripts.actionLoading" :disabled="!canSaveScript" @click="handleSave"> Сохранить </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Диалог предпросмотра -->
     <v-dialog v-model="previewDialog" max-width="500">
-      <v-card>
-        <v-card-title>Предпросмотр скрипта</v-card-title>
+      <v-card rounded="lg">
+        <v-card-item class="px-6 py-5">
+          <template #prepend>
+            <v-avatar size="48" color="info" variant="tonal">
+              <v-icon>mdi-eye-outline</v-icon>
+            </v-avatar>
+          </template>
+          <v-card-title class="text-h6 font-weight-bold">Предпросмотр скрипта</v-card-title>
+          <v-card-subtitle>Так будут выглядеть автосообщения в чате</v-card-subtitle>
+        </v-card-item>
+        <v-divider />
         <v-card-text>
           <div class="pa-3 bg-grey-lighten-4 rounded" style="max-height: 400px; overflow-y: auto">
             <div v-for="(step, index) in previewSteps" :key="index" class="mb-3">
@@ -487,10 +533,18 @@ onMounted(async () => {
 
     <!-- Диалог удаления -->
     <v-dialog v-model="deleteDialog" max-width="400">
-      <v-card>
-        <v-card-title>Удалить скрипт?</v-card-title>
-        <v-card-text> Скрипт будет удалён и отвязан от всех объявлений. Уже запущенные сделки не затрагиваются. </v-card-text>
-        <v-card-actions>
+      <v-card rounded="lg">
+        <v-card-item class="px-6 py-5">
+          <template #prepend>
+            <v-avatar size="48" color="error" variant="tonal">
+              <v-icon>mdi-delete-outline</v-icon>
+            </v-avatar>
+          </template>
+          <v-card-title class="text-h6 font-weight-bold">Удалить скрипт?</v-card-title>
+          <v-card-subtitle class="text-wrap">Скрипт будет удалён и отвязан от всех объявлений. Уже запущенные сделки не затрагиваются.</v-card-subtitle>
+        </v-card-item>
+        <v-divider />
+        <v-card-actions class="px-6 py-4">
           <v-spacer />
           <v-btn variant="text" @click="deleteDialog = false">Отмена</v-btn>
           <v-btn color="error" :loading="scripts.actionLoading" @click="handleDelete">Удалить</v-btn>

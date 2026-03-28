@@ -5,41 +5,20 @@ import { useAuthStore } from '@/stores/auth';
 import { useWalletStore } from '@/stores/wallet';
 import { useIdentityStore } from '@/stores/identity';
 import { useExchangeStore } from '@/stores/exchange';
+import { useTransactionLabels } from '@/composables/useTransactionLabels';
+import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
 import type { OrderBookEntry } from '@/api/exchange';
 import AppEmptyState from '@/components/shared/AppEmptyState.vue';
+import CurrencyIcon from '@/components/shared/CurrencyIcon.vue';
 
 const auth = useAuthStore();
 const wallet = useWalletStore();
 const identity = useIdentityStore();
 const exchange = useExchangeStore();
+const { txLabel, txColor, txIcon } = useTransactionLabels();
+const { parseAmount: parseAmountFn, formatRub } = useCurrencyFormat();
 const isPageLoading = ref(true);
 
-const txLabels: Record<string, string> = {
-  deposit: 'Депозит',
-  withdrawal: 'Вывод',
-  trade_buy: 'Покупка',
-  trade_sell: 'Продажа',
-  lock: 'Блокировка',
-  unlock: 'Разблокировка',
-  fee: 'Комиссия'
-};
-
-const txColors: Record<string, string> = {
-  deposit: 'success',
-  withdrawal: 'error',
-  trade_buy: 'info',
-  trade_sell: 'warning',
-  lock: 'grey',
-  unlock: 'grey',
-  fee: 'error'
-};
-
-const txIcons: Record<string, string> = {
-  trade_sell: 'mdi-arrow-top-right',
-  trade_buy: 'mdi-arrow-bottom-left',
-  lock: 'mdi-lock-outline',
-  fee: 'mdi-percent-outline'
-};
 
 const userDisplayName = computed(() => auth.user?.['name'] ?? auth.user?.['email'] ?? '');
 const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['mode']);
@@ -49,6 +28,36 @@ const lockedBalancesCount = computed(() => wallet.balances.filter((balance) => p
 const sortedBalances = computed(() => {
   return [...wallet.balances].sort((left, right) => parseAmount(right.total) - parseAmount(left.total));
 });
+const bestBuyPrice = computed(() => {
+  const prices = exchange.buyOrders.map((o) => parseAmount(o.price)).filter((n) => 0 < n);
+  return 0 === prices.length ? null : Math.max(...prices);
+});
+
+function rubEquivalent(total: string, currency: string): string | null {
+  if ('RUB' === currency.toUpperCase()) return null;
+  if (null === bestBuyPrice.value) return null;
+  const USDT_LIKE = new Set(['USDT', 'USDC']);
+  if (!USDT_LIKE.has(currency.toUpperCase())) return null;
+  const value = parseAmount(total) * bestBuyPrice.value;
+  return formatRub(value);
+}
+
+const totalRubEquivalent = computed(() => {
+  if (null === bestBuyPrice.value) return null;
+  let total = 0;
+  for (const balance of wallet.balances) {
+    if ('RUB' === balance.currency.toUpperCase()) {
+      total += parseAmount(balance.total);
+    } else {
+      const USDT_LIKE = new Set(['USDT', 'USDC']);
+      if (USDT_LIKE.has(balance.currency.toUpperCase())) {
+        total += parseAmount(balance.total) * bestBuyPrice.value;
+      }
+    }
+  }
+  return formatRub(total);
+});
+
 const bestBuyOrder = computed(() => {
   return exchange.buyOrders.reduce(
     (best, current) => {
@@ -104,18 +113,18 @@ const lastTransactionDate = computed(() => {
 });
 const dashboardMetrics = computed(() => [
   {
+    title: 'Общий баланс',
+    value: totalRubEquivalent.value ?? '—',
+    description: 'Приблизительная стоимость всех активов в рублях',
+    color: 'secondary',
+    icon: 'mdi-currency-rub'
+  },
+  {
     title: 'Статус Bybit API',
     value: identity.statusLabel ?? connectionStateText(),
     description: hasConnectionMode.value ? `Режим: ${identity.modeLabel}` : 'Подключите API для торговли и синхронизации данных',
     color: connectionStateColor(),
     icon: identity.hasActiveConnection ? 'mdi-shield-check-outline' : identity.isConnected ? 'mdi-alert-outline' : 'mdi-link-variant-off'
-  },
-  {
-    title: 'Балансы с активами',
-    value: balancesWithFundsCount.value,
-    description: `Всего валют в кабинете: ${wallet.balances.length}`,
-    color: 'primary',
-    icon: 'mdi-wallet-outline'
   },
   {
     title: 'Заблокированные позиции',
@@ -210,18 +219,6 @@ function formatDate(value: string): string {
   return new Date(value).toLocaleString('ru-RU');
 }
 
-function txLabel(type: string): string {
-  return txLabels[type] ?? type;
-}
-
-function txColor(type: string): string {
-  return txColors[type] ?? 'default';
-}
-
-function txIcon(type: string): string {
-  return txIcons[type] ?? 'mdi-swap-horizontal';
-}
-
 function connectionStateText(): string {
   if (identity.hasActiveConnection) {
     return 'Подключение активно';
@@ -281,13 +278,13 @@ onMounted(async () => {
         <v-row align="center">
           <v-col cols="12" md="8">
             <div class="d-flex align-center flex-wrap ga-3 mb-4">
-              <v-chip :color="connectionStateColor()" variant="tonal" size="small">
+              <v-chip :color="connectionStateColor()" variant="tonal" size="small" class="font-weight-bold">
                 {{ connectionStateText() }}
               </v-chip>
-              <v-chip v-if="hasConnectionMode" color="primary" variant="tonal" size="small">
+              <v-chip v-if="hasConnectionMode" color="primary" variant="tonal" size="small" class="font-weight-bold">
                 {{ identity.modeLabel }}
               </v-chip>
-              <v-chip color="secondary" variant="tonal" size="small"> Пара: {{ exchange.selectedPair.label }} </v-chip>
+              <v-chip color="secondary" variant="tonal" size="small" class="font-weight-bold"> Пара: {{ exchange.selectedPair.label }} </v-chip>
             </div>
 
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">Добро пожаловать, {{ userDisplayName }}</h1>
@@ -298,8 +295,8 @@ onMounted(async () => {
 
           <v-col cols="12" md="4">
             <div class="d-flex flex-column ga-3 dashboard-hero__actions">
-              <v-btn color="primary" size="large" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook"> Открыть P2P стакан </v-btn>
-              <v-btn variant="outlined" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection">
+              <v-btn color="white" size="large" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook" class="text-secondary"> Открыть P2P стакан </v-btn>
+              <v-btn color="white" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection" class="text-secondary">
                 Настроить Bybit API
               </v-btn>
             </div>
@@ -358,14 +355,25 @@ onMounted(async () => {
             <v-divider class="dashboard-card__divider" />
 
             <v-card-text class="dashboard-card__body pa-5">
+              <!-- Общий баланс в рублях -->
+              <v-sheet v-if="totalRubEquivalent" class="dashboard-total-rub pa-4 mb-4" rounded="lg">
+                <div class="d-flex align-center ga-3">
+                  <v-avatar size="44" color="primary" variant="tonal">
+                    <v-icon>mdi-currency-rub</v-icon>
+                  </v-avatar>
+                  <div>
+                    <div class="text-caption text-medium-emphasis">Общий баланс (приблизительно)</div>
+                    <div class="text-h5 font-weight-bold">{{ totalRubEquivalent }}</div>
+                  </div>
+                </div>
+              </v-sheet>
+
               <v-row v-if="0 < sortedBalances.length">
                 <v-col v-for="balance in sortedBalances" :key="balance.currency" cols="12" md="6">
                   <v-sheet class="dashboard-mini-card pa-4" rounded="lg">
                     <div class="d-flex align-start justify-space-between ga-3 mb-4">
                       <div class="d-flex align-center ga-3">
-                        <v-avatar size="44" color="primary" variant="tonal">
-                          <span class="text-body-2 font-weight-bold">{{ balance.currency }}</span>
-                        </v-avatar>
+                        <CurrencyIcon :code="balance.currency" :size="44" />
                         <div>
                           <div class="text-subtitle-1 font-weight-bold">{{ balance.currency }}</div>
                           <div class="text-body-2 text-medium-emphasis">Всего: {{ formatAmount(balance.total, 8) }}</div>
@@ -387,6 +395,9 @@ onMounted(async () => {
                         <div class="text-subtitle-1 font-weight-medium">{{ formatAmount(balance.locked, 8) }}</div>
                       </div>
                     </div>
+                    <div v-if="rubEquivalent(balance.total, balance.currency)" class="text-body-2 text-primary font-weight-medium">
+                      ≈ {{ rubEquivalent(balance.total, balance.currency) }}
+                    </div>
                   </v-sheet>
                 </v-col>
               </v-row>
@@ -402,7 +413,7 @@ onMounted(async () => {
               >
                 <template #actions>
                   <div class="d-flex justify-start">
-                    <v-btn color="primary" variant="outlined" to="/profile/api-connection">
+                    <v-btn color="secondary" variant="outlined" to="/profile/api-connection">
                       <template #prepend>
                         <PlugConnectedIcon :size="18" stroke-width="1.75" />
                       </template>
@@ -651,8 +662,8 @@ onMounted(async () => {
 
             <v-card-text class="dashboard-card__body pa-5">
               <div class="d-flex flex-column ga-3">
-                <v-btn color="primary" variant="flat" block prepend-icon="mdi-swap-horizontal-bold" to="/orderbook">
-                  Перейти в стакан
+                <v-btn color="secondary" variant="flat" block prepend-icon="mdi-swap-horizontal-bold" to="/orderbook">
+                  Стакан заявок
                 </v-btn>
                 <v-btn color="secondary" variant="tonal" block prepend-icon="mdi-wallet-outline" to="/wallet/balances">
                   Открыть балансы
@@ -724,6 +735,13 @@ onMounted(async () => {
 .dashboard-mini-card {
   border: 1px solid rgba(15, 23, 42, 0.07);
   background: rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-total-rub {
+  border: 1px solid rgba(30, 136, 229, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(94, 53, 177, 0.06), transparent 40%),
+    linear-gradient(135deg, rgba(30, 136, 229, 0.06), #ffffff);
 }
 
 .dashboard-market-card {

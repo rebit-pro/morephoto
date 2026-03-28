@@ -1355,6 +1355,46 @@ export function getTradeMessagesWithMock(tradeId: number): ChatMessage[] {
   return clone(state.tradeMessages[tradeId] ?? []);
 }
 
+export function getCounterpartyInfoWithMock(tradeId: number): Record<string, unknown> {
+  const state = getMockState();
+  const trade = state.trades.find((item) => tradeId === item.id);
+
+  if (undefined === trade) {
+    throw new Error('Сделка не найдена.');
+  }
+
+  const nameIndex = counterpartyNames.indexOf(trade.counterpartyName);
+  const seed = -1 === nameIndex ? 0 : nameIndex;
+
+  return {
+    nickName: trade.counterpartyName,
+    realName: `${trade.counterpartyName} Иванов`,
+    realNameEn: `${trade.counterpartyName} Ivanov`,
+    isOnline: 0 === seed % 2,
+    kycLevel: 1 + (seed % 3),
+    kycCountryCode: ['RUS', 'KAZ', 'UZB', 'BLR', 'TUR'][seed % 5] ?? 'RUS',
+    email: `${trade.counterpartyName.toLowerCase()}***@mail.com`,
+    mobile: '+7 *** *** ** ' + String(10 + seed).slice(-2),
+    totalFinishCount: 120 + seed * 37,
+    totalFinishBuyCount: 80 + seed * 20,
+    totalFinishSellCount: 40 + seed * 17,
+    recentFinishCount: 15 + seed * 3,
+    recentRate: 95 + (seed % 6),
+    averageReleaseTime: String(3 + (seed % 5)),
+    averageTransferTime: String(2 + (seed % 4)),
+    accountCreateDays: 400 + seed * 100,
+    firstTradeDays: 300 + seed * 80,
+    recentTradeAmount: String(5000 + seed * 2000),
+    totalTradeAmount: String(50000 + seed * 15000),
+    goodAppraiseRate: String(95 + (seed % 5)),
+    goodAppraiseCount: 100 + seed * 25,
+    badAppraiseCount: seed,
+    authStatus: 1,
+    blocked: 'N',
+    vipLevel: seed % 3
+  };
+}
+
 export function sendTradeMessageWithMock(
   tradeId: number,
   payload: {

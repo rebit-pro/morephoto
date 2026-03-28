@@ -50,6 +50,26 @@
 .v-btn {
   text-transform: capitalize;
   letter-spacing: $btn-letter-spacing;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Berry-style: subtle shadow on elevated/flat action buttons
+  &.v-btn--variant-flat:not(.v-btn--icon):not(.profileBtn) {
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+    }
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  // Berry-style: outlined buttons get a tonal fill on hover
+  &.v-btn--variant-outlined {
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+  }
 }
 .v-btn--icon.v-btn--density-default {
   width: calc(var(--v-btn-height) + 6px);

@@ -5,7 +5,8 @@ import { DirAttrSet } from '@/utils/utils';
 import { ThemeMode } from '@/types/themeTypes/ThemeMode';
 
 export const useCustomizerStore = defineStore('customizer', () => {
-  const Sidebar_drawer = ref(config.Sidebar_drawer);
+  const isMobile = 'undefined' !== typeof window && window.innerWidth < 1280;
+  const Sidebar_drawer = ref(isMobile ? false : config.Sidebar_drawer);
   const Customizer_drawer = ref(config.Customizer_drawer);
   const mini_sidebar = ref(config.mini_sidebar);
   const setHorizontalLayout = ref(config.setHorizontalLayout);

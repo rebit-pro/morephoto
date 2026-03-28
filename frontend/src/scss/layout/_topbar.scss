@@ -1,8 +1,21 @@
 .profileBtn {
   height: 50px !important;
   margin: 0 20px 0 0 !important;
+  min-width: 50px !important;
   [dir='rtl'] & {
     margin: 0 0 0 20px !important;
+  }
+
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.08) !important;
+  }
+
+  // Ensure the avatar inside never changes colors on hover
+  .v-avatar {
+    transition: transform 0.2s ease;
+  }
+  &:hover .v-avatar {
+    transform: scale(1.08);
   }
 }
 

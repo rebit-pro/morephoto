@@ -62,7 +62,11 @@ export default createVuetify({
     }
   },
   defaults: {
-    VBtn: {},
+    VBtn: {
+      color: 'secondary',
+      variant: 'flat',
+      rounded: 'lg'
+    },
     VCard: {
       rounded: 'md'
     },

@@ -3,7 +3,6 @@ import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue';
 import { exchangeApi, type ChatContentType, type ChatMessage } from '@/api/exchange';
 import { useTradesStore } from '@/stores/trades';
 import { usePolling } from '@/composables/usePolling';
-import { isMockApiEnabled } from '@/mocks/config';
 
 interface SelectedAttachment {
   file: File;
@@ -154,9 +153,10 @@ async function sendMessage(): Promise<void> {
 
       await trades.sendMessage(props.tradeId, {
         tradeId: props.tradeId,
-        message: uploadedFile.fileUrl,
+        message: '' !== text ? '' : uploadedFile.fileName,
         contentType: uploadedFile.contentType,
-        fileName: uploadedFile.fileName
+        fileName: uploadedFile.fileName,
+        fileUrl: uploadedFile.fileUrl
       });
 
       clearAttachment();
@@ -194,33 +194,43 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <v-card rounded="md">
-    <v-card-title class="d-flex align-center">
-      <v-icon class="mr-2">mdi-chat-outline</v-icon>
-      Чат сделки
-    </v-card-title>
+  <v-card class="trade-chat" rounded="lg">
+    <v-card-item class="trade-chat__header px-5 py-4">
+      <template #prepend>
+        <v-avatar size="42" color="secondary" variant="tonal">
+          <v-icon>mdi-chat-outline</v-icon>
+        </v-avatar>
+      </template>
+      <v-card-title class="text-h6 font-weight-bold">Чат сделки</v-card-title>
+      <v-card-subtitle>Общение с контрагентом</v-card-subtitle>
+    </v-card-item>
 
     <v-divider />
 
-    <div ref="chatContainer" class="chat-messages pa-4" style="height: 400px; overflow-y: auto">
-      <v-row v-if="trades.chatLoading && 0 === trades.chatMessages.length" justify="center">
-        <v-progress-circular indeterminate color="primary" size="24" />
+    <!-- Область сообщений -->
+    <div ref="chatContainer" class="trade-chat__messages pa-4">
+      <v-row v-if="trades.chatLoading && 0 === trades.chatMessages.length" justify="center" class="py-6">
+        <v-progress-circular indeterminate color="secondary" size="24" />
       </v-row>
 
-      <div v-if="0 === trades.chatMessages.length && !trades.chatLoading" class="text-center text-lightText pa-6">Сообщений пока нет</div>
+      <div v-if="0 === trades.chatMessages.length && !trades.chatLoading" class="text-center text-medium-emphasis pa-8">
+        <v-icon size="40" color="grey" class="mb-2">mdi-chat-sleep-outline</v-icon>
+        <div class="text-body-1">Сообщений пока нет</div>
+      </div>
 
-      <div v-for="msg in trades.chatMessages" :key="msg.id" class="mb-3">
-        <div class="d-flex" :class="'user' === msg.senderType ? 'justify-end' : 'justify-start'">
-          <div
-            class="chat-bubble pa-3 rounded-lg"
-            :class="{
-              'bg-primary text-white': 'user' === msg.senderType,
-              'bg-grey-lighten-3': 'system' === msg.senderType,
-              'bg-blue-lighten-4': 'script' === msg.senderType
-            }"
-            style="max-width: 70%"
-          >
-            <div class="text-caption font-weight-bold mb-1" :class="'user' === msg.senderType ? 'text-white' : ''">
+      <div v-for="msg in trades.chatMessages" :key="msg.id" class="trade-chat__row mb-3">
+        <!-- Системные сообщения — по центру -->
+        <div v-if="'system' === msg.senderType" class="d-flex justify-center">
+          <div class="trade-chat__bubble trade-chat__bubble--system pa-2 px-4">
+            <div class="text-caption text-center" style="white-space: pre-wrap">{{ msg.message }}</div>
+            <div class="trade-chat__time text-caption text-center mt-1">{{ formatTime(msg.createdAt) }}</div>
+          </div>
+        </div>
+
+        <!-- Мои сообщения — справа -->
+        <div v-else-if="'user' === msg.senderType || 'script' === msg.senderType" class="d-flex justify-end">
+          <div class="trade-chat__bubble trade-chat__bubble--user pa-3" :class="{ 'trade-chat__bubble--script': 'script' === msg.senderType }">
+            <div class="text-caption font-weight-bold mb-1 trade-chat__sender">
               {{ senderLabels[msg.senderType] ?? msg.senderType }}
             </div>
 
@@ -232,29 +242,62 @@ onUnmounted(() => {
                 class="trade-chat__image mb-2"
               />
               <a
-                v-else-if="msg.fileUrl"
+                v-if="msg.fileUrl"
                 :href="msg.fileUrl"
-                :download="msg.fileName ?? undefined"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="trade-chat__attachment-link"
+                :download="msg.fileName ?? 'file'"
+                class="trade-chat__attachment-link d-block"
               >
-                <v-chip size="small" variant="tonal" prepend-icon="mdi-attachment">
+                <v-chip size="small" variant="outlined" color="white" prepend-icon="mdi-download">
                   {{ msg.fileName ?? msg.contentType }}
                 </v-chip>
               </a>
-              <v-chip v-else size="small" variant="tonal" prepend-icon="mdi-attachment">
-                {{ msg.fileName ?? msg.contentType }}
-              </v-chip>
-              <div v-if="'' !== msg.message" class="text-body-2 mt-1" style="white-space: pre-wrap">{{ msg.message }}</div>
+              <div v-if="'' !== msg.message && msg.message !== msg.fileName" class="text-body-2 mt-1" style="white-space: pre-wrap">{{ msg.message }}</div>
             </template>
             <template v-else>
               <div class="text-body-2" style="white-space: pre-wrap">{{ msg.message }}</div>
             </template>
 
-            <div class="text-caption mt-1" :class="'user' === msg.senderType ? 'text-white' : 'text-lightText'" style="opacity: 0.7">
-              {{ formatTime(msg.createdAt) }}
-            </div>
+            <div class="trade-chat__time text-caption mt-1">{{ formatTime(msg.createdAt) }}</div>
+          </div>
+
+          <v-avatar size="32" color="secondary" variant="tonal" class="ml-2 mt-1 flex-shrink-0">
+            <v-icon size="16">{{ 'script' === msg.senderType ? 'mdi-script-text-outline' : 'mdi-account' }}</v-icon>
+          </v-avatar>
+        </div>
+
+        <!-- Сообщения контрагента — слева -->
+        <div v-else class="d-flex justify-start">
+          <v-avatar size="32" color="grey-lighten-1" variant="tonal" class="mr-2 mt-1 flex-shrink-0">
+            <v-icon size="16">mdi-account</v-icon>
+          </v-avatar>
+
+          <div class="trade-chat__bubble trade-chat__bubble--counterparty pa-3">
+            <div class="text-caption font-weight-bold mb-1">Контрагент</div>
+
+            <template v-if="isMediaMessage(msg.contentType)">
+              <img
+                v-if="isImageMessage(msg)"
+                :src="msg.fileUrl ?? undefined"
+                :alt="msg.fileName ?? 'attachment'"
+                class="trade-chat__image mb-2"
+              />
+              <a
+                v-if="msg.fileUrl"
+                :href="msg.fileUrl"
+                :download="msg.fileName ?? 'file'"
+                class="trade-chat__attachment-link d-block"
+              >
+                <v-chip size="small" variant="tonal" color="secondary" prepend-icon="mdi-download">
+                  {{ msg.fileName ?? msg.contentType }}
+                </v-chip>
+              </a>
+              <div v-if="'' !== msg.message && msg.message !== msg.fileName" class="text-body-2 mt-1" style="white-space: pre-wrap">{{ msg.message }}</div>
+            </template>
+            <template v-else>
+              <div class="text-body-2" style="white-space: pre-wrap">{{ msg.message }}</div>
+            </template>
+
+            <div class="trade-chat__time text-caption mt-1">{{ formatTime(msg.createdAt) }}</div>
           </div>
         </div>
       </div>
@@ -262,71 +305,133 @@ onUnmounted(() => {
 
     <v-divider />
 
-    <v-alert v-if="readonly" type="info" variant="tonal" class="ma-2" density="compact"> Сделка завершена / отменена. Чат закрыт. </v-alert>
+    <v-alert v-if="readonly" type="info" variant="tonal" class="ma-3" density="compact"> Сделка завершена / отменена. Чат закрыт. </v-alert>
 
-    <v-card-actions v-if="!readonly" class="pa-3 flex-column align-stretch ga-3">
-      <div class="d-flex flex-wrap align-center ga-3">
+    <!-- Область ввода -->
+    <div v-if="!readonly" class="trade-chat__input pa-4">
+      <!-- Превью вложения -->
+      <div v-if="hasSelectedAttachment" class="d-flex align-center ga-2 mb-3 pa-3 trade-chat__attachment-bar rounded-lg">
+        <v-icon size="20" color="secondary">mdi-paperclip</v-icon>
+        <img v-if="hasSelectedImageAttachment()" :src="getSelectedAttachmentUrl()" :alt="getSelectedAttachmentName()" class="trade-chat__image-mini" />
+        <span class="text-body-2 font-weight-medium flex-grow-1 text-truncate">{{ getSelectedAttachmentName() }}</span>
+        <v-btn icon="mdi-close" size="x-small" variant="text" color="error" @click="clearAttachment" />
+      </div>
+
+      <div class="d-flex align-center ga-2">
         <label class="d-inline-flex">
           <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleFileSelected" />
-          <v-btn size="small" variant="outlined" prepend-icon="mdi-paperclip" tag="span">
-            {{ hasSelectedAttachment ? 'Заменить файл' : 'Прикрепить файл' }}
-          </v-btn>
+          <v-btn icon="mdi-paperclip" size="small" variant="text" color="secondary" tag="span" />
         </label>
-        <v-chip v-if="hasSelectedAttachment" size="small" color="primary" variant="tonal">
-          {{ getSelectedAttachmentName() }}
-        </v-chip>
-        <v-btn v-if="hasSelectedAttachment" size="small" variant="text" color="error" prepend-icon="mdi-close" @click="clearAttachment">
-          Удалить
-        </v-btn>
-      </div>
 
-      <v-alert v-if="!isMockApiEnabled" type="info" variant="tonal" density="compact">
-        Текст и вложение отправляются отдельными сообщениями: сначала комментарий, затем файл, загруженный в Bybit.
-      </v-alert>
-
-      <div v-if="hasSelectedImageAttachment()" class="trade-chat__attachment-preview">
-        <img :src="getSelectedAttachmentUrl()" :alt="getSelectedAttachmentName()" class="trade-chat__image" />
-      </div>
-
-      <div class="d-flex align-center">
         <v-text-field
           v-model="messageText"
           placeholder="Введите сообщение..."
           variant="outlined"
           density="compact"
           hide-details
+          rounded="lg"
           :disabled="sending"
           @keydown.enter.exact.prevent="sendMessage"
         />
+
         <v-btn
           icon="mdi-send"
-          color="primary"
+          color="secondary"
           variant="flat"
           size="small"
-          class="ml-2"
+          rounded="lg"
           :loading="sending"
           :disabled="!canSendMessage"
           @click="sendMessage"
         />
       </div>
-    </v-card-actions>
+    </div>
   </v-card>
 </template>
 
-<style scoped>
-.chat-messages {
-  scroll-behavior: smooth;
+<style scoped lang="scss">
+.trade-chat {
+  border: 1px solid rgba(var(--v-theme-borderLight), 0.14);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.chat-bubble {
+.trade-chat__header {
+  min-height: 72px;
+}
+
+.trade-chat__messages {
+  height: 420px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background: rgb(var(--v-theme-gray100));
+}
+
+.trade-chat__bubble {
+  max-width: 70%;
+  border-radius: 12px;
   word-break: break-word;
+  position: relative;
+}
+
+/* Мои сообщения — справа, secondary */
+.trade-chat__bubble--user {
+  background: rgb(var(--v-theme-secondary));
+  color: #fff;
+  border-bottom-right-radius: 2px;
+
+  .trade-chat__sender {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .trade-chat__time {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Скрипт — чуть отличающийся оттенок */
+.trade-chat__bubble--script {
+  background: rgb(var(--v-theme-info));
+}
+
+/* Контрагент — слева, светлый */
+.trade-chat__bubble--counterparty {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom-left-radius: 2px;
+  color: rgb(var(--v-theme-on-surface));
+
+  .trade-chat__time {
+    color: rgba(var(--v-theme-on-surface), 0.45);
+  }
+}
+
+/* Системные — по центру, нейтральные */
+.trade-chat__bubble--system {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  max-width: 85%;
+
+  .trade-chat__time {
+    color: rgba(0, 0, 0, 0.35);
+  }
 }
 
 .trade-chat__image {
   display: block;
   max-width: 220px;
   max-height: 220px;
-  border-radius: 12px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.trade-chat__image-mini {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   object-fit: cover;
 }
 
@@ -334,7 +439,12 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-.trade-chat__attachment-preview {
-  display: flex;
+.trade-chat__attachment-bar {
+  background: rgba(var(--v-theme-secondary), 0.06);
+  border: 1px solid rgba(var(--v-theme-secondary), 0.12);
+}
+
+.trade-chat__input {
+  background: rgb(var(--v-theme-surface));
 }
 </style>

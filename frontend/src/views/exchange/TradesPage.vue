@@ -3,11 +3,14 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTradesStore } from '@/stores/trades';
 import { usePolling } from '@/composables/usePolling';
+import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
 import type { TradeStatus } from '@/api/exchange';
 import { isMockApiEnabled } from '@/mocks/config';
+import UiTableCard from '@/components/shared/UiTableCard.vue';
 
 const router = useRouter();
 const trades = useTradesStore();
+const { formatRub, formatDate } = useCurrencyFormat();
 
 const statusFilter = ref<TradeStatus | ''>('');
 
@@ -39,10 +42,6 @@ const statusColors: Record<string, string> = {
   disputed: 'error'
 };
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString('ru-RU');
-}
-
 async function loadTrades(): Promise<void> {
   const status = '' !== statusFilter.value ? statusFilter.value : undefined;
   await trades.fetchTrades(status);
@@ -67,7 +66,7 @@ onUnmounted(() => {
 <template>
   <div>
     <div class="d-flex align-center justify-space-between mb-6 flex-wrap ga-3">
-      <h2 class="text-h4">Сделки</h2>
+      <h2 class="text-h4 font-weight-bold">Сделки</h2>
       <v-select
         v-model="statusFilter"
         :items="statusOptions"
@@ -92,7 +91,14 @@ onUnmounted(() => {
 
     <v-alert v-if="trades.error" type="error" variant="tonal" class="mb-4">{{ trades.error }}</v-alert>
 
-    <v-card v-if="!trades.loading || 0 < trades.trades.length" rounded="md">
+    <UiTableCard
+      v-if="!trades.loading || 0 < trades.trades.length"
+      title="Список сделок"
+      subtitle="Все ваши P2P сделки"
+      icon="mdi-swap-horizontal-bold"
+      color="primary"
+      gradient="neutral"
+    >
       <v-table density="comfortable" hover>
         <thead>
           <tr>
@@ -106,7 +112,7 @@ onUnmounted(() => {
         </thead>
         <tbody>
           <tr v-if="0 === trades.trades.length">
-            <td colspan="6" class="text-center text-lightText pa-6">Нет сделок</td>
+            <td colspan="6" class="text-center text-medium-emphasis pa-6">Нет сделок</td>
           </tr>
           <tr
             v-for="trade in trades.trades"
@@ -133,18 +139,18 @@ onUnmounted(() => {
                 {{ 'buy' === trade.side ? 'Покупка' : 'Продажа' }}
               </v-chip>
             </td>
-            <td class="text-right font-weight-medium">{{ trade.price.toFixed(2) }} ₽</td>
-            <td class="text-right">{{ trade.fiatAmount.toFixed(2) }} ₽</td>
+            <td class="text-right font-weight-medium">{{ formatRub(trade.price) }}</td>
+            <td class="text-right font-weight-bold">{{ formatRub(trade.fiatAmount) }}</td>
             <td>
               <v-chip size="small" variant="tonal" :color="statusColors[trade.status] ?? 'default'">
                 {{ statusLabels[trade.status] ?? trade.status }}
               </v-chip>
             </td>
-            <td class="text-lightText text-body-2">{{ formatDate(trade.createdAt) }}</td>
+            <td class="text-medium-emphasis text-body-2">{{ formatDate(trade.createdAt) }}</td>
           </tr>
         </tbody>
       </v-table>
-    </v-card>
+    </UiTableCard>
   </div>
 </template>
 
