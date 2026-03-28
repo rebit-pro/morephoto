@@ -24,18 +24,31 @@ const lastSyncedAt = computed(() => {
   return new Date(maxDate).toLocaleString('ru-RU');
 });
 
+const USDT_LIKE_CURRENCIES = new Set(['USDT', 'USDC']);
+
 /** Лучшая цена покупки из стакана — приблизительный курс */
 const bestBuyPrice = computed(() => {
-  const prices = exchange.buyOrders.map((o) => parseAmount(o.price)).filter((n) => 0 < n);
-  return 0 === prices.length ? null : Math.max(...prices);
+  let max: number | null = null;
+
+  for (const order of exchange.buyOrders) {
+    const price = parseAmount(order.price);
+
+    if (0 >= price) {
+      continue;
+    }
+
+    if (null === max || price > max) {
+      max = price;
+    }
+  }
+
+  return max;
 });
 
 function rubEquivalent(total: string, currency: string): string | null {
   if ('RUB' === currency.toUpperCase()) return null;
   if (null === bestBuyPrice.value) return null;
-  // Для USDT — курс из стакана напрямую; для других — пока не конвертируем
-  const USDT_LIKE = new Set(['USDT', 'USDC']);
-  if (!USDT_LIKE.has(currency.toUpperCase())) return null;
+  if (!USDT_LIKE_CURRENCIES.has(currency.toUpperCase())) return null;
   const value = parseAmount(total) * bestBuyPrice.value;
   return formatRub(value);
 }
@@ -46,11 +59,8 @@ const totalRubEquivalent = computed(() => {
   for (const balance of wallet.balances) {
     if ('RUB' === balance.currency.toUpperCase()) {
       total += parseAmount(balance.total);
-    } else {
-      const USDT_LIKE = new Set(['USDT', 'USDC']);
-      if (USDT_LIKE.has(balance.currency.toUpperCase())) {
-        total += parseAmount(balance.total) * bestBuyPrice.value;
-      }
+    } else if (USDT_LIKE_CURRENCIES.has(balance.currency.toUpperCase())) {
+      total += parseAmount(balance.total) * bestBuyPrice.value;
     }
   }
   return formatRub(total);

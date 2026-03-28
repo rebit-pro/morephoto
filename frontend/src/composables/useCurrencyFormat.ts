@@ -1,7 +1,7 @@
 /**
  * Composable для форматирования денежных сумм.
  * Фиат (RUB и т.п.) — формат ru-RU с округлением до 2 знаков.
- * Крипта (USDT, BTC и т.п.) — без принудительного ru-формата, до 8 знаков.
+ * Крипта (USDT, BTC и т.п.) — формат ru-RU, до 8 знаков.
  */
 
 const FIAT_CODES = new Set(['RUB', 'USD', 'EUR', 'UAH', 'KZT', 'BYN', 'GEL', 'TRY', 'CNY', 'AED']);
@@ -20,6 +20,22 @@ const rubSuffixFormatter = new Intl.NumberFormat('ru-RU', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 });
+
+const numberFormatterCache = new Map<number, Intl.NumberFormat>();
+
+function getNumberFormatter(maximumFractionDigits: number): Intl.NumberFormat {
+  let formatter = numberFormatterCache.get(maximumFractionDigits);
+
+  if (undefined === formatter) {
+    formatter = new Intl.NumberFormat('ru-RU', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits
+    });
+    numberFormatterCache.set(maximumFractionDigits, formatter);
+  }
+
+  return formatter;
+}
 
 export function useCurrencyFormat() {
   function parseAmount(value: string | number): number {
@@ -45,10 +61,7 @@ export function useCurrencyFormat() {
 
   /** Форматирует число в стиле ru-RU с указанным кол-вом знаков */
   function formatNumber(value: string | number, maximumFractionDigits = 2): string {
-    return new Intl.NumberFormat('ru-RU', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits
-    }).format(parseAmount(value));
+    return getNumberFormatter(maximumFractionDigits).format(parseAmount(value));
   }
 
   function formatDate(iso: string): string {

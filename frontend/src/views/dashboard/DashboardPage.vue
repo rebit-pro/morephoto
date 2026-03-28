@@ -22,6 +22,8 @@ const isPageLoading = ref(true);
 
 const userDisplayName = computed(() => auth.user?.['name'] ?? auth.user?.['email'] ?? '');
 const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['mode']);
+const USDT_LIKE_CURRENCIES = new Set(['USDT', 'USDC']);
+
 const latestTransactions = computed(() => wallet.transactions.slice(0, 4));
 const balancesWithFundsCount = computed(() => wallet.balances.filter((balance) => parseAmount(balance.total) > 0).length);
 const lockedBalancesCount = computed(() => wallet.balances.filter((balance) => parseAmount(balance.locked) > 0).length);
@@ -29,15 +31,27 @@ const sortedBalances = computed(() => {
   return [...wallet.balances].sort((left, right) => parseAmount(right.total) - parseAmount(left.total));
 });
 const bestBuyPrice = computed(() => {
-  const prices = exchange.buyOrders.map((o) => parseAmount(o.price)).filter((n) => 0 < n);
-  return 0 === prices.length ? null : Math.max(...prices);
+  let max: number | null = null;
+
+  for (const order of exchange.buyOrders) {
+    const price = parseAmount(order.price);
+
+    if (0 >= price) {
+      continue;
+    }
+
+    if (null === max || price > max) {
+      max = price;
+    }
+  }
+
+  return max;
 });
 
 function rubEquivalent(total: string, currency: string): string | null {
   if ('RUB' === currency.toUpperCase()) return null;
   if (null === bestBuyPrice.value) return null;
-  const USDT_LIKE = new Set(['USDT', 'USDC']);
-  if (!USDT_LIKE.has(currency.toUpperCase())) return null;
+  if (!USDT_LIKE_CURRENCIES.has(currency.toUpperCase())) return null;
   const value = parseAmount(total) * bestBuyPrice.value;
   return formatRub(value);
 }
@@ -48,11 +62,8 @@ const totalRubEquivalent = computed(() => {
   for (const balance of wallet.balances) {
     if ('RUB' === balance.currency.toUpperCase()) {
       total += parseAmount(balance.total);
-    } else {
-      const USDT_LIKE = new Set(['USDT', 'USDC']);
-      if (USDT_LIKE.has(balance.currency.toUpperCase())) {
-        total += parseAmount(balance.total) * bestBuyPrice.value;
-      }
+    } else if (USDT_LIKE_CURRENCIES.has(balance.currency.toUpperCase())) {
+      total += parseAmount(balance.total) * bestBuyPrice.value;
     }
   }
   return formatRub(total);
