@@ -79,17 +79,19 @@ final readonly class SyncTradeHistoryUseCase
 
     /**
      * @param array<string, mixed> $item
+     * @throws RepositoryException
      */
     private function createTrade(array $item, int $userId): void
     {
         $bybitStatus = (int)($item['status'] ?? 0);
+        $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
 
         $this->tradeRepository->createFromBybit([
             'bybitOrderId' => (string)($item['id'] ?? ''),
             'bybitStatus' => $bybitStatus,
-            'buyerUserId' => $userId,
-            'sellerUserId' => 0,
-            'side' => (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell',
+            'buyerUserId' => 'buy' === $side ? $userId : 0,
+            'sellerUserId' => 'sell' === $side ? $userId : 0,
+            'side' => $side,
             'price' => (float)($item['price'] ?? 0),
             'quantity' => 0.0,
             'fiatAmount' => (float)($item['amount'] ?? 0),

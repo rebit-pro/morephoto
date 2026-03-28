@@ -28,16 +28,21 @@ final readonly class EnrichTradeFromBybitUseCase
      * @throws HttpException
      * @throws RepositoryException
      */
-    public function execute(Trade $trade): void
+    public function execute(Trade $trade): array
     {
-        $userId = $trade->getUfBuyerUserId();
+        $userId = match ($trade->getUfSide()) {
+            'buy' => 0 < $trade->getUfBuyerUserId() ? $trade->getUfBuyerUserId() : $trade->getUfSellerUserId(),
+            'sell' => 0 < $trade->getUfSellerUserId() ? $trade->getUfSellerUserId() : $trade->getUfBuyerUserId(),
+            default => 0,
+        };
+
         if (0 >= $userId) {
-            $this->logger->warning('Обогащение сделки пропущено: buyerUserId не задан', [
+            $this->logger->warning('Обогащение сделки пропущено: локальный пользователь сделки не определён', [
                 'tradeId' => $trade->getId(),
                 'bybitOrderId' => $trade->getUfBybitOrderId(),
             ]);
 
-            return;
+            return [];
         }
 
         $orderInfo = $this->bybitTradeGateway->fetchOrderInfo($userId, $trade->getUfBybitOrderId());
@@ -86,5 +91,7 @@ final readonly class EnrichTradeFromBybitUseCase
             'advertisementId' => $trade->getUfAdvertisementId(),
             'paymentMethodId' => $trade->getUfPaymentMethodId(),
         ]);
+
+        return $orderInfo;
     }
 }

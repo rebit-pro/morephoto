@@ -46,19 +46,26 @@ final readonly class TradeStatusChangedMessageHandler
         }
 
         $newStatus = TradeStatusEnum::tryFrom($message->newStatus);
+        $localUserId = $this->resolveLocalUserId($trade);
+
         if (null !== $newStatus && false === $newStatus->isChatActive()) {
             $this->chatScriptExecutionRepository->cancelByTradeId($trade->getId());
         }
 
-        if (TradeStatusEnum::Completed === $newStatus) {
-            $this->publishBalanceSync($trade->getUfBuyerUserId(), $trade->getId(), 'buyer');
-
-            if (0 < $trade->getUfSellerUserId()) {
-                $this->publishBalanceSync($trade->getUfSellerUserId(), $trade->getId(), 'seller');
-            }
+        if (TradeStatusEnum::Completed === $newStatus && 0 < $localUserId) {
+            $this->publishBalanceSync($localUserId, $trade->getId(), 'localUser');
         }
 
-        $this->publishStatusChangedNotification($trade, $message->oldStatus, $message->newStatus);
+        if (0 < $localUserId) {
+            $this->publishStatusChangedNotification($trade, $localUserId, $message->oldStatus, $message->newStatus);
+        } else {
+            $this->logger->warning('Пропущено уведомление о смене статуса: локальный пользователь сделки не определён', [
+                'tradeId' => $trade->getId(),
+                'side' => $trade->getUfSide(),
+                'oldStatus' => $message->oldStatus,
+                'newStatus' => $message->newStatus,
+            ]);
+        }
 
         $this->logger->info('TradeStatusChangedMessage получено', [
             'tradeId' => $message->tradeId,
@@ -100,18 +107,15 @@ final readonly class TradeStatusChangedMessageHandler
 
     private function publishStatusChangedNotification(
         \Rebit\Exchange\Domain\Trade\Entity\Trade $trade,
+        int $localUserId,
         string $oldStatus,
         string $newStatus,
     ): void {
-        if (0 >= $trade->getUfBuyerUserId()) {
-            return;
-        }
-
         try {
             $this->notificationPublisher->publish(
                 new SendNotificationDto(
                     type: NotificationTypeEnum::TRADE_STATUS_CHANGED->value,
-                    userId: $trade->getUfBuyerUserId(),
+                    userId: $localUserId,
                     payload: [
                         'tradeId' => (string)$trade->getId(),
                         'oldStatus' => $oldStatus,
@@ -129,5 +133,14 @@ final readonly class TradeStatusChangedMessageHandler
                 'exceptionClass' => $exception::class,
             ]);
         }
+    }
+
+    private function resolveLocalUserId(\Rebit\Exchange\Domain\Trade\Entity\Trade $trade): int
+    {
+        return match ($trade->getUfSide()) {
+            'buy' => $trade->getUfBuyerUserId(),
+            'sell' => $trade->getUfSellerUserId(),
+            default => 0,
+        };
     }
 }

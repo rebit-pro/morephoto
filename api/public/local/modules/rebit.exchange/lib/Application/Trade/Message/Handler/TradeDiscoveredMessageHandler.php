@@ -7,6 +7,7 @@ namespace Rebit\Exchange\Application\Trade\Message\Handler;
 use Psr\Log\LoggerInterface;
 use Rebit\Exchange\Application\Trade\Message\TradeDiscoveredMessage;
 use Rebit\Exchange\Application\Trade\UseCase\EnrichTradeFromBybitUseCase;
+use Rebit\Exchange\Application\Trade\UseCase\SyncCounterpartyUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\StartTradeChatScriptUseCase;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Notification\Dto\SendNotificationDto;
@@ -22,6 +23,7 @@ final readonly class TradeDiscoveredMessageHandler
     public function __construct(
         private TradeRepository $tradeRepository,
         private EnrichTradeFromBybitUseCase $enrichTradeFromBybitUseCase,
+        private SyncCounterpartyUseCase $syncCounterpartyUseCase,
         private NotificationPublisherInterface $notificationPublisher,
         private StartTradeChatScriptUseCase $startTradeChatScriptUseCase,
         private LoggerInterface $logger,
@@ -42,8 +44,10 @@ final readonly class TradeDiscoveredMessageHandler
             return;
         }
 
+        $orderInfo = [];
+
         try {
-            $this->enrichTradeFromBybitUseCase->execute($trade);
+            $orderInfo = $this->enrichTradeFromBybitUseCase->execute($trade);
         } catch (\Throwable $exception) {
             $this->logger->error('Не удалось обогатить сделку деталями Bybit', [
                 'tradeId' => $trade->getId(),
@@ -53,11 +57,31 @@ final readonly class TradeDiscoveredMessageHandler
             ]);
         }
 
-        try {
+        if ([] !== $orderInfo) {
+            try {
+                $this->syncCounterpartyUseCase->execute($trade, $orderInfo);
+            } catch (\Throwable $exception) {
+                $this->logger->error('Не удалось синхронизировать контрагента для сделки', [
+                    'tradeId' => $trade->getId(),
+                    'bybitOrderId' => $trade->getUfBybitOrderId(),
+                    'error' => $exception->getMessage(),
+                    'exceptionClass' => $exception::class,
+                ]);
+            }
+        }
+
+        $localUserId = $this->resolveLocalUserId($trade);
+        if (0 >= $localUserId) {
+            $this->logger->warning('Пропущено уведомление по новой сделке: локальный пользователь не определён', [
+                'tradeId' => $trade->getId(),
+                'side' => $trade->getUfSide(),
+            ]);
+        } else {
+            try {
             $this->notificationPublisher->publish(
                 new SendNotificationDto(
                     type: NotificationTypeEnum::TRADE_DISCOVERED->value,
-                    userId: $trade->getUfBuyerUserId(),
+                    userId: $localUserId,
                     payload: [
                         'tradeId' => (string)$trade->getId(),
                         'side' => $trade->getUfSide(),
@@ -66,12 +90,13 @@ final readonly class TradeDiscoveredMessageHandler
                     ],
                 ),
             );
-        } catch (\Throwable $exception) {
-            $this->logger->error('Не удалось отправить уведомление по новой сделке из tradeEvent handler', [
-                'tradeId' => $trade->getId(),
-                'error' => $exception->getMessage(),
-                'exceptionClass' => $exception::class,
-            ]);
+            } catch (\Throwable $exception) {
+                $this->logger->error('Не удалось отправить уведомление по новой сделке из tradeEvent handler', [
+                    'tradeId' => $trade->getId(),
+                    'error' => $exception->getMessage(),
+                    'exceptionClass' => $exception::class,
+                ]);
+            }
         }
 
         try {
@@ -88,5 +113,14 @@ final readonly class TradeDiscoveredMessageHandler
             'tradeId' => $message->tradeId,
             'bybitOrderId' => $message->bybitOrderId,
         ]);
+    }
+
+    private function resolveLocalUserId(\Rebit\Exchange\Domain\Trade\Entity\Trade $trade): int
+    {
+        return match ($trade->getUfSide()) {
+            'buy' => $trade->getUfBuyerUserId(),
+            'sell' => $trade->getUfSellerUserId(),
+            default => 0,
+        };
     }
 }

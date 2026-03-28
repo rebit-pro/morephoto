@@ -5,9 +5,11 @@ declare(strict_types=1);
 use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Exchange\Application\Trade\Message\Handler\TradeDiscoveredMessageHandler;
 use Rebit\Exchange\Application\Trade\Message\Handler\TradeStatusChangedMessageHandler;
+use Rebit\Exchange\Application\Trade\Port\BybitCounterpartyGatewayInterface;
 use Rebit\Exchange\Application\Trade\UseCase\ConsumeTradeEventsUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\EnrichTradeFromBybitUseCase;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
+use Rebit\Exchange\Application\Trade\UseCase\SyncCounterpartyUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmPaymentUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmReceiptUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\GetTradeUseCase;
@@ -23,6 +25,7 @@ use Rebit\Exchange\Presentation\Command\Trade\TradeEventConsumerCommand;
 use Rebit\Exchange\Application\TradeChat\UseCase\StartTradeChatScriptUseCase;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
+use Rebit\Exchange\Domain\Counterparty\Repository\CounterpartyRepository;
 use Rebit\Exchange\Domain\PaymentMethod\Repository\PaymentMethodRepository;
 use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Exchange\Presentation\Controller\TradeController;
@@ -33,6 +36,7 @@ use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Facade\Log;
+use Rebit\Exchange\Infrastructure\Bybit\BybitCounterpartyGateway;
 
 return [
     TradeRepository::class => [
@@ -48,11 +52,25 @@ return [
             );
         },
     ],
+    BybitCounterpartyGatewayInterface::class => [
+        'constructor' => static function(): BybitCounterpartyGatewayInterface {
+            $sl = ServiceLocator::getInstance();
+
+            return new BybitCounterpartyGateway(
+                $sl->get(BybitConnectionResolverInterface::class),
+                $sl->get(BybitClientInterface::class),
+            );
+        },
+    ],
+    CounterpartyRepository::class => [
+        'className' => CounterpartyRepository::class,
+    ],
     TradeDiscoveredMessageHandler::class => [
         'className' => TradeDiscoveredMessageHandler::class,
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(TradeRepository::class),
             ServiceLocator::getInstance()->get(EnrichTradeFromBybitUseCase::class),
+            ServiceLocator::getInstance()->get(SyncCounterpartyUseCase::class),
             ServiceLocator::getInstance()->get(NotificationPublisherInterface::class),
             ServiceLocator::getInstance()->get(StartTradeChatScriptUseCase::class),
             Log::channel(LogChannelEnum::exchange),
@@ -79,6 +97,15 @@ return [
             ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
             ServiceLocator::getInstance()->get(AdvertisementRepository::class),
             ServiceLocator::getInstance()->get(PaymentMethodRepository::class),
+            ServiceLocator::getInstance()->get(TradeRepository::class),
+            Log::getLogger(LogChannelEnum::exchange),
+        ],
+    ],
+    SyncCounterpartyUseCase::class => [
+        'className' => SyncCounterpartyUseCase::class,
+        'constructorParams' => static fn(): array => [
+            ServiceLocator::getInstance()->get(BybitCounterpartyGatewayInterface::class),
+            ServiceLocator::getInstance()->get(CounterpartyRepository::class),
             ServiceLocator::getInstance()->get(TradeRepository::class),
             Log::getLogger(LogChannelEnum::exchange),
         ],

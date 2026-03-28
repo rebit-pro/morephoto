@@ -104,14 +104,16 @@ final class SyncTradesCommand extends RebitCommand
             if (null === $existing) {
                 $bybitStatus = (int)($item['status'] ?? 0);
                 $side = (0 === (int)($item['side'] ?? 0)) ? 'buy' : 'sell';
+                $buyerUserId = 'buy' === $side ? $userId : 0;
+                $sellerUserId = 'sell' === $side ? $userId : 0;
                 $fiatAmount = (float)($item['amount'] ?? 0);
                 $counterpartyName = (string)($item['targetNickName'] ?? '');
 
                 $trade = $this->tradeRepository->createFromBybit([
                     'bybitOrderId' => $bybitOrderId,
                     'bybitStatus' => $bybitStatus,
-                    'buyerUserId' => $userId,
-                    'sellerUserId' => 0,
+                    'buyerUserId' => $buyerUserId,
+                    'sellerUserId' => $sellerUserId,
                     'side' => $side,
                     'price' => (float)($item['price'] ?? 0),
                     'quantity' => 0.0,
