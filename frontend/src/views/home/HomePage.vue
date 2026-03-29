@@ -5,9 +5,8 @@ import PublicTopBar from '@/components/public/PublicTopBar.vue';
 
 const auth = useAuthStore();
 
-const primaryActionLabel = computed(() => (auth.isAuthenticated ? 'Перейти в кабинет' : 'Начать работу'));
+const primaryActionLabel = computed(() => (auth.isAuthenticated ? 'Перейти в кабинет' : 'Регистрация'));
 const primaryActionLink = computed(() => (auth.isAuthenticated ? '/dashboard' : '/register'));
-const secondaryActionLabel = computed(() => (auth.isAuthenticated ? 'Открыть кабинет' : 'Узнать возможности'));
 
 const featureCards = [
   {
@@ -139,8 +138,8 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
         <PublicTopBar />
 
         <v-row align="center" class="landing-page__hero-row">
-          <v-col cols="12" md="7" lg="6">
-            <div class="landing-page__hero-content">
+          <v-col cols="12" md="7" lg="6" class="landing-page__hero-col landing-page__hero-col--main">
+            <div class="landing-page__hero-copy">
               <v-chip color="white" variant="outlined" size="small" class="mb-4 landing-page__hero-chip">
                 Платформа для системной P2P-работы
               </v-chip>
@@ -150,53 +149,18 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
                 Подключите Bybit API один раз и управляйте P2P-операциями из единого кабинета: контролируйте балансы, ведите сделки,
                 проверяйте контрагентов, получайте уведомления и отслеживайте прибыль по отчётам без лишних переключений.
               </p>
+            </div>
 
+            <div class="landing-page__hero-actions-wrap">
               <div class="landing-page__hero-actions">
                 <v-btn class="landing-page__responsive-button" color="secondary" variant="flat" size="x-large" rounded="xl" :to="primaryActionLink">
                   {{ primaryActionLabel }}
                 </v-btn>
-                <v-btn
-                  v-if="auth.isAuthenticated"
-                  class="landing-page__responsive-button"
-                  color="white"
-                  variant="outlined"
-                  size="x-large"
-                  rounded="xl"
-                  to="/dashboard"
-                >
-                  {{ secondaryActionLabel }}
-                </v-btn>
-                <v-btn
-                  v-else
-                  class="landing-page__responsive-button"
-                  color="white"
-                  variant="outlined"
-                  size="x-large"
-                  rounded="xl"
-                  href="#benefits"
-                >
-                  {{ secondaryActionLabel }}
-                </v-btn>
-              </div>
-
-              <div class="landing-page__hero-benefits">
-                <div class="landing-page__hero-benefit">
-                  <v-icon size="20">mdi-check-circle-outline</v-icon>
-                  Единое рабочее место для сделок, чатов и действий.
-                </div>
-                <div class="landing-page__hero-benefit">
-                  <v-icon size="20">mdi-check-circle-outline</v-icon>
-                  Понимание прибыли и движения средств через отчёты.
-                </div>
-                <div class="landing-page__hero-benefit">
-                  <v-icon size="20">mdi-check-circle-outline</v-icon>
-                  Более безопасные решения за счёт проверки контрагентов и сценариев.
-                </div>
               </div>
             </div>
           </v-col>
 
-          <v-col cols="12" md="5" lg="6">
+          <v-col cols="12" md="5" lg="6" class="landing-page__hero-col landing-page__hero-col--aside">
             <v-card class="landing-page__hero-panel" rounded="lg" elevation="0">
               <div class="landing-page__hero-panel-grid">
                 <v-card v-for="card in insightCards" :key="card.title" class="landing-page__metric-card" rounded="lg" elevation="0">
@@ -266,7 +230,7 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
           <div class="text-overline text-secondary font-weight-bold">Почему это полезно</div>
           <h2 class="landing-page__section-title">Преимущества, которые закрывают ежедневные задачи P2P-команды</h2>
           <p class="landing-page__section-description">
-            Rebit P2P помогает не просто смотреть данные, а выстраивать управляемый процесс: контролировать операции, ускорять
+            Rebit P2P Trader помогает не просто смотреть данные, а выстраивать управляемый процесс: контролировать операции, ускорять
             реакцию на события и уменьшать количество ручных ошибок.
           </p>
         </div>
@@ -395,9 +359,22 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
   padding-bottom: 32px;
 }
 
-.landing-page__hero-content {
+.landing-page__hero-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-page__hero-copy {
   max-width: 640px;
-  padding-bottom: 24px;
+}
+
+.landing-page__hero-copy {
+  padding-top: 8px;
+}
+
+.landing-page__hero-actions-wrap {
+  margin-top: auto;
+  padding-top: 24px;
 }
 
 .landing-page__hero-chip {
@@ -424,20 +401,7 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 28px;
-  padding-bottom: 8px;
-}
-
-.landing-page__hero-benefits {
-  display: grid;
-  gap: 12px;
-}
-
-.landing-page__hero-benefit {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  color: rgba(255, 255, 255, 0.86);
+  margin-bottom: 12px;
 }
 
 .landing-page__hero-panel {
@@ -620,8 +584,7 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
 .landing-page__feature-text,
 .landing-page__workflow-text,
 .landing-page__channels-text,
-.landing-page__quote-text,
-.landing-page__cta-text {
+.landing-page__quote-text {
   margin: 0;
   line-height: 1.7;
   color: rgba(15, 23, 42, 0.7);
@@ -717,11 +680,31 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
   }
 }
 
+@media (min-width: 960px) and (max-width: 1279px) {
+  .landing-page__hero-col--aside {
+    display: none;
+  }
+
+  .landing-page__hero-col--main {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .landing-page__hero-copy {
+    max-width: 760px;
+  }
+}
+
 @media (max-width: 959px) {
   .landing-page__hero-row {
     min-height: auto;
     padding-top: 24px;
     padding-bottom: 24px;
+  }
+
+  .landing-page__hero-actions-wrap {
+    margin-top: 0;
+    padding-top: 16px;
   }
 
   .landing-page__hero-panel-grid {

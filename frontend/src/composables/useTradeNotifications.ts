@@ -2,7 +2,7 @@ import { watch, ref } from 'vue';
 import type { Trade } from '@/api/exchange';
 
 const NOTIFICATION_SOUND_URL = '/sounds/new-trade.wav';
-const NOTIFICATION_TITLE = 'Rebit P2P';
+const NOTIFICATION_TITLE = 'Rebit P2P Trader';
 const MAX_TRACKED_TRADE_IDS = 200;
 
 let audioInstance: HTMLAudioElement | null = null;

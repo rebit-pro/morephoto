@@ -20,7 +20,7 @@ const PublicRoutes = {
       component: () => import('@/views/docs/DocumentationPage.vue'),
       meta: {
         title: 'Документация',
-        description: 'Руководство пользователя Rebit P2P: получение Bybit API-ключа, подключение и обзор разделов приложения.'
+        description: 'Руководство пользователя Rebit P2P Trader: получение Bybit API-ключа, подключение и обзор разделов приложения.'
       }
     },
     {
@@ -29,7 +29,7 @@ const PublicRoutes = {
       component: () => import('@/views/authentication/LoginPage.vue'),
       meta: {
         title: 'Вход',
-        description: 'Войдите в аккаунт Rebit P2P для доступа к торговле и управлению балансами.'
+        description: 'Войдите в аккаунт Rebit P2P Trader для доступа к торговле и управлению балансами.'
       }
     },
     {
@@ -38,7 +38,7 @@ const PublicRoutes = {
       component: () => import('@/views/authentication/RegisterPage.vue'),
       meta: {
         title: 'Регистрация',
-        description: 'Создайте аккаунт Rebit P2P и начните торговать криптовалютой на P2P-платформе.'
+        description: 'Создайте аккаунт Rebit P2P Trader и начните торговать криптовалютой на P2P-платформе.'
       }
     },
     {

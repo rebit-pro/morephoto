@@ -3,7 +3,13 @@ import { computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import PublicTopBar from '@/components/public/PublicTopBar.vue';
 
-const auth = useAuthStore();
+const isAuthenticated = computed(() => useAuthStore().isAuthenticated);
+const heroPrimaryLink = computed(() => (isAuthenticated.value ? '/profile/api-connection' : '/login'));
+const heroPrimaryLabel = computed(() => (isAuthenticated.value ? 'Перейти к API-подключению' : 'Войти и подключить API'));
+const tipsPrimaryLink = computed(() => (isAuthenticated.value ? '/dashboard' : '/register'));
+const tipsPrimaryLabel = computed(() => (isAuthenticated.value ? 'Открыть кабинет' : 'Создать аккаунт'));
+const tipsSecondaryLink = computed(() => (isAuthenticated.value ? '/profile/api-connection' : '/login'));
+const tipsSecondaryLabel = computed(() => (isAuthenticated.value ? 'Проверить API-подключение' : 'Войти'));
 
 const heroHighlights = [
   {
@@ -52,7 +58,7 @@ const apiSteps = [
   },
   {
     step: '02',
-    title: 'Создайте отдельный ключ под Rebit P2P',
+    title: 'Создайте отдельный ключ под Rebit P2P Trader',
     description: 'Не используйте общий ключ для других интеграций. Отдельный ключ проще контролировать, отзывать и проверять.'
   },
   {
@@ -157,8 +163,8 @@ const tips = [
                 начать работать со сделками, балансами, отчётами и уведомлениями.
               </p>
               <div class="documentation-page__hero-actions">
-                <v-btn class="documentation-page__responsive-button" color="secondary" variant="flat" rounded="xl" size="large" :to="auth.isAuthenticated ? '/profile/api-connection' : '/login'">
-                  {{ auth.isAuthenticated ? 'Перейти к API-подключению' : 'Войти и подключить API' }}
+                <v-btn class="documentation-page__responsive-button" color="secondary" variant="flat" rounded="xl" size="large" :to="heroPrimaryLink">
+                  {{ heroPrimaryLabel }}
                 </v-btn>
                 <v-btn class="documentation-page__responsive-button" color="white" variant="outlined" rounded="xl" size="large" to="/">
                   Вернуться на главную
@@ -333,11 +339,11 @@ const tips = [
               </div>
             </div>
             <div class="documentation-page__tips-actions">
-              <v-btn class="documentation-page__responsive-button" color="secondary" variant="flat" rounded="xl" size="large" :to="auth.isAuthenticated ? '/dashboard' : '/register'">
-                {{ auth.isAuthenticated ? 'Открыть кабинет' : 'Создать аккаунт' }}
+              <v-btn class="documentation-page__responsive-button" color="secondary" variant="flat" rounded="xl" size="large" :to="tipsPrimaryLink">
+                {{ tipsPrimaryLabel }}
               </v-btn>
-              <v-btn class="documentation-page__responsive-button" color="secondary" variant="outlined" rounded="xl" size="large" :to="auth.isAuthenticated ? '/profile/api-connection' : '/login'">
-                {{ auth.isAuthenticated ? 'Проверить API-подключение' : 'Войти' }}
+              <v-btn class="documentation-page__responsive-button" color="secondary" variant="outlined" rounded="xl" size="large" :to="tipsSecondaryLink">
+                {{ tipsSecondaryLabel }}
               </v-btn>
             </div>
           </v-card-text>
