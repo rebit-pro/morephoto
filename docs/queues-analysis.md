@@ -196,6 +196,157 @@ MESSENGER_TRANSPORT_DSN=amqp://rebit:__RABBITMQ_PASSWORD__@rabbitmq:5672/rebit
 
 После этого нужно заново опубликовать versioned Swarm config через `deploy/swarm-publish-runtime.sh` и повторить deploy с тем же новым `BUILD_NUMBER`.
 
+### 1.3. Повторная проверка production после очередного деплоя (`rebit-pro`)
+
+После следующего деплоя production-состояние снова изменилось.
+
+#### Актуальное состояние сервисов
+
+| Сервис | Состояние | Вывод |
+|--------|-----------|-------|
+| `site_api` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-api:c6f2eff3ca7c912cf7f45ddfd6dd4922cddff8f5` | обновился успешно |
+| `site_frontend` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-frontend:c6f2eff3ca7c912cf7f45ddfd6dd4922cddff8f5` | обновился успешно |
+| `site_api-php-fpm` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-api-php-fpm:c6f2eff3ca7c912cf7f45ddfd6dd4922cddff8f5` | работает на новом образе |
+| `site_api-cron` | `1/1`, образ `ghcr.io/rebit-pro/rebit-p2p-api-php-cli:c6f2eff3ca7c912cf7f45ddfd6dd4922cddff8f5` | работает на новом образе |
+| `site_api-trade-event-consumer` | `1/1` | сервис поднят |
+| `site_api-chat-script-consumer` | `1/1` | сервис поднят |
+| `site_api-balance-sync-consumer` | `1/1` | сервис поднят |
+| `site_api-identity-sync-consumer` | `1/1` | сервис поднят |
+| `site_api-audit-consumer` | `1/1` | сервис поднят |
+| `site_api-notification-consumer` | `0/1` | остаётся проблемным |
+
+#### Что подтверждено по runtime
+
+1. Внутри `site_api-cron` текущий `/app/public/.env` уже содержит корректный шаблонный DSN:
+
+```env
+MESSENGER_TRANSPORT_DSN=amqp://rebit:__RABBITMQ_PASSWORD__@rabbitmq:5672/rebit
+```
+
+2. В RabbitMQ на vhost `rebit` присутствуют очереди:
+
+- `tradeEvent`
+- `balanceSync`
+- `chatScriptStep`
+- `audit`
+- `identitySync`
+
+3. У пользователя `rebit` есть права на vhost `rebit`.
+
+#### Что остаётся проблемой
+
+`site_api-notification-consumer` продолжает падать, но теперь причина уже не AMQP и не entrypoint.
+
+Фактический лог контейнера:
+
+```text
+There are no commands defined in the "app:notification" namespace.
+```
+
+Дополнительная проверка production показала:
+
+- в runtime `bitrix-console list` нет команд `app:notification:*`;
+- модуль `rebit.notification` отсутствует в списке установленных Bitrix-модулей production БД (`b_module`);
+- при этом сервис `site_api-notification-consumer` в `docker-compose-production.yml` задекларирован и пытается запускаться.
+
+#### Текущий вывод по очередям
+
+На этом этапе:
+
+- ✅ `php-fpm`, `cron` и большинство consumer'ов стартуют на новых образах;
+- ✅ `MESSENGER_TRANSPORT_DSN` на production приведён к корректному виду;
+- ✅ RabbitMQ/vhost/permissions соответствуют ожиданиям;
+- ⚠️ `notification`-контур не работает, потому что модуль `rebit.notification` не установлен в production, а его consumer-сервис уже включён в stack;
+- ⚠️ по этой причине production-состояние очередей нельзя считать полностью зелёным.
+
+#### Что нужно сделать дальше
+
+Есть два допустимых пути:
+
+1. **Если `rebit.notification` уже должен работать в production** — установить модуль `rebit.notification` и повторно проверить регистрацию команд `app:notification:consume` и `app:notification:test-send`.
+2. **Если модуль ещё не готов для production** — временно убрать `site_api-notification-consumer` из production stack, чтобы не держать постоянно падающий сервис.
+
+#### Identity / статус API-подключения
+
+Повторная production-проверка также подтвердила, что проблема со статусом аккаунта теперь не в backend-переходах:
+
+- `GET /api/v1/identity/connection/status` успешно отвечает;
+- `POST /api/v1/identity/connection/verify` успешно отвечает;
+- в БД `rebit_api_connection` актуальная запись пользователя остаётся со статусом `invalid`;
+- при повторной верификации обновляется `UF_LAST_VERIFIED_AT`, но сам статус остаётся `invalid`.
+
+Это означает, что backend отрабатывает корректно, а текущий результат проверки — действительно невалидный Bybit API-ключ/секрет или неверные права ключа.
+
+### 1.4. Повторная проверка production после установки `rebit.notification`
+
+После дополнительной установки модуля `rebit.notification` на production состояние снова изменилось.
+
+#### Что подтвердилось
+
+1. В production БД модуль теперь установлен:
+
+```text
+rebit.notification
+```
+
+2. В текущем runtime `bitrix-console list` появились команды:
+
+- `app:notification:consume`
+- `app:notification:test-send`
+
+3. Сервис `site_api-notification-consumer` перешёл в состояние `Running`.
+
+#### Актуальный статус очередных сервисов
+
+На момент проверки одновременно работали:
+
+- `site_api-notification-consumer`
+- `site_api-trade-event-consumer`
+- `site_api-chat-script-consumer`
+- `site_api-balance-sync-consumer`
+- `site_api-identity-sync-consumer`
+- `site_api-audit-consumer`
+
+Таким образом, все consumer-сервисы из production stack уже поднимаются.
+
+#### RabbitMQ после установки `rebit.notification`
+
+Во vhost `rebit` присутствуют очереди:
+
+- `tradeEvent`
+- `notification`
+- `balanceSync`
+- `chatScriptStep`
+- `audit`
+- `identitySync`
+
+Дополнительно `rabbitmqctl list_connections` показывает активные AMQP-подключения пользователя `rebit` к vhost `rebit`.
+
+При этом `rabbitmqctl list_consumers -p rebit` и `list_channels` показывают `consumer_count = 0`.
+
+Для текущей реализации это не обязательно означает неисправность: Symfony Messenger transport в данной конфигурации работает через polling-воркеры, поэтому наличие открытых AMQP connections здесь важнее, чем наличие long-lived consumer registrations в `rabbitmqctl list_consumers`.
+
+#### Что видно по логам
+
+Текущий `site_api-notification-consumer` больше не падает с ошибкой namespace:
+
+```text
+[INFO] Запуск consumer notification (limit=100, time-limit=300 сек)
+```
+
+Старые падения `There are no commands defined in the "app:notification" namespace` относятся к состоянию **до** установки модуля `rebit.notification`.
+
+#### Актуальный вывод по очередям
+
+На этом этапе production-состояние очередной инфраструктуры стало существенно лучше:
+
+- ✅ `php-fpm`, `cron` и все consumer-сервисы запускаются на новых образах;
+- ✅ `MESSENGER_TRANSPORT_DSN` исправлен и соответствует RabbitMQ/vhost `rebit`;
+- ✅ модуль `rebit.notification` установлен, а `notification` consumer-команда зарегистрирована в runtime;
+- ✅ RabbitMQ принимает подключения worker'ов;
+- ⚠️ очереди пока пустые (`messages = 0`), поэтому бизнес-обработку нужно подтверждать уже публикацией тестовых/боевых сообщений;
+- ⚠️ статус Bybit API-подключения пользователя по-прежнему остаётся `invalid` и не связан с состоянием очередной инфраструктуры.
+
 ---
 
 ## 2. Где очереди полезны
