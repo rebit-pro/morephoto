@@ -122,6 +122,80 @@ ssh rebit-pro 'docker exec site_rabbitmq.1.p5hcdy6yjo9x7g4y20tgo2svl rabbitmqctl
 - все `php-cli` consumer'ы и cron упали на entrypoint ещё до старта приложения;
 - следовательно, очереди и новые test/consumer команды сейчас не обслуживаются.
 
+### 1.2. Повторная проверка production после деплоя (`rebit-pro`)
+
+После следующего деплоя entrypoint-ошибка `Bad substitution` устранена: новые образы `php-fpm` и `php-cli` начали стартовать корректно.
+
+#### Что стало лучше
+
+| Сервис | Состояние после повторной проверки | Вывод |
+|--------|------------------------------------|-------|
+| `site_api` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-api:e8264020a448bc2d097c421833ecdd9cea0f105f` | обновился успешно |
+| `site_frontend` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-frontend:e8264020a448bc2d097c421833ecdd9cea0f105f` | обновился успешно |
+| `site_api-php-fpm` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-api-php-fpm:e8264020a448bc2d097c421833ecdd9cea0f105f` | rollout нового php-fpm теперь успешный |
+| `site_api-cron` | `1/1`, образ `ghcr.io/rebit-pro/rebit-p2p-api-php-cli:e8264020a448bc2d097c421833ecdd9cea0f105f` | стартует и выполняет cron-задачи |
+
+Лог `site_api-cron` подтверждает, что контейнер живой и команды выполняются:
+
+- `app:exchange:sync-order-book`
+- `app:exchange:sync-trades`
+- `app:exchange:execute-chat-scripts`
+- `app:exchange:clean-stale-orders`
+- `app:wallet:sync-balances`
+
+#### Что всё ещё сломано
+
+Consumer'ы очередей продолжают падать, но уже **не на entrypoint**, а на попытке AMQP-подключения:
+
+```text
+[ERROR] Ошибка: Could not connect to the AMQP server. Please verify the provided DSN.
+```
+
+`docker service ps` показывает для consumer'ов `exit code 1`, а не прежний `exit code 2`.
+
+#### Новая корневая причина
+
+Проблема теперь в production-конфиге `/srv/rebit-p2p/swarm/backend.env`.
+
+Фактическое значение на сервере:
+
+```env
+MESSENGER_TRANSPORT_DSN=amqp://rebit:947UyXXa85a-@rabbitmq
+```
+
+То же значение попадает и в versioned Docker config `rebit_backend_env_200`, а затем в `/app/public/.env` контейнеров.
+
+Это значение некорректно, потому что в нём отсутствуют как минимум:
+
+- порт `:5672`
+- vhost `/rebit`
+
+Из-за этого:
+
+1. RabbitMQ поднят и пользователь `rebit`/vhost `rebit` существуют;
+2. `php-cli` контейнеры стартуют;
+3. consumer'ы не могут подключиться к AMQP и завершаются с `exit code 1`;
+4. очереди в vhost `rebit` не обслуживаются и consumer'ов нет.
+
+#### Актуальный вывод
+
+На production после повторного деплоя:
+
+- ✅ исправлен shell-bug в entrypoint;
+- ✅ `site_api-php-fpm` и `site_api-cron` работают на новых образах;
+- ❌ инфраструктура очередей всё ещё не работает из-за неверного `MESSENGER_TRANSPORT_DSN` в server-side `backend.env`;
+- ❌ consumer'ы не поднимаются до исправления DSN.
+
+#### Что нужно исправить на сервере
+
+В `/srv/rebit-p2p/swarm/backend.env` необходимо привести `MESSENGER_TRANSPORT_DSN` к полному корректному виду, например:
+
+```env
+MESSENGER_TRANSPORT_DSN=amqp://rebit:__RABBITMQ_PASSWORD__@rabbitmq:5672/rebit
+```
+
+После этого нужно заново опубликовать versioned Swarm config через `deploy/swarm-publish-runtime.sh` и повторить deploy с тем же новым `BUILD_NUMBER`.
+
 ---
 
 ## 2. Где очереди полезны
