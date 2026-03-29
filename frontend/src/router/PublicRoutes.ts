@@ -11,7 +11,16 @@ const PublicRoutes = {
       component: () => import('@/views/home/HomePage.vue'),
       meta: {
         title: 'Главная',
-        description: 'Rebit P2P — платформа для безопасной P2P-торговли криптовалютой. Обмен USDT по лучшим курсам.'
+        description: 'Rebit P2P Trader — единое рабочее пространство для P2P-сделок, балансов, сигналов безопасности и отчётов по прибыли.'
+      }
+    },
+    {
+      name: 'Documentation',
+      path: '/documentation',
+      component: () => import('@/views/docs/DocumentationPage.vue'),
+      meta: {
+        title: 'Документация',
+        description: 'Руководство пользователя Rebit P2P: получение Bybit API-ключа, подключение и обзор разделов приложения.'
       }
     },
     {

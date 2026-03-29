@@ -19,12 +19,12 @@ export const router = createRouter({
   ]
 });
 
-const publicPages = ['/', '/login', '/register', '/error'];
+const publicPages = ['/', '/documentation', '/login', '/register', '/error'];
 
 router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore();
   const isPublicPage = publicPages.includes(to.path);
-  const authRequired = !isPublicPage && to.matched.some((record) => record.meta.requiresAuth);
+  const authRequired = !isPublicPage && to.matched.some((record) => true === record.meta['requiresAuth']);
 
   if (authRequired && !auth.isAuthenticated) {
     auth.returnUrl = to.fullPath;

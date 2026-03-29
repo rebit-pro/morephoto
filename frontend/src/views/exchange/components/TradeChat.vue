@@ -357,11 +357,14 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .trade-chat {
-  border: 1px solid rgba(var(--v-theme-borderLight), 0.14);
+  border: 1px solid rgba(15, 23, 42, 0.12);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
 }
 
 .trade-chat__header {
@@ -369,10 +372,11 @@ onUnmounted(() => {
 }
 
 .trade-chat__messages {
-  height: 420px;
+  flex: 1 1 auto;
+  min-height: 420px;
   overflow-y: auto;
   scroll-behavior: smooth;
-  background: rgb(var(--v-theme-gray100));
+  background: #f5f7fb;
 }
 
 .trade-chat__bubble {
@@ -384,7 +388,7 @@ onUnmounted(() => {
 
 /* Мои сообщения — справа, secondary */
 .trade-chat__bubble--user {
-  background: rgb(var(--v-theme-secondary));
+  background: #5e35b1;
   color: #fff;
   border-bottom-right-radius: 2px;
 
@@ -399,18 +403,18 @@ onUnmounted(() => {
 
 /* Скрипт — чуть отличающийся оттенок */
 .trade-chat__bubble--script {
-  background: rgb(var(--v-theme-info));
+  background: #03c9d7;
 }
 
 /* Контрагент — слева, светлый */
 .trade-chat__bubble--counterparty {
-  background: rgb(var(--v-theme-surface));
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-bottom-left-radius: 2px;
-  color: rgb(var(--v-theme-on-surface));
+  color: #0f172a;
 
   .trade-chat__time {
-    color: rgba(var(--v-theme-on-surface), 0.45);
+    color: rgba(15, 23, 42, 0.45);
   }
 }
 
@@ -446,11 +450,11 @@ onUnmounted(() => {
 }
 
 .trade-chat__attachment-bar {
-  background: rgba(var(--v-theme-secondary), 0.06);
-  border: 1px solid rgba(var(--v-theme-secondary), 0.12);
+  background: rgba(94, 53, 177, 0.06);
+  border: 1px solid rgba(94, 53, 177, 0.12);
 }
 
 .trade-chat__input {
-  background: rgb(var(--v-theme-surface));
+  background: #ffffff;
 }
 </style>

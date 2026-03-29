@@ -5,7 +5,7 @@ import { useTradesStore } from '@/stores/trades';
 import { useExchangeStore } from '@/stores/exchange';
 import { usePolling } from '@/composables/usePolling';
 import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
-import type { Trade } from '@/api/exchange';
+import type { CounterpartyInfo, Trade } from '@/api/exchange';
 import TradeChat from './components/TradeChat.vue';
 import TradeCountdown from './components/TradeCountdown.vue';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
@@ -16,6 +16,37 @@ const router = useRouter();
 const trades = useTradesStore();
 const exchange = useExchangeStore();
 const { formatRub, formatNumber, formatDate } = useCurrencyFormat();
+
+const emptyCounterparty: CounterpartyInfo = {
+  nickName: '',
+  realName: '',
+  realNameEn: '',
+  isOnline: false,
+  kycLevel: 0,
+  kycCountryCode: '',
+  email: '',
+  mobile: '',
+  totalFinishCount: 0,
+  totalFinishBuyCount: 0,
+  totalFinishSellCount: 0,
+  recentFinishCount: 0,
+  recentRate: 0,
+  averageReleaseTime: '',
+  averageTransferTime: '',
+  accountCreateDays: 0,
+  firstTradeDays: 0,
+  recentTradeAmount: '',
+  totalTradeAmount: '',
+  goodAppraiseRate: '',
+  goodAppraiseCount: 0,
+  badAppraiseCount: 0,
+  authStatus: 0,
+  blocked: '',
+  vipLevel: 0
+};
+
+const hasCounterparty = computed(() => null !== trades.counterpartyInfo);
+const counterpartyData = computed<CounterpartyInfo>(() => trades.counterpartyInfo ?? emptyCounterparty);
 
 const tradeId = computed(() => Number(route.params.id));
 
@@ -31,11 +62,9 @@ const currencyPairLabel = computed(() => {
   return pair?.label ?? null;
 });
 
-const counterparty = computed(() => trades.counterpartyInfo);
-
 const kycLevelLabel = computed(() => {
-  if (null === counterparty.value) return '';
-  return match(counterparty.value.kycLevel, {
+  if (!hasCounterparty.value) return '';
+  return match(counterpartyData.value.kycLevel, {
     0: 'Нет KYC',
     1: 'Базовый (Lv.1)',
     2: 'Продвинутый (Lv.2)',
@@ -206,137 +235,9 @@ onUnmounted(() => {
         </v-chip>
       </div>
 
-      <v-row>
-        <!-- Контрагент -->
-        <v-col cols="12" md="7">
-          <!-- Профиль контрагента -->
-          <UiParentCard
-            v-if="null !== counterparty"
-            title="Контрагент"
-            subtitle="Профиль на Bybit"
-            icon="mdi-account-box-outline"
-            color="secondary"
-            class="mb-4"
-          >
-            <v-card-text class="pa-5">
-              <div class="d-flex align-center ga-3 mb-4">
-                <v-avatar size="48" color="secondary" variant="tonal">
-                  <span class="text-h6 font-weight-bold">{{ counterparty.nickName.charAt(0).toUpperCase() }}</span>
-                </v-avatar>
-                <div>
-                  <div class="text-subtitle-1 font-weight-bold">{{ counterparty.nickName }}</div>
-                  <div class="d-flex align-center ga-2">
-                    <v-chip :color="counterparty.isOnline ? 'success' : 'grey'" variant="tonal" size="x-small">
-                      {{ counterparty.isOnline ? 'Онлайн' : 'Офлайн' }}
-                    </v-chip>
-                    <v-chip v-if="0 < counterparty.vipLevel" color="warning" variant="tonal" size="x-small">
-                      VIP {{ counterparty.vipLevel }}
-                    </v-chip>
-                  </div>
-                </div>
-              </div>
-
-              <v-list density="compact" class="pa-0">
-                <v-list-item v-if="'' !== counterparty.realName">
-                  <template #prepend><v-icon size="18" color="secondary">mdi-card-account-details-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">ФИО</v-list-item-title>
-                  <template #append>
-                    <span class="font-weight-medium text-body-2">{{ counterparty.realName }}</span>
-                  </template>
-                </v-list-item>
-
-                <v-list-item>
-                  <template #prepend><v-icon size="18" color="secondary">mdi-shield-check-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">KYC</v-list-item-title>
-                  <template #append>
-                    <v-chip size="x-small" variant="tonal" :color="2 <= counterparty.kycLevel ? 'success' : 'warning'">
-                      {{ kycLevelLabel }}
-                    </v-chip>
-                  </template>
-                </v-list-item>
-
-                <v-list-item v-if="'' !== counterparty.kycCountryCode">
-                  <template #prepend><v-icon size="18" color="secondary">mdi-earth</v-icon></template>
-                  <v-list-item-title class="text-body-2">Страна KYC</v-list-item-title>
-                  <template #append>
-                    <span class="font-weight-medium text-body-2">{{ counterparty.kycCountryCode }}</span>
-                  </template>
-                </v-list-item>
-
-                <v-list-item v-if="'' !== counterparty.email">
-                  <template #prepend><v-icon size="18" color="secondary">mdi-email-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">Email</v-list-item-title>
-                  <template #append>
-                    <span class="text-body-2 text-medium-emphasis">{{ counterparty.email }}</span>
-                  </template>
-                </v-list-item>
-
-                <v-list-item v-if="'' !== counterparty.mobile">
-                  <template #prepend><v-icon size="18" color="secondary">mdi-phone-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">Телефон</v-list-item-title>
-                  <template #append>
-                    <span class="text-body-2 text-medium-emphasis">{{ counterparty.mobile }}</span>
-                  </template>
-                </v-list-item>
-              </v-list>
-
-              <v-divider class="my-3" />
-
-              <div class="text-caption font-weight-bold text-medium-emphasis mb-2">СТАТИСТИКА СДЕЛОК</div>
-              <div class="d-flex flex-wrap ga-2">
-                <v-chip size="small" variant="tonal" color="default" prepend-icon="mdi-check-all">{{ counterparty.totalFinishCount }} сделок</v-chip>
-                <v-chip size="small" variant="tonal" color="success" prepend-icon="mdi-arrow-down-bold">{{ counterparty.totalFinishBuyCount }} покупок</v-chip>
-                <v-chip size="small" variant="tonal" color="error" prepend-icon="mdi-arrow-up-bold">{{ counterparty.totalFinishSellCount }} продаж</v-chip>
-                <v-chip size="small" variant="tonal" color="info" prepend-icon="mdi-calendar-month">{{ counterparty.recentRate }}% за 30д</v-chip>
-              </div>
-
-              <v-divider class="my-3" />
-
-              <div class="text-caption font-weight-bold text-medium-emphasis mb-2">РЕЙТИНГ И СКОРОСТЬ</div>
-              <v-list density="compact" class="pa-0">
-                <v-list-item>
-                  <template #prepend><v-icon size="18" color="success">mdi-thumb-up-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">Положительные отзывы</v-list-item-title>
-                  <template #append>
-                    <span class="font-weight-medium text-body-2">{{ counterparty.goodAppraiseCount }} ({{ counterparty.goodAppraiseRate }}%)</span>
-                  </template>
-                </v-list-item>
-                <v-list-item>
-                  <template #prepend><v-icon size="18" color="error">mdi-thumb-down-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">Отрицательные отзывы</v-list-item-title>
-                  <template #append>
-                    <span class="font-weight-medium text-body-2">{{ counterparty.badAppraiseCount }}</span>
-                  </template>
-                </v-list-item>
-                <v-list-item>
-                  <template #prepend><v-icon size="18" color="info">mdi-timer-outline</v-icon></template>
-                  <v-list-item-title class="text-body-2">Ср. время оплаты</v-list-item-title>
-                  <template #append>
-                    <span class="text-body-2">{{ counterparty.averageTransferTime }} мин</span>
-                  </template>
-                </v-list-item>
-                <v-list-item>
-                  <template #prepend><v-icon size="18" color="info">mdi-clock-fast</v-icon></template>
-                  <v-list-item-title class="text-body-2">Ср. время выпуска</v-list-item-title>
-                  <template #append>
-                    <span class="text-body-2">{{ counterparty.averageReleaseTime }} мин</span>
-                  </template>
-                </v-list-item>
-                <v-list-item>
-                  <template #prepend><v-icon size="18" color="secondary">mdi-calendar-clock</v-icon></template>
-                  <v-list-item-title class="text-body-2">Аккаунт создан</v-list-item-title>
-                  <template #append>
-                    <span class="text-body-2">{{ counterparty.accountCreateDays }} дн. назад</span>
-                  </template>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </UiParentCard>
-        </v-col>
-
-        <!-- Информация + Таймер + Действия -->
-        <v-col cols="12" md="5">
-          <UiParentCard title="Информация" subtitle="Детали текущей сделки" icon="mdi-information-outline" color="primary">
+      <v-row class="trade-detail-layout" align="stretch">
+        <v-col cols="12" md="5" class="trade-detail-layout__left">
+          <UiParentCard title="Информация о сделке" subtitle="Детали текущей сделки" icon="mdi-information-outline" color="primary">
             <v-card-text class="pa-5">
               <v-list density="compact" class="pa-0">
                 <v-list-item>
@@ -398,27 +299,158 @@ onUnmounted(() => {
                   </template>
                 </v-list-item>
               </v-list>
+
+              <div v-if="showCountdown">
+                <v-divider class="my-4" />
+                <TradeCountdown :deadline="trades.currentTrade['paymentDeadline']!" :total-seconds="900" />
+              </div>
             </v-card-text>
           </UiParentCard>
 
-          <!-- Таймер обратного отсчёта -->
-          <TradeCountdown
-            v-if="showCountdown"
-            :deadline="trades.currentTrade['paymentDeadline']!"
-            :total-seconds="900"
-            class="mt-4"
-          />
-
-
-          <!-- Действия -->
-          <v-card class="trade-actions mt-4" rounded="lg">
+          <UiParentCard title="Информация о пользователе" subtitle="Профиль контрагента на Bybit" icon="mdi-account-box-outline" color="secondary">
             <v-card-text class="pa-5">
-              <div class="d-flex flex-column ga-3">
+              <template v-if="hasCounterparty">
+                <div class="d-flex align-center ga-3 mb-4">
+                  <v-avatar size="48" color="secondary" variant="tonal">
+                    <span class="text-h6 font-weight-bold">{{ counterpartyData.nickName.charAt(0).toUpperCase() }}</span>
+                  </v-avatar>
+                  <div>
+                    <div class="text-subtitle-1 font-weight-bold">{{ counterpartyData.nickName }}</div>
+                    <div class="d-flex align-center ga-2">
+                      <v-chip :color="counterpartyData.isOnline ? 'success' : 'grey'" variant="tonal" size="x-small">
+                        {{ counterpartyData.isOnline ? 'Онлайн' : 'Офлайн' }}
+                      </v-chip>
+                      <v-chip v-if="0 < counterpartyData.vipLevel" color="warning" variant="tonal" size="x-small">
+                        VIP {{ counterpartyData.vipLevel }}
+                      </v-chip>
+                    </div>
+                  </div>
+                </div>
+
+                <v-list density="compact" class="pa-0">
+                  <v-list-item v-if="'' !== counterpartyData.realName">
+                    <template #prepend><v-icon size="18" color="secondary">mdi-card-account-details-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">ФИО</v-list-item-title>
+                    <template #append>
+                      <span class="font-weight-medium text-body-2">{{ counterpartyData.realName }}</span>
+                    </template>
+                  </v-list-item>
+
+                  <v-list-item>
+                    <template #prepend><v-icon size="18" color="secondary">mdi-shield-check-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">KYC</v-list-item-title>
+                    <template #append>
+                      <v-chip size="x-small" variant="tonal" :color="2 <= counterpartyData.kycLevel ? 'success' : 'warning'">
+                        {{ kycLevelLabel }}
+                      </v-chip>
+                    </template>
+                  </v-list-item>
+
+                  <v-list-item v-if="'' !== counterpartyData.kycCountryCode">
+                    <template #prepend><v-icon size="18" color="secondary">mdi-earth</v-icon></template>
+                    <v-list-item-title class="text-body-2">Страна KYC</v-list-item-title>
+                    <template #append>
+                      <span class="font-weight-medium text-body-2">{{ counterpartyData.kycCountryCode }}</span>
+                    </template>
+                  </v-list-item>
+
+                  <v-list-item v-if="'' !== counterpartyData.email">
+                    <template #prepend><v-icon size="18" color="secondary">mdi-email-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">Email</v-list-item-title>
+                    <template #append>
+                      <span class="text-body-2 text-medium-emphasis">{{ counterpartyData.email }}</span>
+                    </template>
+                  </v-list-item>
+
+                  <v-list-item v-if="'' !== counterpartyData.mobile">
+                    <template #prepend><v-icon size="18" color="secondary">mdi-phone-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">Телефон</v-list-item-title>
+                    <template #append>
+                      <span class="text-body-2 text-medium-emphasis">{{ counterpartyData.mobile }}</span>
+                    </template>
+                  </v-list-item>
+                </v-list>
+
+                <v-divider class="my-3" />
+
+                <div class="text-caption font-weight-bold text-medium-emphasis mb-2">СТАТИСТИКА СДЕЛОК</div>
+                <div class="d-flex flex-wrap ga-2">
+                  <v-chip size="small" variant="tonal" color="default" prepend-icon="mdi-check-all">{{ counterpartyData.totalFinishCount }} сделок</v-chip>
+                  <v-chip size="small" variant="tonal" color="success" prepend-icon="mdi-arrow-down-bold">{{ counterpartyData.totalFinishBuyCount }} покупок</v-chip>
+                  <v-chip size="small" variant="tonal" color="error" prepend-icon="mdi-arrow-up-bold">{{ counterpartyData.totalFinishSellCount }} продаж</v-chip>
+                  <v-chip size="small" variant="tonal" color="info" prepend-icon="mdi-calendar-month">{{ counterpartyData.recentRate }}% за 30д</v-chip>
+                </div>
+
+                <v-divider class="my-3" />
+
+                <div class="text-caption font-weight-bold text-medium-emphasis mb-2">РЕЙТИНГ И СКОРОСТЬ</div>
+                <v-list density="compact" class="pa-0">
+                  <v-list-item>
+                    <template #prepend><v-icon size="18" color="success">mdi-thumb-up-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">Положительные отзывы</v-list-item-title>
+                    <template #append>
+                      <span class="font-weight-medium text-body-2">{{ counterpartyData.goodAppraiseCount }} ({{ counterpartyData.goodAppraiseRate }}%)</span>
+                    </template>
+                  </v-list-item>
+                  <v-list-item>
+                    <template #prepend><v-icon size="18" color="error">mdi-thumb-down-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">Отрицательные отзывы</v-list-item-title>
+                    <template #append>
+                      <span class="font-weight-medium text-body-2">{{ counterpartyData.badAppraiseCount }}</span>
+                    </template>
+                  </v-list-item>
+                  <v-list-item>
+                    <template #prepend><v-icon size="18" color="info">mdi-timer-outline</v-icon></template>
+                    <v-list-item-title class="text-body-2">Ср. время оплаты</v-list-item-title>
+                    <template #append>
+                      <span class="text-body-2">{{ counterpartyData.averageTransferTime }} мин</span>
+                    </template>
+                  </v-list-item>
+                  <v-list-item>
+                    <template #prepend><v-icon size="18" color="info">mdi-clock-fast</v-icon></template>
+                    <v-list-item-title class="text-body-2">Ср. время выпуска</v-list-item-title>
+                    <template #append>
+                      <span class="text-body-2">{{ counterpartyData.averageReleaseTime }} мин</span>
+                    </template>
+                  </v-list-item>
+                  <v-list-item>
+                    <template #prepend><v-icon size="18" color="secondary">mdi-calendar-clock</v-icon></template>
+                    <v-list-item-title class="text-body-2">Аккаунт создан</v-list-item-title>
+                    <template #append>
+                      <span class="text-body-2">{{ counterpartyData.accountCreateDays }} дн. назад</span>
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </template>
+
+              <div v-else class="trade-detail-layout__user-placeholder">
+                <v-progress-circular indeterminate color="secondary" size="28" />
+                <div>
+                  <div class="text-subtitle-1 font-weight-bold mb-2">Информация о пользователе загружается</div>
+                  <p class="text-body-2 text-medium-emphasis mb-0">
+                    Профиль контрагента, показатели безопасности и статистика сделок появятся здесь сразу после загрузки данных.
+                  </p>
+                </div>
+              </div>
+            </v-card-text>
+          </UiParentCard>
+        </v-col>
+
+        <v-col cols="12" md="7" class="d-flex">
+          <TradeChat class="trade-detail-layout__chat" :trade-id="tradeId" :readonly="isChatReadonly" />
+        </v-col>
+      </v-row>
+
+      <v-row class="mt-2">
+        <v-col cols="12">
+          <v-card class="trade-actions" rounded="lg">
+            <v-card-text class="pa-5">
+              <div class="trade-actions__buttons">
                 <v-btn
                   v-if="canConfirmPayment"
+                  class="trade-actions__button"
                   color="secondary"
                   variant="flat"
-                  block
                   size="large"
                   rounded="lg"
                   elevation="2"
@@ -431,9 +463,9 @@ onUnmounted(() => {
 
                 <v-btn
                   v-if="canRelease"
+                  class="trade-actions__button"
                   color="success"
                   variant="flat"
-                  block
                   size="large"
                   rounded="lg"
                   elevation="2"
@@ -446,8 +478,8 @@ onUnmounted(() => {
 
                 <v-btn
                   v-if="canOpenAdvertisement"
+                  class="trade-actions__button"
                   variant="outlined"
-                  block
                   size="large"
                   rounded="lg"
                   prepend-icon="mdi-bullhorn-outline"
@@ -456,26 +488,12 @@ onUnmounted(() => {
                   Открыть объявление
                 </v-btn>
 
-                <v-btn
-                  variant="outlined"
-                  block
-                  size="large"
-                  rounded="lg"
-                  prepend-icon="mdi-open-in-new"
-                  @click="openBybitTradePage"
-                >
+                <v-btn class="trade-actions__button" variant="outlined" size="large" rounded="lg" prepend-icon="mdi-open-in-new" @click="openBybitTradePage">
                   Перейти на Bybit
                 </v-btn>
               </div>
             </v-card-text>
           </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Чат на всю ширину -->
-      <v-row class="mt-2">
-        <v-col cols="12">
-          <TradeChat :trade-id="tradeId" :readonly="isChatReadonly" />
         </v-col>
       </v-row>
     </template>
@@ -536,8 +554,45 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
+.trade-detail-layout__left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trade-detail-layout__chat {
+  width: 100%;
+  height: 100%;
+}
+
+.trade-detail-layout__user-placeholder {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-height: 220px;
+  padding-top: 8px;
+}
+
 .trade-actions {
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.trade-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.trade-actions__button {
+  min-width: 220px;
+}
+
+@media (max-width: 767px) {
+  .trade-actions__button {
+    width: 100%;
+    min-width: 0;
+  }
 }
 </style>
