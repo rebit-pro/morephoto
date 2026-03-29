@@ -235,22 +235,31 @@ function connectionStateText(): string {
   }
 
   if (identity.isConnected) {
-    return 'Подключение требует внимания';
+    return identity.statusLabel ?? 'Подключение требует внимания';
   }
 
   return 'API не подключён';
 }
 
 function connectionStateColor(): string {
-  if (identity.hasActiveConnection) {
-    return 'success';
+  const connectionStatus = identity.connectionStatus;
+
+  if (null === connectionStatus) {
+    return identity.isConnected ? 'warning' : 'error';
   }
 
-  if (identity.isConnected) {
-    return 'warning';
+  switch (connectionStatus['status']) {
+    case 'active':
+      return 'success';
+    case 'pending_verification':
+      return 'info';
+    case 'invalid':
+      return 'warning';
+    case 'revoked':
+      return 'error';
+    default:
+      return identity.isConnected ? 'warning' : 'error';
   }
-
-  return 'error';
 }
 
 async function loadDashboard(): Promise<void> {

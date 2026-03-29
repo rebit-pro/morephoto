@@ -39,6 +39,89 @@
 | `MESSENGER_TRANSPORT_DSN` | ✅ Прокинут в `api-php-fpm`, `api-php-cli`, `api-cron` и consumer-контейнеры |
 | Consumer-контейнеры | ✅ Есть отдельные сервисы под очереди |
 
+### 1.1. Production-аудит от 2026-03-29 (`rebit-pro`)
+
+Проверка выполнена напрямую на production-хосте `rebit-pro` (Docker Swarm stack `site`).
+
+#### Актуальное состояние сервисов
+
+| Сервис | Факт на production | Вывод |
+|--------|---------------------|-------|
+| `site_api` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-api:96c2ffbb04a80162e2451a8d21955737eba42642` | HTTP-слой обновился до текущего release `site_198` |
+| `site_frontend` | `2/2`, образ `ghcr.io/rebit-pro/rebit-p2p-frontend:96c2ffbb04a80162e2451a8d21955737eba42642` | Frontend обновился |
+| `site_api-php-fpm` | `2/2`, но фактически остался на старом образе `ghcr.io/rebit-pro/rebit-p2p-api-php-fpm:fe29b17d4b171d0efef2b0b7f0c2905c5ae23310` | rollout нового php-fpm не состоялся, Swarm откатил сервис |
+| `site_api-cron` | `0/1`, образ `ghcr.io/rebit-pro/rebit-p2p-api-php-cli:96c2ffbb04a80162e2451a8d21955737eba42642` | cron не работает |
+| `site_api-*-consumer` | все `0/1`, тот же образ `rebit-p2p-api-php-cli:96c2ffbb04a80162e2451a8d21955737eba42642` | ни один consumer не работает |
+| `site_rabbitmq` | `1/1`, `rabbitmq:3.13-management-alpine` | брокер поднят, но без рабочих consumer'ов |
+
+#### Корневая причина падения php-cli / php-fpm новых образов
+
+Во всех новых `php-cli`/`php-fpm` контейнерах воспроизводится один и тот же фатальный стартовый сбой:
+
+```text
+/usr/local/bin/docker-entrypoint.sh: 23: Bad substitution
+```
+
+Причина — в `api/docker/common/php/docker-entrypoint.sh` использована bash-подстановка:
+
+```sh
+${MESSENGER_TRANSPORT_DSN//__RABBITMQ_PASSWORD__/$RABBITMQ_SECRET_PASSWORD_ENCODED}
+```
+
+Но entrypoint запускается под `#!/bin/sh`, а в production-образах это `dash`, который такую подстановку не поддерживает.
+
+Следствия:
+
+1. новый `site_api-php-fpm` не стартует и откатывается на старый образ;
+2. `site_api-cron` не стартует совсем;
+3. все queue-consumer сервисы падают с exit code `2`;
+4. очередь сообщений на production фактически не обслуживается.
+
+#### Фактическое состояние очередной инфраструктуры
+
+- `rabbitmqctl list_queues ...` на production не показал рабочих очередей с consumer'ами на момент проверки;
+- через рабочий контейнер старого `site_api-php-fpm` команда `php /app/public/local/bin/bitrix-console list` показывает только legacy cron-команды (`sync-order-book`, `sync-trades`, `execute-chat-scripts`, `sync-balances`, `sync-trade-history`) и общий `messenger:consume`;
+- специализированные команды consumer'ов и test-команды из нового кода на production сейчас недоступны, потому что рабочий runtime остаётся на старом `php-fpm`, а новый `php-cli` не может стартовать.
+
+#### Что есть в коде, но не работает в текущем production runtime
+
+В репозитории уже присутствуют отдельные consumer/test-команды:
+
+- `app:notification:consume`
+- `app:exchange:trade-event:consume`
+- `app:exchange:chat-script:consume`
+- `app:wallet:balance-sync:consume`
+- `app:identity:sync:consume`
+- `app:audit:consume`
+- `app:notification:test-send`
+- `app:exchange:trade-event:test`
+- `app:exchange:chat-script:test`
+- `app:wallet:balance-sync:test`
+- `app:identity:sync:test`
+- `app:audit:test`
+
+На production их нельзя считать работоспособными до исправления entrypoint и успешного выката актуальных `php-cli`/`php-fpm` образов.
+
+#### Безопасные команды диагностики для production
+
+```bash
+ssh rebit-pro 'docker stack services site'
+ssh rebit-pro 'docker service ps site_api-cron --no-trunc'
+ssh rebit-pro 'docker service ps site_api-notification-consumer --no-trunc'
+ssh rebit-pro 'docker logs $(docker ps -a --filter name=site_api-notification-consumer --format "{{.Names}}" | head -n 1) 2>&1 | tail -n 20'
+ssh rebit-pro 'docker exec site_rabbitmq.1.p5hcdy6yjo9x7g4y20tgo2svl rabbitmqctl list_queues name messages consumers'
+```
+
+#### Итог по production на 2026-03-29
+
+Инфраструктура очередей **задекларирована и частично развернута**, но **не функционирует в runtime**:
+
+- RabbitMQ поднят;
+- release `site_198` переключил `frontend` и `api`;
+- `php-fpm` не обновился на новый образ;
+- все `php-cli` consumer'ы и cron упали на entrypoint ещё до старта приложения;
+- следовательно, очереди и новые test/consumer команды сейчас не обслуживаются.
+
 ---
 
 ## 2. Где очереди полезны

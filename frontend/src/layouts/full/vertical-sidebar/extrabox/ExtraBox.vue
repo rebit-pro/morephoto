@@ -4,10 +4,34 @@ import { computed } from 'vue';
 
 const identity = useIdentityStore();
 
-const statusText = computed(() =>
-  identity.hasActiveConnection ? 'Активный ключ' : identity.isConnected ? 'Требует проверки' : 'Не подключён'
-);
-const statusColor = computed(() => (identity.hasActiveConnection ? 'success' : identity.isConnected ? 'info' : 'warning'));
+const statusText = computed(() => {
+  if (!identity.isConnected) {
+    return 'Не подключён';
+  }
+
+  return identity.statusLabel ?? 'Требует проверки';
+});
+
+const statusColor = computed(() => {
+  const status = identity.connectionStatus?.status;
+
+  if (!identity.isConnected) {
+    return 'warning';
+  }
+
+  switch (status) {
+    case 'active':
+      return 'success';
+    case 'invalid':
+      return 'error';
+    case 'pending_verification':
+      return 'info';
+    case 'revoked':
+      return 'warning';
+    default:
+      return 'info';
+  }
+});
 </script>
 
 <template>

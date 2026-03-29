@@ -18,6 +18,40 @@ const { txLabel, txColor } = useTransactionLabels();
 const activeTab = ref('balances');
 const userEmail = computed(() => auth.user?.['email'] ?? '');
 
+const identityCardTitle = computed(() => {
+  if (!identity.isConnected) {
+    return 'API не подключён';
+  }
+
+  return identity.hasActiveConnection ? 'API подключён' : 'API требует внимания';
+});
+
+const identityCardSubtitle = computed(() => {
+  if (!identity.isConnected) {
+    return 'Подключите Bybit API для начала торговли';
+  }
+
+  return identity.hasActiveConnection
+    ? 'Bybit API активен и готов к работе'
+    : `Текущий статус: ${identity.statusLabel ?? 'требует проверки'}`;
+});
+
+const identityCardIcon = computed(() => {
+  if (!identity.isConnected) {
+    return 'mdi-link-variant-off';
+  }
+
+  return identity.hasActiveConnection ? 'mdi-shield-check-outline' : 'mdi-alert-outline';
+});
+
+const identityCardColor = computed(() => {
+  if (!identity.isConnected) {
+    return 'warning';
+  }
+
+  return identity.hasActiveConnection ? 'success' : identityStatusColor();
+});
+
 function identityStatusColor(): string {
   const status = identity.connectionStatus;
 
@@ -25,7 +59,18 @@ function identityStatusColor(): string {
     return 'warning';
   }
 
-  return 'active' === status['status'] ? 'success' : 'warning';
+  switch (status['status']) {
+    case 'active':
+      return 'success';
+    case 'pending_verification':
+      return 'info';
+    case 'invalid':
+      return 'error';
+    case 'revoked':
+      return 'warning';
+    default:
+      return 'warning';
+  }
 }
 
 async function refreshBalances(): Promise<void> {
@@ -161,10 +206,10 @@ onMounted(async () => {
         <v-alert v-if="identity.error" type="error" variant="tonal" class="mb-4">{{ identity.error }}</v-alert>
 
         <UiParentCard
-          :title="identity.isConnected ? 'API подключён' : 'API не подключён'"
-          :subtitle="identity.isConnected ? 'Bybit API активен и готов к работе' : 'Подключите Bybit API для начала торговли'"
-          :icon="identity.isConnected ? 'mdi-shield-check-outline' : 'mdi-link-variant-off'"
-          :color="identity.isConnected ? 'success' : 'warning'"
+          :title="identityCardTitle"
+          :subtitle="identityCardSubtitle"
+          :icon="identityCardIcon"
+          :color="identityCardColor"
         >
           <v-card-text class="pa-5">
             <!-- Подключён -->
