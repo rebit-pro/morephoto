@@ -259,8 +259,10 @@ deploy: deploy-check-env
 		&& cd $(LINK_DIR) && set -a && . ./.env && set +a \
 		&& docker stack deploy --with-registry-auth --prune --resolve-image=never -c $(COMPOSE_DST) $(STACK_NAME)'
 	ssh $(REMOTE) -p $(PORT) ' \
-		cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf \
-		&& docker image prune --force'
+		cd ~ && ls -d site_* 2>/dev/null | sort -t_ -k2 -n | head -n -$(KEEP_RELEASES) | xargs -r rm -rf'
+	ssh $(REMOTE) -p $(PORT) ' \
+		docker image prune --force \
+		|| { status=$$?; printf "[deploy][warn] docker image prune failed with exit %s; deployment is already applied, continuing.\n" "$$status" >&2; true; }'
 #	@echo "Waiting for services to start..."
 #	sleep 15
 #	$(MAKE) api-migrate-deploy
