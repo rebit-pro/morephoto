@@ -12,8 +12,8 @@ import AuthRegister from './authForms/AuthRegister.vue';
               <v-card variant="outlined">
                 <v-card-text class="pa-9">
                   <div class="text-center mb-6">
-                    <img src="/favicon.svg" alt="Rebit P2P" width="64" height="64" class="mb-3" />
-                    <h2 class="text-h4 text-secondary mt-4">Регистрация в Rebit P2P</h2>
+                    <img src="/favicon.svg" alt="Rebit P2P Trader" width="64" height="64" class="mb-3" />
+                    <h2 class="text-h4 text-secondary mt-4">Регистрация в Rebit P2P Trader</h2>
                     <p class="text-lightText mt-2">Создайте аккаунт для торговли</p>
                   </div>
                   <AuthRegister />

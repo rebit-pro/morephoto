@@ -11,7 +11,7 @@ export const router = createRouter({
       component: () => import('@/views/pages/maintenance/error/Error404Page.vue'),
       meta: {
         title: 'Страница не найдена',
-        description: 'Запрашиваемая страница не найдена на Rebit P2P.'
+        description: 'Запрашиваемая страница не найдена на Rebit P2P Trader.'
       }
     },
     MainRoutes,

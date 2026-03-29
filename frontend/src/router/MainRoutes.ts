@@ -12,7 +12,7 @@ const MainRoutes = {
       component: () => import('@/views/dashboard/DashboardPage.vue'),
       meta: {
         title: 'Дашборд',
-        description: 'Обзор торговой активности, балансов и последних сделок на Rebit P2P.'
+        description: 'Обзор торговой активности, балансов и последних сделок в Rebit P2P Trader.'
       }
     },
     {

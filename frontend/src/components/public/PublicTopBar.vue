@@ -1,9 +1,9 @@
 <template>
   <div class="public-top-bar">
     <RouterLink class="public-top-bar__brand" to="/">
-      <div class="public-top-bar__logo">R</div>
+      <img :src="brandLogoUrl" alt="Rebit P2P Trader" width="48" height="48" class="public-top-bar__logo" />
       <div>
-        <div class="public-top-bar__title">Rebit P2P</div>
+        <div class="public-top-bar__title">Rebit P2P Trader</div>
         <div class="public-top-bar__subtitle">Контроль сделок, балансов и рисков в одном интерфейсе</div>
       </div>
     </RouterLink>
@@ -20,7 +20,7 @@
         Документация
       </v-btn>
       <v-btn class="public-top-bar__button" variant="text" color="white" rounded="lg" to="/login">Вход</v-btn>
-      <v-btn class="public-top-bar__button" color="secondary" variant="flat" rounded="lg" to="/register">Регистрация</v-btn>
+      <v-btn v-if="!auth.isAuthenticated" class="public-top-bar__button" color="secondary" variant="flat" rounded="lg" to="/register">Регистрация</v-btn>
     </div>
   </div>
 </template>
@@ -28,8 +28,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const route = useRoute();
+const auth = useAuthStore();
+const brandLogoUrl = `${import.meta.env.BASE_URL}favicon.svg`;
 const isDocumentationPage = computed(() => '/documentation' === route.path);
 </script>
 
@@ -51,17 +54,12 @@ const isDocumentationPage = computed(() => '/documentation' === route.path);
 }
 
 .public-top-bar__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(94, 53, 177, 0.9) 0%, rgba(30, 136, 229, 0.9) 100%);
+  object-fit: contain;
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #ffffff;
 }
 
 .public-top-bar__title {
