@@ -26,17 +26,43 @@ final readonly class GetBalancesUseCase
     public function execute(int $userId): BalanceListResultDto
     {
         $collection = $this->balanceRepository->findByUserId($userId);
+        $items = $collection->getAll();
+
+        if ([] === $items) {
+            return new BalanceListResultDto(balances: []);
+        }
+
+        /** @var array<int, string> $currencyCodeMap currencyId → code */
+        $currencyCodeMap = [];
+        /** @var array<string, ?float> $rubRateMap currencyCode → rubRate */
+        $rubRateMap = [];
+
+        foreach ($items as $balance) {
+            $currencyId = $balance->getUfCurrencyId();
+            if (!isset($currencyCodeMap[$currencyId])) {
+                $currencyCodeMap[$currencyId] = $this->currencyQuery->findCodeById($currencyId)
+                    ?? "CUR_{$currencyId}";
+            }
+
+            $code = $currencyCodeMap[$currencyId];
+            if (!array_key_exists($code, $rubRateMap)) {
+                $rubRateMap[$code] = $this->currencyRubRateQuery->findApproximateRubRateByCurrencyCode($code);
+            }
+        }
+
         $totalRubEquivalent = 0.0;
+        $hasAnyRubEquivalent = false;
 
         $balances = array_map(
-            function(Balance $balance) use (&$totalRubEquivalent): BalanceResultDto {
-                $currencyCode = $this->currencyQuery->findCodeById($balance->getUfCurrencyId()) ?? "CUR_{$balance->getUfCurrencyId()}";
-                $rubRate = $this->currencyRubRateQuery->findApproximateRubRateByCurrencyCode($currencyCode);
+            static function(Balance $balance) use ($currencyCodeMap, $rubRateMap, &$totalRubEquivalent, &$hasAnyRubEquivalent): BalanceResultDto {
+                $currencyCode = $currencyCodeMap[$balance->getUfCurrencyId()];
+                $rubRate = $rubRateMap[$currencyCode];
                 $rubEquivalent = null;
 
                 if (null !== $rubRate && 0.0 < $rubRate) {
                     $rubEquivalent = $balance->getUfTotal() * $rubRate;
                     $totalRubEquivalent += $rubEquivalent;
+                    $hasAnyRubEquivalent = true;
                 }
 
                 return new BalanceResultDto(
@@ -52,12 +78,12 @@ final readonly class GetBalancesUseCase
                     syncedAt: $balance->getUfSyncedAt()?->format('c'),
                 );
             },
-            $collection->getAll(),
+            $items,
         );
 
         return new BalanceListResultDto(
             balances: $balances,
-            totalRubEquivalent: [] === $balances ? null : $totalRubEquivalent,
+            totalRubEquivalent: $hasAnyRubEquivalent ? $totalRubEquivalent : null,
         );
     }
 }

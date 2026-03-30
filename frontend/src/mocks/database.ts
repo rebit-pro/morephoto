@@ -727,7 +727,7 @@ function buildBalancesResponse(state: MockState): BalanceListResponse {
 
   return {
     balances: clone(balances),
-    totalRubEquivalent: 0 === balances.length
+    totalRubEquivalent: 0 === balances.length || !balances.some((b) => null !== b.rubEquivalent)
       ? null
       : balances.reduce((sum, balance) => sum + (balance.rubEquivalent ?? 0), 0)
   };
