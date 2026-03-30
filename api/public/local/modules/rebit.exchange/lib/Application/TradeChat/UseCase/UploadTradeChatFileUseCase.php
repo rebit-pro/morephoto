@@ -7,9 +7,9 @@ namespace Rebit\Exchange\Application\TradeChat\UseCase;
 use Rebit\Exchange\Application\TradeChat\Dto\Request\UploadTradeChatFileRequestDto;
 use Rebit\Exchange\Application\TradeChat\Dto\Result\UploadTradeChatFileResultDto;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
+use Rebit\Exchange\Application\TradeChat\Port\TradeChatUploadFileLocatorInterface;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
-use Rebit\Exchange\Infrastructure\Bitrix\TradeChatUploadFileLocator;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
@@ -20,7 +20,7 @@ final readonly class UploadTradeChatFileUseCase
     public function __construct(
         private TradeRepository $tradeRepository,
         private BybitChatGatewayInterface $chatGateway,
-        private TradeChatUploadFileLocator $fileLocator,
+        private TradeChatUploadFileLocatorInterface $fileLocator,
     ) {}
 
     /**

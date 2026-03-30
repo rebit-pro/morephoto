@@ -6,8 +6,8 @@ namespace Rebit\Share\Domain\Audit\Repository;
 
 use Bitrix\Main\Application;
 use Bitrix\Main\Type\DateTime;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 
 final readonly class AuditLogRepository
 {

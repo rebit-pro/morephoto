@@ -6,12 +6,11 @@ namespace Rebit\Auth\Domain\User\Repository;
 
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\UserTable;
-use Rebit\Auth\Application\Auth\Contract\LoginUserRepositoryInterface;
 use Rebit\Auth\Domain\User\Entity\UserCredentials;
 use Rebit\Auth\Domain\User\Entity\UserRegistrationState;
 use Rebit\Auth\Domain\User\Entity\UserToken;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 
 final readonly class UserRepository implements LoginUserRepositoryInterface
 {

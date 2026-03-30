@@ -9,7 +9,7 @@ use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecutionCollection;
 use Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptExecutionTable;
 use Rebit\Exchange\Domain\ChatScript\Enum\ExecutionStatusEnum;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class ChatScriptExecutionRepository

@@ -7,7 +7,7 @@ namespace Rebit\Exchange\Application\Advertisement\UseCase;
 use Rebit\Exchange\Application\Advertisement\Port\BybitAdvertisementGatewayInterface;
 use Rebit\Exchange\Domain\Advertisement\Enum\AdvertisementStatusEnum;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 

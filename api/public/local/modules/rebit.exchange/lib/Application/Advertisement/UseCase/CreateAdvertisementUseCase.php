@@ -15,10 +15,10 @@ use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Domain\Shared\Enum\SideEnum;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
-use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Exception\ValidationHttpException;
 use Rebit\Exchange\Domain\Advertisement\Entity\Advertisement;
 
 /**

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Rebit\Share\Infrastructure\Controller\Responses;
 
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
-use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
+use Rebit\Share\Shared\Interface\ResponseDtoInterface;
 
 /**
  * Класс для формирования Json-ответа API в нашем формате.
@@ -22,7 +22,7 @@ final class JsonResponse extends AbstractResponse
      */
     public function __construct(
         private readonly SerializerInterface $serializer,
-        private readonly array|ResultDtoInterface|null $data = null,
+        private readonly array|ResponseDtoInterface|null $data = null,
         private readonly array $meta = [],
         private readonly int $options = 0,
     ) {}

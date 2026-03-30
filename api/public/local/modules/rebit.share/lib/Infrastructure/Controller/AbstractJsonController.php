@@ -10,9 +10,9 @@ use Bitrix\Main\HttpResponse;
 use Bitrix\Main\Response;
 use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Share\Infrastructure\Controller\Responses\JsonExceptionResponse;
-use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
 use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Interface\ResponseDtoInterface;
 
 /**
  * @internal
@@ -27,7 +27,7 @@ abstract class AbstractJsonController extends AbstractController
      * {@inheritdoc}
      */
     abstract protected function getResponse(
-        array|ResultDtoInterface $data,
+        array|ResponseDtoInterface $data,
         array $meta = [],
         ?SerializerInterface $serializer = null,
     ): ControllerJson;
@@ -37,7 +37,7 @@ abstract class AbstractJsonController extends AbstractController
      * Алиас для getResponse.
      */
     final public function json(
-        array|ResultDtoInterface $data,
+        array|ResponseDtoInterface $data,
         array $meta = [],
         ?SerializerInterface $serializer = null,
     ): ControllerJson {

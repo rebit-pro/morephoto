@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Rebit\Exchange\Application\TradeChat\Message\ExecuteChatScriptStepMessage;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
+use Rebit\Exchange\Application\TradeChat\Port\ChatScriptStepPublisherInterface;
 use Rebit\Exchange\Domain\ChatScript\Enum\ExecutionStatusEnum;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
@@ -17,7 +18,6 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Enum\ContentTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Enum\MessageTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
@@ -29,7 +29,7 @@ final readonly class ExecuteQueuedChatScriptStepUseCase
         private TradeRepository $tradeRepository,
         private TradeMessageRepository $messageRepository,
         private BybitChatGatewayInterface $chatGateway,
-        private MessagePublisherInterface $chatScriptStepPublisher,
+        private ChatScriptStepPublisherInterface $chatScriptStepPublisher,
         private LoggerInterface $logger,
     ) {}
 

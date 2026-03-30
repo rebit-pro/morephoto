@@ -6,8 +6,8 @@ namespace Rebit\Share\Infrastructure\Bitrix;
 
 use Bitrix\Main\ArgumentTypeException;
 use Bitrix\Main\Engine\Response\Json;
-use Rebit\Share\Application\Interface\ResultDtoInterface;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
+use Rebit\Share\Shared\Interface\ResponseDtoInterface;
 
 /**
  * Совместимый с Bitrix класс для возврата Json-ответа контроллера с использованием нашего сериалайзера.
@@ -19,7 +19,7 @@ final class ControllerJson extends Json
      */
     public function __construct(
         private readonly SerializerInterface $serializer,
-        array|ResultDtoInterface|null $data = null,
+        array|ResponseDtoInterface|null $data = null,
         int $options = 0,
     ) {
         parent::__construct($data, $options);

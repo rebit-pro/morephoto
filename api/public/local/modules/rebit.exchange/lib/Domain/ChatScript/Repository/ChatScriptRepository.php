@@ -8,7 +8,7 @@ use Bitrix\Main\Type\DateTime;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScript;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptCollection;
 use Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptTable;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class ChatScriptRepository

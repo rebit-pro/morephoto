@@ -6,12 +6,12 @@ namespace Rebit\Exchange\Application\TradeChat\UseCase;
 
 use Psr\Log\LoggerInterface;
 use Rebit\Exchange\Application\TradeChat\Message\ExecuteChatScriptStepMessage;
+use Rebit\Exchange\Application\TradeChat\Port\ChatScriptStepPublisherInterface;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class StartTradeChatScriptUseCase
@@ -21,7 +21,7 @@ final readonly class StartTradeChatScriptUseCase
         private ChatScriptRepository $chatScriptRepository,
         private ChatScriptStepRepository $chatScriptStepRepository,
         private ChatScriptExecutionRepository $chatScriptExecutionRepository,
-        private MessagePublisherInterface $chatScriptStepPublisher,
+        private ChatScriptStepPublisherInterface $chatScriptStepPublisher,
         private LoggerInterface $logger,
     ) {}
 

@@ -16,7 +16,7 @@ return [
             'logstash' => [
                 'handler' => static fn(LogChannelEnum $channel) => new RotatingFileHandler(
                     dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/logstash/' . $channel->value . '.log',
-                    maxFiles: 30,
+                    maxFiles: 5,
                     level: Logger::INFO,
                     filePermission: 0644,
                 ),

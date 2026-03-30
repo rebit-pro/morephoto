@@ -7,6 +7,7 @@ namespace Rebit\Exchange\Tests\Application\TradeChat\UseCase;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Rebit\Exchange\Application\TradeChat\Message\ExecuteChatScriptStepMessage;
+use Rebit\Exchange\Application\TradeChat\Port\ChatScriptStepPublisherInterface;
 use Rebit\Exchange\Application\TradeChat\UseCase\StartTradeChatScriptUseCase;
 use Rebit\Exchange\Domain\Advertisement\Entity\Advertisement;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
@@ -18,7 +19,6 @@ use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 
 /**
  * @internal
@@ -63,7 +63,7 @@ final class StartTradeChatScriptUseCaseTest extends TestCase
         $executionRepository->method('existsPendingForTrade')->willReturn(false);
         $executionRepository->method('enqueue')->willReturn($execution);
 
-        $publisher = $this->createMock(MessagePublisherInterface::class);
+        $publisher = $this->createMock(ChatScriptStepPublisherInterface::class);
         $publisher
             ->expects($this->once())
             ->method('dispatch')
@@ -125,7 +125,7 @@ final class StartTradeChatScriptUseCaseTest extends TestCase
         $executionRepository->method('existsPendingForTrade')->willReturn(false);
         $executionRepository->method('enqueue')->willReturn($execution);
 
-        $publisher = $this->createMock(MessagePublisherInterface::class);
+        $publisher = $this->createMock(ChatScriptStepPublisherInterface::class);
         $publisher->expects($this->never())->method('dispatch');
 
         $useCase = new StartTradeChatScriptUseCase(
@@ -164,7 +164,7 @@ final class StartTradeChatScriptUseCaseTest extends TestCase
         $executionRepository = $this->createStub(ChatScriptExecutionRepository::class);
         $executionRepository->method('existsPendingForTrade')->willReturn(true);
 
-        $publisher = $this->createMock(MessagePublisherInterface::class);
+        $publisher = $this->createMock(ChatScriptStepPublisherInterface::class);
         $publisher->expects($this->never())->method('dispatch');
 
         $useCase = new StartTradeChatScriptUseCase(

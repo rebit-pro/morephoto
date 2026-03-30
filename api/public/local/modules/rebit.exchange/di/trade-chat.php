@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Exchange\Application\TradeChat\Message\Handler\ExecuteChatScriptStepMessageHandler;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
+use Rebit\Exchange\Application\TradeChat\Port\TradeChatUploadFileLocatorInterface;
 use Rebit\Exchange\Application\TradeChat\UseCase\ConsumeChatScriptStepsUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\ExecuteQueuedChatScriptStepUseCase;
 use Rebit\Exchange\Application\TradeChat\UseCase\ExecuteChatScriptUseCase;
@@ -22,12 +23,13 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
 use Rebit\Exchange\Infrastructure\Bitrix\TradeChatUploadFileLocator;
 use Rebit\Exchange\Infrastructure\Bybit\BybitChatGateway;
+use Rebit\Exchange\Application\TradeChat\Port\ChatScriptStepPublisherInterface;
 use Rebit\Exchange\Infrastructure\TradeChat\Messenger\ChatScriptMessengerFactory;
+use Rebit\Exchange\Infrastructure\TradeChat\Messenger\ChatScriptStepPublisher;
 use Rebit\Exchange\Presentation\Command\ExecuteChatScriptsCommand;
 use Rebit\Exchange\Presentation\Command\TradeChat\ChatScriptStepConsumerCommand;
 use Rebit\Exchange\Presentation\Command\TradeChat\TestChatScriptStepCommand;
 use Rebit\Exchange\Presentation\Controller\TradeChatController;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
 use Rebit\Share\Domain\File\Service\UploadedFileOwnershipService;
@@ -47,6 +49,10 @@ return [
             );
         },
     ],
+    TradeChatUploadFileLocatorInterface::class => [
+        'constructor' => static fn(): TradeChatUploadFileLocatorInterface => ServiceLocator::getInstance()
+            ->get(TradeChatUploadFileLocator::class),
+    ],
     BybitChatGatewayInterface::class => [
         'constructor' => static function(): BybitChatGatewayInterface {
             $sl = ServiceLocator::getInstance();
@@ -64,9 +70,9 @@ return [
             Log::channel(LogChannelEnum::exchange),
         ],
     ],
-    'exchange.chat_script_step.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => ChatScriptMessengerFactory::createPublisher(
-            ServiceLocator::getInstance(),
+    ChatScriptStepPublisherInterface::class => [
+        'constructor' => static fn(): ChatScriptStepPublisherInterface => new ChatScriptStepPublisher(
+            ChatScriptMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
     ],
     SyncChatMessagesUseCase::class => [
@@ -97,7 +103,7 @@ return [
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(TradeRepository::class),
             ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
-            ServiceLocator::getInstance()->get(TradeChatUploadFileLocator::class),
+            ServiceLocator::getInstance()->get(TradeChatUploadFileLocatorInterface::class),
         ],
     ],
     ExecuteChatScriptUseCase::class => [
@@ -132,7 +138,7 @@ return [
             ServiceLocator::getInstance()->get(ChatScriptRepository::class),
             ServiceLocator::getInstance()->get(ChatScriptStepRepository::class),
             ServiceLocator::getInstance()->get(ChatScriptExecutionRepository::class),
-            ServiceLocator::getInstance()->get('exchange.chat_script_step.publisher'),
+            ServiceLocator::getInstance()->get(ChatScriptStepPublisherInterface::class),
             Log::getLogger(LogChannelEnum::exchange),
         ],
     ],
@@ -144,7 +150,7 @@ return [
             ServiceLocator::getInstance()->get(TradeRepository::class),
             ServiceLocator::getInstance()->get(TradeMessageRepository::class),
             ServiceLocator::getInstance()->get(BybitChatGatewayInterface::class),
-            ServiceLocator::getInstance()->get('exchange.chat_script_step.publisher'),
+            ServiceLocator::getInstance()->get(ChatScriptStepPublisherInterface::class),
             Log::getLogger(LogChannelEnum::exchange),
         ],
     ],
@@ -171,7 +177,7 @@ return [
     TestChatScriptStepCommand::class => [
         'className' => TestChatScriptStepCommand::class,
         'constructorParams' => static fn(): array => [
-            ServiceLocator::getInstance()->get('exchange.chat_script_step.publisher'),
+            ServiceLocator::getInstance()->get(ChatScriptStepPublisherInterface::class),
         ],
     ],
     TradeChatController::class => [

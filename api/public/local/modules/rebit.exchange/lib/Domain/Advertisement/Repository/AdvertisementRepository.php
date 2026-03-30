@@ -9,7 +9,7 @@ use Rebit\Exchange\Domain\Advertisement\Entity\Advertisement;
 use Rebit\Exchange\Domain\Advertisement\Entity\AdvertisementCollection;
 use Rebit\Exchange\Domain\Advertisement\Entity\Table\AdvertisementTable;
 use Rebit\Exchange\Domain\Advertisement\Enum\AdvertisementStatusEnum;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class AdvertisementRepository

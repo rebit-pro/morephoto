@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Rebit\Wallet\Domain\Balance\Repository;
 
 use Bitrix\Main\Type\DateTime;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Wallet\Domain\Balance\Entity\Balance;
 use Rebit\Wallet\Domain\Balance\Entity\BalanceCollection;
 use Rebit\Wallet\Domain\Balance\Entity\Table\BalanceTable;

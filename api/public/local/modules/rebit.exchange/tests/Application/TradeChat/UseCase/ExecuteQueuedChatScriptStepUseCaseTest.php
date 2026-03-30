@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Rebit\Exchange\Application\TradeChat\Message\ExecuteChatScriptStepMessage;
 use Rebit\Exchange\Application\TradeChat\Port\BybitChatGatewayInterface;
+use Rebit\Exchange\Application\TradeChat\Port\ChatScriptStepPublisherInterface;
 use Rebit\Exchange\Application\TradeChat\UseCase\ExecuteQueuedChatScriptStepUseCase;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptExecution;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStep;
@@ -19,7 +20,6 @@ use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -47,7 +47,7 @@ final class ExecuteQueuedChatScriptStepUseCaseTest extends TestCase
         $messageRepository = $this->createStub(TradeMessageRepository::class);
         $chatGateway = $this->createMock(BybitChatGatewayInterface::class);
         $chatGateway->expects($this->never())->method('sendMessage');
-        $publisher = $this->createMock(MessagePublisherInterface::class);
+        $publisher = $this->createMock(ChatScriptStepPublisherInterface::class);
         $publisher->expects($this->never())->method('dispatch');
 
         $logger = $this->createMock(LoggerInterface::class);
@@ -98,7 +98,7 @@ final class ExecuteQueuedChatScriptStepUseCaseTest extends TestCase
         $chatGateway = $this->createMock(BybitChatGatewayInterface::class);
         $chatGateway->expects($this->never())->method('sendMessage');
 
-        $publisher = $this->createMock(MessagePublisherInterface::class);
+        $publisher = $this->createMock(ChatScriptStepPublisherInterface::class);
         $publisher->expects($this->never())->method('dispatch');
 
         $useCase = new ExecuteQueuedChatScriptStepUseCase(
@@ -158,7 +158,7 @@ final class ExecuteQueuedChatScriptStepUseCaseTest extends TestCase
         $chatGateway = $this->createMock(BybitChatGatewayInterface::class);
         $chatGateway->expects($this->once())->method('sendMessage');
 
-        $publisher = $this->createMock(MessagePublisherInterface::class);
+        $publisher = $this->createMock(ChatScriptStepPublisherInterface::class);
         $publisher
             ->expects($this->once())
             ->method('dispatch')

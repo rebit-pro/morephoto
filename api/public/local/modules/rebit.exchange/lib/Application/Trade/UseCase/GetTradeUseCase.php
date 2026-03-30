@@ -8,7 +8,7 @@ use Rebit\Exchange\Application\Trade\Dto\Result\TradeResultDto;
 use Rebit\Exchange\Application\Trade\Mapper\TradeResultDtoMapper;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
