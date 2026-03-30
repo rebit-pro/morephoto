@@ -14,8 +14,8 @@ use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Entity\TradeMessage;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
-use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\ValidationHttpException;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**

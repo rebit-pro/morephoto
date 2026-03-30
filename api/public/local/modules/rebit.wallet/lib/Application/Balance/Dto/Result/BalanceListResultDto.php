@@ -13,5 +13,6 @@ final readonly class BalanceListResultDto implements ResultDtoInterface
      */
     public function __construct(
         public array $balances,
+        public ?float $totalRubEquivalent = null,
     ) {}
 }

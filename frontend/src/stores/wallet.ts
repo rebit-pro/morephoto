@@ -4,6 +4,7 @@ import { walletApi, type Balance, type Transaction, type TransactionFilters } fr
 
 export const useWalletStore = defineStore('wallet', () => {
   const balances = ref<Balance[]>([]);
+  const totalRubEquivalent = ref<number | null>(null);
   const transactions = ref<Transaction[]>([]);
   const transactionsTotal = ref(0);
   const loading = ref(false);
@@ -14,7 +15,9 @@ export const useWalletStore = defineStore('wallet', () => {
     loading.value = true;
     error.value = null;
     try {
-      balances.value = await walletApi.getBalances();
+      const result = await walletApi.getBalances();
+      balances.value = result.balances;
+      totalRubEquivalent.value = result.totalRubEquivalent;
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Ошибка загрузки балансов';
     } finally {
@@ -26,7 +29,9 @@ export const useWalletStore = defineStore('wallet', () => {
     syncing.value = true;
     error.value = null;
     try {
-      balances.value = await walletApi.syncBalances();
+      const result = await walletApi.syncBalances();
+      balances.value = result.balances;
+      totalRubEquivalent.value = result.totalRubEquivalent;
     } catch (e: unknown) {
       error.value = e instanceof Error ? e.message : 'Ошибка синхронизации балансов';
     } finally {
@@ -84,6 +89,7 @@ export const useWalletStore = defineStore('wallet', () => {
 
   return {
     balances,
+    totalRubEquivalent,
     transactions,
     transactionsTotal,
     loading,

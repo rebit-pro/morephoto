@@ -16,8 +16,8 @@ use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Entity\CurrencyPair;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
-use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\ValidationHttpException;
 use Bitrix\Main\Type\DateTime;
 
 /**

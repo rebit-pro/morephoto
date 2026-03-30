@@ -16,6 +16,8 @@ final readonly class BalanceResultDto implements ResultDtoInterface
         public float $available,
         public float $locked,
         public float $total,
+        public ?float $rubRate = null,
+        public ?float $rubEquivalent = null,
         public ?string $syncedAt = null,
     ) {}
 }

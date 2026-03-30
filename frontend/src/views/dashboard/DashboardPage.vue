@@ -22,50 +22,11 @@ const isPageLoading = ref(true);
 
 const userDisplayName = computed(() => auth.user?.['name'] ?? auth.user?.['email'] ?? '');
 const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['mode']);
-const USDT_LIKE_CURRENCIES = new Set(['USDT', 'USDC']);
 
 const latestTransactions = computed(() => wallet.transactions.slice(0, 4));
 const lockedBalancesCount = computed(() => wallet.balances.filter((balance) => parseAmount(balance.locked) > 0).length);
 const sortedBalances = computed(() => {
   return [...wallet.balances].sort((left, right) => parseAmount(right.total) - parseAmount(left.total));
-});
-const bestBuyPrice = computed(() => {
-  let max: number | null = null;
-
-  for (const order of exchange.buyOrders) {
-    const price = parseAmount(order.price);
-
-    if (0 >= price) {
-      continue;
-    }
-
-    if (null === max || price > max) {
-      max = price;
-    }
-  }
-
-  return max;
-});
-
-function rubEquivalent(total: string, currency: string): string | null {
-  if ('RUB' === currency.toUpperCase()) return null;
-  if (null === bestBuyPrice.value) return null;
-  if (!USDT_LIKE_CURRENCIES.has(currency.toUpperCase())) return null;
-  const value = parseAmount(total) * bestBuyPrice.value;
-  return formatRub(value);
-}
-
-const totalRubEquivalent = computed(() => {
-  if (null === bestBuyPrice.value) return null;
-  let total = 0;
-  for (const balance of wallet.balances) {
-    if ('RUB' === balance.currency.toUpperCase()) {
-      total += parseAmount(balance.total);
-    } else if (USDT_LIKE_CURRENCIES.has(balance.currency.toUpperCase())) {
-      total += parseAmount(balance.total) * bestBuyPrice.value;
-    }
-  }
-  return formatRub(total);
 });
 
 const bestBuyOrder = computed(() => {
@@ -124,7 +85,7 @@ const lastTransactionDate = computed(() => {
 const dashboardMetrics = computed(() => [
   {
     title: 'Общий баланс',
-    value: totalRubEquivalent.value ?? '—',
+    value: null === wallet.totalRubEquivalent ? '—' : formatRub(wallet.totalRubEquivalent),
     description: 'Приблизительная стоимость всех активов в рублях',
     color: 'secondary',
     icon: 'mdi-currency-rub'
@@ -375,14 +336,14 @@ onMounted(async () => {
 
             <v-card-text class="dashboard-card__body pa-5">
               <!-- Общий баланс в рублях -->
-              <v-sheet v-if="totalRubEquivalent" class="dashboard-total-rub pa-4 mb-4" rounded="lg">
+              <v-sheet v-if="null !== wallet.totalRubEquivalent" class="dashboard-total-rub pa-4 mb-4" rounded="lg">
                 <div class="d-flex align-center ga-3">
                   <v-avatar size="44" color="primary" variant="tonal">
                     <v-icon>mdi-currency-rub</v-icon>
                   </v-avatar>
                   <div>
                     <div class="text-caption text-medium-emphasis">Общий баланс (приблизительно)</div>
-                    <div class="text-h5 font-weight-bold">{{ totalRubEquivalent }}</div>
+                    <div class="text-h5 font-weight-bold">{{ formatRub(wallet.totalRubEquivalent) }}</div>
                   </div>
                 </div>
               </v-sheet>
@@ -414,8 +375,8 @@ onMounted(async () => {
                         <div class="text-subtitle-1 font-weight-medium">{{ formatAmount(balance.locked, 8) }}</div>
                       </div>
                     </div>
-                    <div v-if="rubEquivalent(balance.total, balance.currency)" class="text-body-2 text-primary font-weight-medium">
-                      ≈ {{ rubEquivalent(balance.total, balance.currency) }}
+                    <div v-if="null != balance.rubEquivalent" class="text-body-2 text-primary font-weight-medium">
+                      ≈ {{ formatRub(balance.rubEquivalent) }}
                     </div>
                   </v-sheet>
                 </v-col>

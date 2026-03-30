@@ -1,7 +1,7 @@
 import type { AuthUser, LoginRequest, RegisterRequest, RequestRegistrationCodeResponse } from '@/api/auth';
 import type { ChatContentType, ChatMessage, ChatScript, ChatScriptStep, Advertisement, OrderBookResponseDto, Trade } from '@/api/exchange';
 import type { ApiConnectionMode, ApiConnectionState, ApiConnectionStatus } from '@/api/identity';
-import type { Balance, CashFlowFilters, CashFlowReport, Transaction, TransactionFilters } from '@/api/wallet';
+import type { Balance, BalanceListResponse, CashFlowFilters, CashFlowReport, Transaction, TransactionFilters } from '@/api/wallet';
 
 const STORAGE_KEY = 'rebit:p2p:mock-state:v1';
 const DEFAULT_USER_EMAIL = 'owner@rebit.test';
@@ -184,6 +184,10 @@ function formatAmount(value: number, decimals: number): string {
   const normalized = value.toFixed(decimals).replace(/\.?0+$/, '');
 
   return '' === normalized ? '0' : normalized;
+}
+
+function parseNumericValue(value: number | string): number {
+  return 'number' === typeof value ? value : Number.parseFloat(value);
 }
 
 function getCurrencyByCode(state: MockState, code: string): DictionaryCurrency | undefined {
@@ -663,8 +667,8 @@ function adjustBalance(state: MockState, currencyCode: string, availableDelta: n
     return;
   }
 
-  const nextAvailable = Number.parseFloat(balance.available) + availableDelta;
-  const nextLocked = Number.parseFloat(balance.locked) + lockedDelta;
+  const nextAvailable = parseNumericValue(balance.available) + availableDelta;
+  const nextLocked = parseNumericValue(balance.locked) + lockedDelta;
   const normalizedAvailable = Math.max(0, nextAvailable);
   const normalizedLocked = Math.max(0, nextLocked);
 
@@ -681,6 +685,52 @@ function syncBalancesTimestamp(state: MockState): void {
     ...balance,
     syncedAt
   }));
+}
+
+function getApproximateRubRate(state: MockState, currencyCode: string): number | null {
+  if ('RUB' === currencyCode.toUpperCase()) {
+    return 1;
+  }
+
+  if ('USDT' !== currencyCode.toUpperCase()) {
+    return null;
+  }
+
+  let bestBuyPrice: number | null = null;
+
+  for (const order of state.orderBook.buy) {
+    const price = 'number' === typeof order.price ? order.price : Number.parseFloat(order.price);
+
+    if (Number.isNaN(price) || 0 >= price) {
+      continue;
+    }
+
+    if (null === bestBuyPrice || price > bestBuyPrice) {
+      bestBuyPrice = price;
+    }
+  }
+
+  return bestBuyPrice;
+}
+
+function buildBalancesResponse(state: MockState): BalanceListResponse {
+  const balances = state.balances.map((balance) => {
+    const rubRate = getApproximateRubRate(state, balance.currency);
+    const total = parseNumericValue(balance.total);
+
+    return {
+      ...balance,
+      rubRate,
+      rubEquivalent: null === rubRate || Number.isNaN(total) ? null : total * rubRate
+    } satisfies Balance;
+  });
+
+  return {
+    balances: clone(balances),
+    totalRubEquivalent: 0 === balances.length
+      ? null
+      : balances.reduce((sum, balance) => sum + (balance.rubEquivalent ?? 0), 0)
+  };
 }
 
 function renderScriptMessage(step: MockChatScriptStepRecord, trade: MockTradeRecord): string {
@@ -979,16 +1029,16 @@ export function getApiStatusWithMock(): ApiConnectionStatus {
   return clone(getMockState().connectionStatus);
 }
 
-export function getBalancesWithMock(): Balance[] {
-  return clone(getMockState().balances);
+export function getBalancesWithMock(): BalanceListResponse {
+  return buildBalancesResponse(getMockState());
 }
 
-export function syncBalancesWithMock(): Balance[] {
+export function syncBalancesWithMock(): BalanceListResponse {
   const state = getMockState();
   syncBalancesTimestamp(state);
   commitMockState();
 
-  return clone(state.balances);
+  return buildBalancesResponse(state);
 }
 
 export function getTransactionsWithMock(filters?: TransactionFilters): { transactions: Transaction[]; total: number } {
@@ -1070,7 +1120,7 @@ export function getCashFlowReportWithMock(filters?: CashFlowFilters): CashFlowRe
 
   const items = Array.from(grouped.values()).map((item) => {
     const balance = state.balances.find((entry) => item.currency === entry.currency);
-    const closingBalance = undefined === balance ? item.incoming - item.outgoing : Number.parseFloat(balance.total);
+    const closingBalance = undefined === balance ? item.incoming - item.outgoing : parseNumericValue(balance.total);
     const openingBalance = Math.max(0, closingBalance - item.incoming + item.outgoing);
 
     return {
@@ -1158,7 +1208,7 @@ export function createAdvertisementWithMock(payload: Omit<Advertisement, 'id' | 
     const balance = undefined === tokenCurrency ? undefined : state.balances.find((item) => tokenCurrency.code === item.currency);
 
     if (undefined !== tokenCurrency && undefined !== balance) {
-      if (Number.parseFloat(balance.available) < quantity) {
+      if (parseNumericValue(balance.available) < quantity) {
         throw new Error(`Недостаточно ${tokenCurrency.code} для создания объявления.`);
       }
 
@@ -1217,7 +1267,7 @@ export function toggleAdvertisementWithMock(id: number, status: 'active' | 'paus
       if ('active' === status) {
         const balance = state.balances.find((item) => tokenCurrency.code === item.currency);
 
-        if (undefined !== balance && Number.parseFloat(balance.available) < quantity) {
+        if (undefined !== balance && parseNumericValue(balance.available) < quantity) {
           throw new Error(`Недостаточно ${tokenCurrency.code} для активации объявления.`);
         }
 

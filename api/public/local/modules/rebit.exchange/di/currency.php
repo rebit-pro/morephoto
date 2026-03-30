@@ -6,8 +6,11 @@ use Rebit\Exchange\Application\Currency\UseCase\GetCurrenciesUseCase;
 use Rebit\Exchange\Application\Currency\UseCase\GetCurrencyPairsUseCase;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyRepository;
+use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
+use Rebit\Exchange\Infrastructure\Adapter\CurrencyRubRateQueryAdapter;
 use Rebit\Exchange\Infrastructure\Adapter\CurrencyQueryAdapter;
 use Rebit\Exchange\Presentation\Controller\CurrencyController;
+use Rebit\Share\Application\Contract\Exchange\CurrencyRubRateQueryInterface;
 use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 
 return [
@@ -21,6 +24,14 @@ return [
         'constructor' => static function(): CurrencyQueryInterface {
             return new CurrencyQueryAdapter(
                 ServiceLocator::getInstance()->get(CurrencyRepository::class),
+            );
+        },
+    ],
+    CurrencyRubRateQueryInterface::class => [
+        'constructor' => static function(): CurrencyRubRateQueryInterface {
+            return new CurrencyRubRateQueryAdapter(
+                ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+                ServiceLocator::getInstance()->get(OrderBookRepository::class),
             );
         },
     ],

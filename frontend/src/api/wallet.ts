@@ -5,10 +5,17 @@ export interface Balance {
   userId: number;
   currencyId: number;
   currency: string;
-  available: string;
-  locked: string;
-  total: string;
+  available: number | string;
+  locked: number | string;
+  total: number | string;
+  rubRate?: number | null;
+  rubEquivalent?: number | null;
   syncedAt: string | null;
+}
+
+export interface BalanceListResponse {
+  balances: Balance[];
+  totalRubEquivalent: number | null;
 }
 
 export interface Transaction {
@@ -62,12 +69,18 @@ export interface CashFlowReport {
 }
 
 export const walletApi = {
-  getBalances(): Promise<Balance[]> {
-    return api.get('/api/v1/wallet/balances').then((r) => r.data?.balances ?? r.data);
+  getBalances(): Promise<BalanceListResponse> {
+    return api.get('/api/v1/wallet/balances').then((r) => ({
+      balances: r.data?.balances ?? r.data ?? [],
+      totalRubEquivalent: r.data?.totalRubEquivalent ?? null
+    }));
   },
 
-  syncBalances(): Promise<Balance[]> {
-    return api.post('/api/v1/wallet/balances/sync').then((r) => r.data?.balances ?? r.data);
+  syncBalances(): Promise<BalanceListResponse> {
+    return api.post('/api/v1/wallet/balances/sync').then((r) => ({
+      balances: r.data?.balances ?? r.data ?? [],
+      totalRubEquivalent: r.data?.totalRubEquivalent ?? null
+    }));
   },
 
   getTransactions(params?: TransactionFilters): Promise<TransactionListResponse> {

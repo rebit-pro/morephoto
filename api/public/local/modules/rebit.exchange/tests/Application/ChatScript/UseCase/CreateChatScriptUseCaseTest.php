@@ -14,7 +14,7 @@ use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStep;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStepCollection;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
-use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
+use Rebit\Share\Shared\Exception\ValidationHttpException;
 
 /**
  * @internal
