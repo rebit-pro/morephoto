@@ -23,6 +23,7 @@ const publicPages = ['/', '/documentation', '/login', '/register', '/error'];
 
 router.beforeEach(async (to, _from, next) => {
   const auth = useAuthStore();
+  auth.restoreSession();
   const isPublicPage = publicPages.includes(to.path);
   const authRequired = !isPublicPage && to.matched.some((record) => true === record.meta['requiresAuth']);
 

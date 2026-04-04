@@ -3,30 +3,140 @@ import { ref, computed } from 'vue';
 import { router } from '@/router';
 import { authApi, type AuthUser, type GeeTestCaptchaPayload, type RequestRegistrationCodeResponse } from '@/api/auth';
 
+const TOKEN_STORAGE_KEY = 'token';
+const USER_STORAGE_KEY = 'user';
+const TOKEN_EXPIRES_AT_STORAGE_KEY = 'token_expires_at';
+
+function readStoredUser(): AuthUser | null {
+  const rawUser = localStorage.getItem(USER_STORAGE_KEY);
+
+  if (null === rawUser) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawUser) as AuthUser;
+  } catch {
+    return null;
+  }
+}
+
+function resolveExpiresAtTimestamp(expiresAt: string | null): number | null {
+  if (null === expiresAt) {
+    return null;
+  }
+
+  const expiresAtTimestamp = Date.parse(expiresAt);
+
+  return Number.isNaN(expiresAtTimestamp) ? null : expiresAtTimestamp;
+}
+
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(localStorage.getItem('token'));
-  const user = ref<AuthUser | null>(JSON.parse(localStorage.getItem('user') ?? 'null'));
+  const token = ref<string | null>(localStorage.getItem(TOKEN_STORAGE_KEY));
+  const user = ref<AuthUser | null>(readStoredUser());
+  const expiresAt = ref<string | null>(localStorage.getItem(TOKEN_EXPIRES_AT_STORAGE_KEY));
   const returnUrl = ref<string | null>(null);
+  let sessionExpirationTimeoutId: number | null = null;
 
-  const isAuthenticated = computed(() => null !== token.value && null !== user.value);
+  const isAuthenticated = computed(() => null !== token.value && null !== user.value && null !== expiresAt.value);
 
-  function setSession(newToken: string, newUser: AuthUser): void {
+  function clearSessionExpirationTimer(): void {
+    if (null === sessionExpirationTimeoutId) {
+      return;
+    }
+
+    window.clearTimeout(sessionExpirationTimeoutId);
+    sessionExpirationTimeoutId = null;
+  }
+
+  function expireSession(): void {
+    const currentRoute = router.currentRoute.value;
+    const authRequired = currentRoute.matched.some((record) => true === record.meta['requiresAuth']);
+
+    if (authRequired) {
+      returnUrl.value = currentRoute.fullPath;
+    }
+
+    clearSession();
+
+    if (authRequired) {
+      void router.push('/login');
+    }
+  }
+
+  function scheduleSessionExpiration(): void {
+    clearSessionExpirationTimer();
+
+    const expiresAtTimestamp = resolveExpiresAtTimestamp(expiresAt.value);
+
+    if (null === expiresAtTimestamp) {
+      return;
+    }
+
+    const expiresInMilliseconds = expiresAtTimestamp - Date.now();
+
+    if (0 >= expiresInMilliseconds) {
+      expireSession();
+      return;
+    }
+
+    sessionExpirationTimeoutId = window.setTimeout(() => {
+      expireSession();
+    }, expiresInMilliseconds);
+  }
+
+  function restoreSession(): void {
+    if (null === token.value && null === user.value && null === expiresAt.value) {
+      clearSessionExpirationTimer();
+      return;
+    }
+
+    const expiresAtTimestamp = resolveExpiresAtTimestamp(expiresAt.value);
+
+    if (null === token.value || null === user.value || null === expiresAt.value || null === expiresAtTimestamp || expiresAtTimestamp <= Date.now()) {
+      clearSession();
+      return;
+    }
+
+    scheduleSessionExpiration();
+  }
+
+  function setSession(newToken: string, newUser: AuthUser, newExpiresAt: string): void {
+    const expiresAtTimestamp = resolveExpiresAtTimestamp(newExpiresAt);
+
+    if (null === expiresAtTimestamp || expiresAtTimestamp <= Date.now()) {
+      clearSession();
+      throw new Error('Получен некорректный или истёкший токен.');
+    }
+
     token.value = newToken;
     user.value = newUser;
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    expiresAt.value = newExpiresAt;
+    localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+    localStorage.setItem(TOKEN_EXPIRES_AT_STORAGE_KEY, newExpiresAt);
+    scheduleSessionExpiration();
   }
 
   function clearSession(): void {
+    clearSessionExpirationTimer();
     token.value = null;
     user.value = null;
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    expiresAt.value = null;
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(USER_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_EXPIRES_AT_STORAGE_KEY);
+  }
+
+  function getAccessToken(): string | null {
+    restoreSession();
+
+    return isAuthenticated.value ? token.value : null;
   }
 
   async function login(email: string, password: string, captcha?: GeeTestCaptchaPayload): Promise<void> {
     const response = await authApi.login({ email, password, captcha });
-    setSession(response.token, response.user);
+    setSession(response.token, response.user, response.expiresAt);
     await router.push(returnUrl.value ?? '/dashboard');
     returnUrl.value = null;
   }
@@ -37,7 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function confirmRegistration(email: string, code: string): Promise<void> {
     const response = await authApi.confirmRegistration({ email, code });
-    setSession(response.token, response.user);
+    setSession(response.token, response.user, response.expiresAt);
     await router.push('/dashboard');
   }
 
@@ -51,13 +161,17 @@ export const useAuthStore = defineStore('auth', () => {
     await router.push('/login');
   }
 
+  restoreSession();
+
   return {
     token,
     user,
+    expiresAt,
     returnUrl,
     isAuthenticated,
-    setSession,
     clearSession,
+    restoreSession,
+    getAccessToken,
     login,
     requestRegistrationCode,
     confirmRegistration,

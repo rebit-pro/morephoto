@@ -1,4 +1,4 @@
-import type { AuthUser, LoginRequest, RegisterRequest, RequestRegistrationCodeResponse } from '@/api/auth';
+import type { AuthUser, LoginRequest, LoginResponse, RegisterRequest, RequestRegistrationCodeResponse } from '@/api/auth';
 import type { ChatContentType, ChatMessage, ChatScript, ChatScriptStep, Advertisement, OrderBookResponseDto, Trade } from '@/api/exchange';
 import type { ApiConnectionMode, ApiConnectionState, ApiConnectionStatus } from '@/api/identity';
 import type { Balance, BalanceListResponse, CashFlowFilters, CashFlowReport, Transaction, TransactionFilters } from '@/api/wallet';
@@ -6,6 +6,7 @@ import type { Balance, BalanceListResponse, CashFlowFilters, CashFlowReport, Tra
 const STORAGE_KEY = 'rebit:p2p:mock-state:v1';
 const DEFAULT_USER_EMAIL = 'owner@rebit.test';
 const DEFAULT_USER_PASSWORD = 'secret123';
+const MOCK_TOKEN_TTL_MINUTES = 60 * 24;
 
 type DictionaryCurrency = {
   id: number;
@@ -869,7 +870,7 @@ export function generateTradeForActiveAdvertisement(advertisementId?: number): M
   return null;
 }
 
-export function loginWithMock(request: LoginRequest): { token: string; user: AuthUser } {
+export function loginWithMock(request: LoginRequest): LoginResponse {
   const state = getMockState();
   const normalizedEmail = request.email.trim().toLowerCase();
   const user = findUserByEmail(state, normalizedEmail);
@@ -888,6 +889,7 @@ export function loginWithMock(request: LoginRequest): { token: string; user: Aut
 
   return {
     token,
+    expiresAt: shiftIso(MOCK_TOKEN_TTL_MINUTES),
     user: {
       id: user.id,
       email: user.email,
@@ -914,7 +916,7 @@ export function requestRegistrationCodeWithMock(request: RegisterRequest): Reque
   };
 }
 
-export function confirmRegistrationWithMock(email: string, code: string): { token: string; user: AuthUser } {
+export function confirmRegistrationWithMock(email: string, code: string): LoginResponse {
   const state = getMockState();
 
   if (null === state.registration || email.trim().toLowerCase() !== state.registration.email) {
@@ -933,6 +935,7 @@ export function confirmRegistrationWithMock(email: string, code: string): { toke
 
   return {
     token,
+    expiresAt: shiftIso(MOCK_TOKEN_TTL_MINUTES),
     user: {
       id: user.id,
       email: user.email,
