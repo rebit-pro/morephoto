@@ -8,10 +8,10 @@ init: api-clear docker-down-clear docker-pull docker-build docker-up cron-up que
 up: docker-up
 down: docker-down
 restart: down up
-lint: api-lint
+lint: api-lint frontend-lint
 fix: api-cs-fix
 analyze: api-analyze
-check: api-cs-check lint analyze
+check: api-cs-check lint frontend-typecheck analyze
 test: api-test
 test-unit: api-test-unit
 test-unit-coverage: api-test-unit--coverage
@@ -44,6 +44,20 @@ frontend-init: frontend-npm-install
 
 frontend-npm-install:
 	docker compose run --rm frontend-node-cli npm install
+
+frontend-lint:
+	docker compose run --rm frontend-node-cli npm run lint
+
+frontend-typecheck:
+	docker compose run --rm frontend-node-cli npm run typecheck && docker compose run --rm frontend-node-cli npm run typecheck:e2e
+
+frontend-build:
+	docker compose run --rm -e VITE_API_URL=/api -e VITE_APP_VERSION=local-check -e VITE_GEETEST_CAPTCHA_ID= frontend-node-cli npm run build
+
+frontend-check: frontend-lint frontend-typecheck frontend-build frontend-e2e
+
+frontend-e2e:
+	docker run --rm -v ${PWD}:/workspace -w /workspace mcr.microsoft.com/playwright:v1.52.0-jammy sh -lc 'rm -rf /tmp/frontend-e2e && cp -R /workspace/frontend /tmp/frontend-e2e && cd /tmp/frontend-e2e && npm ci && npm run test:e2e:install && npm run test:e2e:run'
 
 # api
 api-clear:

@@ -109,7 +109,15 @@ onMounted(async () => {
       <v-tabs-window-item value="balances">
         <div class="d-flex align-center justify-space-between mb-4">
           <span class="text-body-1 text-medium-emphasis">Ваши балансы на Bybit</span>
-          <v-btn variant="text" color="primary" size="small" rounded="lg" :loading="wallet.loading" prepend-icon="mdi-refresh" @click="refreshBalances">
+          <v-btn
+            variant="text"
+            color="primary"
+            size="small"
+            rounded="lg"
+            :loading="wallet.loading"
+            prepend-icon="mdi-refresh"
+            @click="refreshBalances"
+          >
             Обновить
           </v-btn>
         </div>
@@ -205,12 +213,7 @@ onMounted(async () => {
       <v-tabs-window-item value="api">
         <v-alert v-if="identity.error" type="error" variant="tonal" class="mb-4">{{ identity.error }}</v-alert>
 
-        <UiParentCard
-          :title="identityCardTitle"
-          :subtitle="identityCardSubtitle"
-          :icon="identityCardIcon"
-          :color="identityCardColor"
-        >
+        <UiParentCard :title="identityCardTitle" :subtitle="identityCardSubtitle" :icon="identityCardIcon" :color="identityCardColor">
           <v-card-text class="pa-5">
             <!-- Подключён -->
             <div v-if="identity.isConnected" class="text-center">
@@ -256,7 +259,16 @@ onMounted(async () => {
               <v-icon size="56" color="warning" class="mb-4">mdi-link-variant-off</v-icon>
               <h3 class="text-h5 font-weight-bold mb-2">API не подключён</h3>
               <p class="text-medium-emphasis mb-5">Подключите Bybit API для начала торговли</p>
-              <v-btn color="secondary" variant="flat" rounded="lg" size="large" prepend-icon="mdi-link-variant-plus" to="/profile/api-connection"> Подключить </v-btn>
+              <v-btn
+                color="secondary"
+                variant="flat"
+                rounded="lg"
+                size="large"
+                prepend-icon="mdi-link-variant-plus"
+                to="/profile/api-connection"
+              >
+                Подключить
+              </v-btn>
             </div>
           </v-card-text>
         </UiParentCard>
@@ -269,7 +281,9 @@ onMounted(async () => {
 .profile-balance-card {
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);

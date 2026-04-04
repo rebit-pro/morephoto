@@ -44,8 +44,38 @@ jobs:
   frontend-checks:
     runs-on: ubuntu-latest
     steps:
-      - name: "⏭️ Skip (no frontend checks yet)"
-        run: echo "Frontend checks are disabled"
+      - uses: actions/checkout@v5
+      - name: "🟢 Setup Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: "📦 Install frontend dependencies"
+        working-directory: frontend
+        run: npm ci
+      - name: "🔍 Frontend lint"
+        working-directory: frontend
+        run: npm run lint
+      - name: "🔎 Frontend typecheck"
+        working-directory: frontend
+        run: npm run typecheck
+      - name: "🧩 E2E typecheck"
+        working-directory: frontend
+        run: npm run typecheck:e2e
+      - name: "🏗️ Frontend build"
+        working-directory: frontend
+        env:
+          VITE_API_URL: /api
+          VITE_APP_VERSION: ${{ github.run_number }}
+          VITE_GEETEST_CAPTCHA_ID: ''
+        run: npm run build
+      - name: "🎭 Install Playwright Chromium"
+        working-directory: frontend
+        run: npm run test:e2e:install
+      - name: "🧪 Frontend e2e"
+        working-directory: frontend
+        run: npm run test:e2e:run
 
   build-frontend:
     runs-on: ubuntu-latest

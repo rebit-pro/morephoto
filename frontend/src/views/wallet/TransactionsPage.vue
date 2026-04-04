@@ -30,7 +30,6 @@ const typeOptions = [
   { title: 'Комиссия', value: 'fee' }
 ];
 
-
 const totalPages = computed(() => Math.max(1, Math.ceil(wallet.transactionsTotal / itemsPerPage)));
 
 function buildParams(): TransactionFilters {

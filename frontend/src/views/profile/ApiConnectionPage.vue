@@ -161,7 +161,9 @@ const connectionFacts = computed(() => [
   }
 ]);
 const formModeTitle = computed(() => ('mainnet' === mode.value ? 'Будет подключён Mainnet' : 'Будет подключён Testnet'));
-const formNoticeTitle = computed(() => ('mainnet' === mode.value ? 'Проверьте доступы для боевого режима' : 'Безопасный режим для первичной проверки'));
+const formNoticeTitle = computed(() =>
+  'mainnet' === mode.value ? 'Проверьте доступы для боевого режима' : 'Безопасный режим для первичной проверки'
+);
 const formNoticeText = computed(() =>
   'mainnet' === mode.value
     ? 'Создайте API-ключ только с правами на чтение и торговлю. Не давайте доступ на вывод средств и перепроверьте ограничения ключа.'
@@ -302,7 +304,15 @@ async function onDisconnect(): Promise<void> {
       <div class="api-connection-notice__layout">
         <v-avatar :color="notificationType" size="44" variant="tonal" class="flex-shrink-0">
           <v-icon>
-            {{ 'success' === notificationType ? 'mdi-check-circle-outline' : 'warning' === notificationType ? 'mdi-alert-outline' : 'error' === notificationType ? 'mdi-alert-circle-outline' : 'mdi-information-outline' }}
+            {{
+              'success' === notificationType
+                ? 'mdi-check-circle-outline'
+                : 'warning' === notificationType
+                  ? 'mdi-alert-outline'
+                  : 'error' === notificationType
+                    ? 'mdi-alert-circle-outline'
+                    : 'mdi-information-outline'
+            }}
           </v-icon>
         </v-avatar>
 
@@ -517,7 +527,11 @@ async function onDisconnect(): Promise<void> {
             </div>
           </v-sheet>
 
-          <v-sheet class="api-connection-notice pa-4 mb-6" :class="'mainnet' === mode ? 'api-connection-notice--warning' : 'api-connection-notice--info'" rounded="lg">
+          <v-sheet
+            class="api-connection-notice pa-4 mb-6"
+            :class="'mainnet' === mode ? 'api-connection-notice--warning' : 'api-connection-notice--info'"
+            rounded="lg"
+          >
             <div class="api-connection-notice__layout">
               <v-avatar size="44" :color="'mainnet' === mode ? 'warning' : 'info'" variant="tonal" class="flex-shrink-0">
                 <v-icon>{{ 'mainnet' === mode ? 'mdi-shield-alert-outline' : 'mdi-information-outline' }}</v-icon>

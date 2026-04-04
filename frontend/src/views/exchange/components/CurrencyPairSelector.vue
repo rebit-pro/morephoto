@@ -151,7 +151,14 @@ watch(
       </div>
 
       <div v-if="hasActiveFilters" class="currency-pair-selector__actions">
-        <v-btn class="currency-pair-selector__reset-btn" color="error" variant="tonal" rounded="lg" prepend-icon="mdi-filter-remove-outline" @click="clearFilters">
+        <v-btn
+          class="currency-pair-selector__reset-btn"
+          color="error"
+          variant="tonal"
+          rounded="lg"
+          prepend-icon="mdi-filter-remove-outline"
+          @click="clearFilters"
+        >
           Сбросить все фильтры
         </v-btn>
       </div>

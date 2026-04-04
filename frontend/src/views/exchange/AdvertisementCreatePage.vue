@@ -147,134 +147,144 @@ onMounted(async () => {
       icon="mdi-bullhorn-outline"
       color="primary"
     >
-        <v-row>
-          <!-- Направление -->
-          <v-col cols="12" sm="6">
-            <v-btn-toggle v-model="side" mandatory color="primary" class="mb-4" density="compact">
-              <v-btn v-for="opt in sideOptions" :key="opt.value" :value="opt.value">
-                {{ opt.title }}
-              </v-btn>
-            </v-btn-toggle>
-          </v-col>
-        </v-row>
+      <v-row>
+        <!-- Направление -->
+        <v-col cols="12" sm="6">
+          <v-btn-toggle v-model="side" mandatory color="primary" class="mb-4" density="compact">
+            <v-btn v-for="opt in sideOptions" :key="opt.value" :value="opt.value">
+              {{ opt.title }}
+            </v-btn>
+          </v-btn-toggle>
+        </v-col>
+      </v-row>
 
-        <v-row>
-          <!-- Валютная пара -->
-          <v-col cols="12" sm="6">
-            <v-select
-              v-model="currencyPairId"
-              :items="currencyPairOptions"
-              item-title="title"
-              item-value="value"
-              label="Валютная пара *"
-              variant="outlined"
-              density="compact"
-            />
-          </v-col>
+      <v-row>
+        <!-- Валютная пара -->
+        <v-col cols="12" sm="6">
+          <v-select
+            v-model="currencyPairId"
+            :items="currencyPairOptions"
+            item-title="title"
+            item-value="value"
+            label="Валютная пара *"
+            variant="outlined"
+            density="compact"
+          />
+        </v-col>
 
-          <!-- Тип цены -->
-          <v-col cols="12" sm="6">
-            <v-select
-              v-model="priceType"
-              :items="priceTypeOptions"
-              item-title="title"
-              item-value="value"
-              label="Тип цены"
-              variant="outlined"
-              density="compact"
-            />
-          </v-col>
-        </v-row>
+        <!-- Тип цены -->
+        <v-col cols="12" sm="6">
+          <v-select
+            v-model="priceType"
+            :items="priceTypeOptions"
+            item-title="title"
+            item-value="value"
+            label="Тип цены"
+            variant="outlined"
+            density="compact"
+          />
+        </v-col>
+      </v-row>
 
-        <v-row>
-          <!-- Цена -->
-          <v-col cols="12" sm="6">
-            <v-text-field v-model="price" label="Цена *" variant="outlined" density="compact" type="number" step="0.01" />
-          </v-col>
+      <v-row>
+        <!-- Цена -->
+        <v-col cols="12" sm="6">
+          <v-text-field v-model="price" label="Цена *" variant="outlined" density="compact" type="number" step="0.01" />
+        </v-col>
 
-          <!-- Премиум -->
-          <v-col v-if="'floating' === priceType" cols="12" sm="6">
-            <v-text-field v-model="premium" label="Премиум (%)" variant="outlined" density="compact" type="number" step="0.01" />
-          </v-col>
-        </v-row>
+        <!-- Премиум -->
+        <v-col v-if="'floating' === priceType" cols="12" sm="6">
+          <v-text-field v-model="premium" label="Премиум (%)" variant="outlined" density="compact" type="number" step="0.01" />
+        </v-col>
+      </v-row>
 
-        <v-row>
-          <!-- Количество -->
-          <v-col cols="12" sm="4">
-            <v-text-field v-model="quantity" label="Количество *" variant="outlined" density="compact" type="number" step="0.01" />
-          </v-col>
+      <v-row>
+        <!-- Количество -->
+        <v-col cols="12" sm="4">
+          <v-text-field v-model="quantity" label="Количество *" variant="outlined" density="compact" type="number" step="0.01" />
+        </v-col>
 
-          <!-- Мин сумма -->
-          <v-col cols="12" sm="4">
-            <v-text-field v-model="minAmount" label="Мин. сумма (₽) *" variant="outlined" density="compact" type="number" />
-          </v-col>
+        <!-- Мин сумма -->
+        <v-col cols="12" sm="4">
+          <v-text-field v-model="minAmount" label="Мин. сумма (₽) *" variant="outlined" density="compact" type="number" />
+        </v-col>
 
-          <!-- Макс сумма -->
-          <v-col cols="12" sm="4">
-            <v-text-field v-model="maxAmount" label="Макс. сумма (₽) *" variant="outlined" density="compact" type="number" />
-          </v-col>
-        </v-row>
+        <!-- Макс сумма -->
+        <v-col cols="12" sm="4">
+          <v-text-field v-model="maxAmount" label="Макс. сумма (₽) *" variant="outlined" density="compact" type="number" />
+        </v-col>
+      </v-row>
 
-        <v-row>
-          <!-- Методы оплаты -->
-          <v-col cols="12" sm="6">
-            <v-select
-              v-model="selectedPaymentMethodIds"
-              :items="paymentMethodOptions"
-              item-title="title"
-              item-value="value"
-              label="Методы оплаты *"
-              variant="outlined"
-              density="compact"
-              multiple
-              chips
-              closable-chips
-            />
-          </v-col>
+      <v-row>
+        <!-- Методы оплаты -->
+        <v-col cols="12" sm="6">
+          <v-select
+            v-model="selectedPaymentMethodIds"
+            :items="paymentMethodOptions"
+            item-title="title"
+            item-value="value"
+            label="Методы оплаты *"
+            variant="outlined"
+            density="compact"
+            multiple
+            chips
+            closable-chips
+          />
+        </v-col>
 
-          <!-- Время на оплату -->
-          <v-col cols="12" sm="6">
-            <v-select
-              v-model="paymentPeriod"
-              :items="paymentPeriodOptions"
-              item-title="title"
-              item-value="value"
-              label="Время на оплату"
-              variant="outlined"
-              density="compact"
-            />
-          </v-col>
-        </v-row>
+        <!-- Время на оплату -->
+        <v-col cols="12" sm="6">
+          <v-select
+            v-model="paymentPeriod"
+            :items="paymentPeriodOptions"
+            item-title="title"
+            item-value="value"
+            label="Время на оплату"
+            variant="outlined"
+            density="compact"
+          />
+        </v-col>
+      </v-row>
 
-        <v-row>
-          <!-- Скрипт чата -->
-          <v-col cols="12" sm="6">
-            <v-select
-              v-model="chatScriptId"
-              :items="chatScriptOptions"
-              item-title="title"
-              item-value="value"
-              label="Скрипт автосообщений"
-              variant="outlined"
-              density="compact"
-            />
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-switch v-model="createAsActive" color="success" inset label="Включить объявление сразу после создания" hide-details />
-          </v-col>
-        </v-row>
+      <v-row>
+        <!-- Скрипт чата -->
+        <v-col cols="12" sm="6">
+          <v-select
+            v-model="chatScriptId"
+            :items="chatScriptOptions"
+            item-title="title"
+            item-value="value"
+            label="Скрипт автосообщений"
+            variant="outlined"
+            density="compact"
+          />
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-switch v-model="createAsActive" color="success" inset label="Включить объявление сразу после создания" hide-details />
+        </v-col>
+      </v-row>
 
-        <v-row>
-          <!-- Условия -->
-          <v-col cols="12">
-            <v-textarea v-model="conditions" label="Условия сделки" variant="outlined" density="compact" rows="3" />
-          </v-col>
-        </v-row>
+      <v-row>
+        <!-- Условия -->
+        <v-col cols="12">
+          <v-textarea v-model="conditions" label="Условия сделки" variant="outlined" density="compact" rows="3" />
+        </v-col>
+      </v-row>
 
       <template #actions>
         <v-spacer />
         <v-btn variant="text" @click="router.push('/exchange/advertisements')">Отмена</v-btn>
-        <v-btn color="secondary" variant="flat" rounded="lg" size="large" :loading="submitting" :disabled="!isFormValid" @click="handleSubmit"> Создать объявление </v-btn>
+        <v-btn
+          color="secondary"
+          variant="flat"
+          rounded="lg"
+          size="large"
+          :loading="submitting"
+          :disabled="!isFormValid"
+          @click="handleSubmit"
+        >
+          Создать объявление
+        </v-btn>
       </template>
     </UiFormCard>
   </div>
