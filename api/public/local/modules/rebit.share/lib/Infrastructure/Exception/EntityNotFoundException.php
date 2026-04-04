@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Exception;
 
-use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException as SharedEntityNotFoundException;
 
-class EntityNotFoundException extends HttpException
-{
-    public const int HTTP_DEFAULT_EXCEPTION_CODE = 404;
-    public const string DEFAULT_ERROR_MESSAGE = 'Сущность не найдена';
-}
+/**
+ * Legacy-wrapper для обратной совместимости со старым namespace.
+ */
+class EntityNotFoundException extends SharedEntityNotFoundException {}

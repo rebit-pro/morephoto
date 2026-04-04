@@ -25,10 +25,7 @@ const lastSyncedAt = computed(() => {
 const latestTransactions = computed(() => wallet.transactions.slice(0, 5));
 
 onMounted(async () => {
-  await Promise.allSettled([
-    wallet.fetchBalances(),
-    wallet.fetchTransactions({ limit: 5, offset: 0 })
-  ]);
+  await Promise.allSettled([wallet.fetchBalances(), wallet.fetchTransactions({ limit: 5, offset: 0 })]);
 });
 
 async function handleSync(): Promise<void> {
@@ -168,7 +165,9 @@ async function handleSync(): Promise<void> {
 .balance-card {
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);

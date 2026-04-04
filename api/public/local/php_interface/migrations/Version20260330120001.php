@@ -8,7 +8,7 @@ use Sprint\Migration\Exceptions\HelperException;
 
 final class Version20260330120001 extends Version
 {
-    protected $author = 'copilot';
+    protected $author = 'auto';
 
     protected $description = 'Создание группы пользователей COUNTERPARTIES';
 

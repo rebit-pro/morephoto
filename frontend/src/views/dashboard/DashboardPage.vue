@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { HistoryIcon, PlugConnectedIcon, WalletIcon } from 'vue-tabler-icons';
+import type { Balance } from '@/api/wallet';
 import { useAuthStore } from '@/stores/auth';
 import { useWalletStore } from '@/stores/wallet';
 import { useIdentityStore } from '@/stores/identity';
@@ -18,7 +19,6 @@ const exchange = useExchangeStore();
 const { txLabel, txColor, txIcon } = useTransactionLabels();
 const { formatRub } = useCurrencyFormat();
 const isPageLoading = ref(true);
-
 
 const userDisplayName = computed(() => auth.user?.['name'] ?? auth.user?.['email'] ?? '');
 const hasConnectionMode = computed(() => null !== identity.connectionStatus?.['mode']);
@@ -171,8 +171,8 @@ const importantNotices = computed(() => {
   return notices;
 });
 
-function parseAmount(value: string): number {
-  const parsedValue = Number.parseFloat(value);
+function parseAmount(value: string | number): number {
+  const parsedValue = Number.parseFloat(String(value));
 
   return Number.isNaN(parsedValue) ? 0 : parsedValue;
 }
@@ -188,6 +188,10 @@ function formatAmount(value: string | number, maximumFractionDigits = 2): string
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString('ru-RU');
+}
+
+function hasRubEquivalent(balance: Balance): boolean {
+  return undefined !== balance.rubEquivalent && null !== balance.rubEquivalent;
 }
 
 function connectionStateText(): string {
@@ -264,7 +268,9 @@ onMounted(async () => {
               <v-chip v-if="hasConnectionMode" color="primary" variant="tonal" size="small" class="font-weight-bold">
                 {{ identity.modeLabel }}
               </v-chip>
-              <v-chip color="secondary" variant="tonal" size="small" class="font-weight-bold"> Пара: {{ exchange.selectedPair.label }} </v-chip>
+              <v-chip color="secondary" variant="tonal" size="small" class="font-weight-bold">
+                Пара: {{ exchange.selectedPair.label }}
+              </v-chip>
             </div>
 
             <h1 class="text-h4 text-md-h3 font-weight-bold mb-2">Добро пожаловать, {{ userDisplayName }}</h1>
@@ -275,7 +281,9 @@ onMounted(async () => {
 
           <v-col cols="12" md="4">
             <div class="d-flex flex-column ga-3 dashboard-hero__actions">
-              <v-btn color="white" size="large" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook" class="text-secondary"> Открыть P2P стакан </v-btn>
+              <v-btn color="white" size="large" prepend-icon="mdi-swap-horizontal-bold" to="/orderbook" class="text-secondary">
+                Открыть P2P стакан
+              </v-btn>
               <v-btn color="white" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection" class="text-secondary">
                 Настроить Bybit API
               </v-btn>
@@ -375,8 +383,8 @@ onMounted(async () => {
                         <div class="text-subtitle-1 font-weight-medium">{{ formatAmount(balance.locked, 8) }}</div>
                       </div>
                     </div>
-                    <div v-if="null != balance.rubEquivalent" class="text-body-2 text-primary font-weight-medium">
-                      ≈ {{ formatRub(balance.rubEquivalent) }}
+                    <div v-if="hasRubEquivalent(balance)" class="text-body-2 text-primary font-weight-medium">
+                      ≈ {{ formatRub(balance.rubEquivalent ?? 0) }}
                     </div>
                   </v-sheet>
                 </v-col>
@@ -463,7 +471,11 @@ onMounted(async () => {
                     </div>
                   </v-sheet>
 
-                  <v-sheet v-if="null !== spread && null !== spreadPercent" class="dashboard-notice dashboard-notice--info pa-4" rounded="lg">
+                  <v-sheet
+                    v-if="null !== spread && null !== spreadPercent"
+                    class="dashboard-notice dashboard-notice--info pa-4"
+                    rounded="lg"
+                  >
                     <div class="dashboard-notice__layout">
                       <v-avatar size="44" color="info" variant="tonal" class="flex-shrink-0">
                         <v-icon>mdi-chart-timeline-variant</v-icon>
@@ -480,11 +492,7 @@ onMounted(async () => {
                   </v-sheet>
                 </template>
 
-                <v-sheet
-                  v-else-if="!identity.hasActiveConnection"
-                  class="dashboard-notice dashboard-notice--warning pa-4"
-                  rounded="lg"
-                >
+                <v-sheet v-else-if="!identity.hasActiveConnection" class="dashboard-notice dashboard-notice--warning pa-4" rounded="lg">
                   <div class="dashboard-notice__layout">
                     <v-avatar size="44" color="warning" variant="tonal" class="flex-shrink-0">
                       <v-icon>mdi-link-variant-off</v-icon>
@@ -495,9 +503,7 @@ onMounted(async () => {
                       <p class="dashboard-notice__text text-body-2 text-medium-emphasis mb-3">
                         Подключите активный Bybit API, чтобы видеть лучшие предложения рынка на дашборде.
                       </p>
-                      <v-btn size="small" variant="text" color="primary" to="/profile/api-connection">
-                        Настроить Bybit API
-                      </v-btn>
+                      <v-btn size="small" variant="text" color="primary" to="/profile/api-connection"> Настроить Bybit API </v-btn>
                     </div>
                   </div>
                 </v-sheet>
