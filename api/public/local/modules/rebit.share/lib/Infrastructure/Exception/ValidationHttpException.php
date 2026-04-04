@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Exception;
 
-use Rebit\Share\Shared\Exception\HttpException;
+use Rebit\Share\Shared\Exception\ValidationHttpException as SharedValidationHttpException;
 
 /**
- * Исключение при ошибках валидации данных в запросах
+ * Legacy-wrapper для обратной совместимости со старым namespace.
  */
-final class ValidationHttpException extends HttpException
-{
-    public const int HTTP_DEFAULT_EXCEPTION_CODE = 400;
-    public const string DEFAULT_ERROR_MESSAGE = 'Ошибка валидации данных.';
-}
+class ValidationHttpException extends SharedValidationHttpException {}

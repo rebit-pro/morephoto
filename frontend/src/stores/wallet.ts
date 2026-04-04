@@ -4,6 +4,7 @@ import { walletApi, type Balance, type Transaction, type TransactionFilters } fr
 
 export const useWalletStore = defineStore('wallet', () => {
   const balances = ref<Balance[]>([]);
+  const totalRubEquivalent = ref<number | null>(null);
   const transactions = ref<Transaction[]>([]);
   const transactionsTotal = ref(0);
   const loading = ref(false);
@@ -13,9 +14,14 @@ export const useWalletStore = defineStore('wallet', () => {
   async function fetchBalances(): Promise<void> {
     loading.value = true;
     error.value = null;
+    totalRubEquivalent.value = null;
+
     try {
-      balances.value = await walletApi.getBalances();
+      const result = await walletApi.getBalances();
+      balances.value = result.balances;
+      totalRubEquivalent.value = result.totalRubEquivalent;
     } catch (e: unknown) {
+      totalRubEquivalent.value = null;
       error.value = e instanceof Error ? e.message : 'Ошибка загрузки балансов';
     } finally {
       loading.value = false;
@@ -25,9 +31,14 @@ export const useWalletStore = defineStore('wallet', () => {
   async function syncBalances(): Promise<void> {
     syncing.value = true;
     error.value = null;
+    totalRubEquivalent.value = null;
+
     try {
-      balances.value = await walletApi.syncBalances();
+      const result = await walletApi.syncBalances();
+      balances.value = result.balances;
+      totalRubEquivalent.value = result.totalRubEquivalent;
     } catch (e: unknown) {
+      totalRubEquivalent.value = null;
       error.value = e instanceof Error ? e.message : 'Ошибка синхронизации балансов';
     } finally {
       syncing.value = false;
@@ -84,6 +95,7 @@ export const useWalletStore = defineStore('wallet', () => {
 
   return {
     balances,
+    totalRubEquivalent,
     transactions,
     transactionsTotal,
     loading,

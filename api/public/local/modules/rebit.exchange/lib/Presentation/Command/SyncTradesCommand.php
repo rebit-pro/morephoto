@@ -8,10 +8,10 @@ use Psr\Log\LoggerInterface;
 use Rebit\Exchange\Application\Trade\Message\TradeDiscoveredMessage;
 use Rebit\Exchange\Application\Trade\Message\TradeStatusChangedMessage;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
+use Rebit\Exchange\Application\Trade\Port\TradeEventPublisherInterface;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Presentation\Command\Attribute\WithLock;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Rebit\Share\Shared\Exception\HttpException;
@@ -35,7 +35,7 @@ final class SyncTradesCommand extends RebitCommand
         private readonly TradeRepository $tradeRepository,
         private readonly BybitTradeGatewayInterface $bybitGateway,
         private readonly BybitConnectionResolverInterface $connectionResolver,
-        private readonly MessagePublisherInterface $tradeEventPublisher,
+        private readonly TradeEventPublisherInterface $tradeEventPublisher,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();

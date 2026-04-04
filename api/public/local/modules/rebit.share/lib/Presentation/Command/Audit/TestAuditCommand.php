@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Share\Presentation\Command\Audit;
 
 use Rebit\Share\Application\Audit\Message\AuditMessage;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Share\Application\Audit\Port\AuditPublisherInterface;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class TestAuditCommand extends RebitCommand
 {
     public function __construct(
-        private readonly MessagePublisherInterface $publisher,
+        private readonly AuditPublisherInterface $publisher,
     ) {
         parent::__construct();
     }

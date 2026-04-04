@@ -8,7 +8,7 @@ use Bitrix\Main\Type\DateTime;
 use Rebit\Identity\Domain\ApiConnection\Entity\ApiConnection;
 use Rebit\Identity\Domain\ApiConnection\Entity\Table\ApiConnectionTable;
 use Rebit\Identity\Domain\ApiConnection\Enum\ConnectionStatusEnum;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class ApiConnectionRepository

@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
+use Rebit\Share\Application\Contract\Exchange\CurrencyRubRateQueryInterface;
 use Rebit\Share\Application\Contract\Exchange\CurrencyQueryInterface;
 use Rebit\Share\Application\Contract\Wallet\BalanceSyncPublisherInterface;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
@@ -51,15 +51,12 @@ return [
             WalletMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
     ],
-    'wallet.balance_sync.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => ServiceLocator::getInstance()
-            ->get(BalanceSyncPublisherInterface::class),
-    ],
     GetBalancesUseCase::class => [
         'className' => GetBalancesUseCase::class,
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(BalanceRepository::class),
             ServiceLocator::getInstance()->get(CurrencyQueryInterface::class),
+            ServiceLocator::getInstance()->get(CurrencyRubRateQueryInterface::class),
         ],
     ],
     LockFundsUseCase::class => [

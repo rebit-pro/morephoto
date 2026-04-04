@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Domain\File\Dto\Result;
 
-use Rebit\Share\Application\Interface\ResultDtoInterface;
+use Rebit\Share\Shared\Interface\ResponseDtoInterface;
 
-final readonly class UploadFileResultDto implements ResultDtoInterface
+final readonly class UploadFileResultDto implements ResponseDtoInterface
 {
     public function __construct(
         public int $id,

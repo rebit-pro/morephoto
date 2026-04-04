@@ -9,7 +9,7 @@ use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Entity\TradeCollection;
 use Rebit\Exchange\Domain\Trade\Entity\Table\TradeTable;
 use Rebit\Exchange\Domain\Trade\Enum\TradeStatusEnum;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 use Bitrix\Main\ORM\Query\Query;
 

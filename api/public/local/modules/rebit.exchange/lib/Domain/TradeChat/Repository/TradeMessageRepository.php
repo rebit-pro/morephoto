@@ -42,11 +42,14 @@ final class TradeMessageRepository
         $threshold = (new DateTime())->add("-{$seconds} seconds");
 
         return $this->query(
-            fn(): int => TradeMessageTable::query()
-                ->where('UF_TRADE_ID', $tradeId)
-                ->where('UF_USER_ID', $userId)
-                ->where('UF_CREATED_AT', '>', $threshold)
-                ->queryCountTotal(),
+            static function() use ($tradeId, $userId, $threshold): int {
+                return (int)TradeMessageTable::query()
+                    ->where('UF_TRADE_ID', $tradeId)
+                    ->where('UF_USER_ID', $userId)
+                    ->where('UF_CREATED_AT', '>', $threshold)
+                    ->queryCountTotal()
+                ;
+            },
         );
     }
 

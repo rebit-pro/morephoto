@@ -9,8 +9,8 @@ use Rebit\Exchange\Application\ChatScript\Dto\Result\ChatScriptResultDto;
 use Rebit\Exchange\Application\ChatScript\Dto\Result\ChatScriptStepResultDto;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptStepRepository;
-use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Exception\ValidationHttpException;
 
 final readonly class CreateChatScriptUseCase
 {

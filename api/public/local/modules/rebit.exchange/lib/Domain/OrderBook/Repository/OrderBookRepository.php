@@ -8,7 +8,7 @@ use Bitrix\Main\Type\DateTime;
 use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntry;
 use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntryCollection;
 use Rebit\Exchange\Domain\OrderBook\Entity\Table\OrderBookEntryTable;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class OrderBookRepository

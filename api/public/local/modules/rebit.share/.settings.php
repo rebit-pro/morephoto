@@ -11,6 +11,7 @@ return [
             require __DIR__ . '/di/Layers/Infrastructure.php',
             require __DIR__ . '/di/Layers/Messenger.php',
             require __DIR__ . '/di/audit.php',
+            require __DIR__ . '/di/exchange.php',
             require __DIR__ . '/di/file.php',
         ),
         'readonly' => true,

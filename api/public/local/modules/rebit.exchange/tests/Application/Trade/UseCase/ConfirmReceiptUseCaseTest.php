@@ -11,7 +11,7 @@ use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmReceiptUseCase;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**

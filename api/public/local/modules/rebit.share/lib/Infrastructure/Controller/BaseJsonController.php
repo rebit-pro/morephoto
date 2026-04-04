@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Infrastructure\Controller;
 
+use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 use Rebit\Share\Infrastructure\Controller\Responses\JsonResponse;
 use Rebit\Share\Infrastructure\Controller\Serializers\CommonSerializer;
 use Rebit\Share\Infrastructure\Interface\SerializerInterface;
-use Rebit\Share\Application\Interface\ResultDtoInterface;
-use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
+use Rebit\Share\Shared\Interface\ResponseDtoInterface;
 
 /**
  * Основной класс для наследования Json-контроллеров.
@@ -16,7 +16,7 @@ use Rebit\Share\Infrastructure\Bitrix\ControllerJson;
 abstract class BaseJsonController extends AbstractJsonController
 {
     protected function getResponse(
-        array|ResultDtoInterface $data,
+        array|ResponseDtoInterface $data,
         array $meta = [],
         ?SerializerInterface $serializer = null,
     ): ControllerJson {

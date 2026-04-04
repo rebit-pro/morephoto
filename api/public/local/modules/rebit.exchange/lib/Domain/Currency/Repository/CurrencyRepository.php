@@ -7,7 +7,7 @@ namespace Rebit\Exchange\Domain\Currency\Repository;
 use Rebit\Exchange\Domain\Currency\Entity\Currency;
 use Rebit\Exchange\Domain\Currency\Entity\CurrencyCollection;
 use Rebit\Exchange\Domain\Currency\Entity\Table\CurrencyTable;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class CurrencyRepository

@@ -8,7 +8,7 @@ use Rebit\Exchange\Domain\Currency\Entity\CurrencyPair;
 use Rebit\Exchange\Domain\Currency\Entity\CurrencyPairCollection;
 use Rebit\Exchange\Domain\Currency\Entity\Table\CurrencyPairTable;
 use Rebit\Exchange\Domain\Currency\Entity\Table\CurrencyTable;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class CurrencyPairRepository

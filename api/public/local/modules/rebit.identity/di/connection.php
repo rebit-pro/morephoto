@@ -5,12 +5,14 @@ declare(strict_types=1);
 use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Identity\Application\ApiConnection\Message\Handler\SyncIdentityMessageHandler;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConsumeIdentitySyncUseCase;
+use Rebit\Identity\Application\ApiConnection\Port\IdentitySyncPublisherInterface;
 use Rebit\Identity\Infrastructure\Adapter\BybitConnectionResolver;
 use Rebit\Identity\Application\ApiConnection\UseCase\ConnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\DisconnectApiUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\GetConnectionStatusUseCase;
 use Rebit\Identity\Application\ApiConnection\UseCase\VerifyApiUseCase;
 use Rebit\Identity\Infrastructure\ApiConnection\Messenger\IdentityMessengerFactory;
+use Rebit\Identity\Infrastructure\ApiConnection\Messenger\IdentitySyncPublisher;
 use Rebit\Identity\Domain\ApiConnection\Repository\ApiConnectionRepository;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyEncryptor;
 use Rebit\Identity\Domain\ApiConnection\Service\ApiKeyMasker;
@@ -19,7 +21,6 @@ use Rebit\Identity\Presentation\Command\ApiConnection\TestIdentitySyncCommand;
 use Rebit\Identity\Presentation\Controller\ApiConnectionController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
@@ -50,9 +51,9 @@ return [
             Log::channel(LogChannelEnum::identity),
         ],
     ],
-    'identity.sync.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => IdentityMessengerFactory::createPublisher(
-            ServiceLocator::getInstance(),
+    IdentitySyncPublisherInterface::class => [
+        'constructor' => static fn(): IdentitySyncPublisherInterface => new IdentitySyncPublisher(
+            IdentityMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
     ],
     ConnectApiUseCase::class => [
@@ -114,7 +115,7 @@ return [
     TestIdentitySyncCommand::class => [
         'className' => TestIdentitySyncCommand::class,
         'constructorParams' => static fn(): array => [
-            ServiceLocator::getInstance()->get('identity.sync.publisher'),
+            ServiceLocator::getInstance()->get(IdentitySyncPublisherInterface::class),
         ],
     ],
     ApiConnectionController::class => [

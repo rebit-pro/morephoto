@@ -7,8 +7,8 @@ namespace Rebit\Auth\Domain\Registration\Repository;
 use Bitrix\Main\Application;
 use Bitrix\Main\Type\DateTime;
 use Rebit\Auth\Domain\Registration\Entity\RegistrationConfirmation;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 
 final readonly class RegistrationConfirmationRepository
 {

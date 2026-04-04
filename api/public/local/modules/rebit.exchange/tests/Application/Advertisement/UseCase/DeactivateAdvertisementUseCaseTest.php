@@ -9,7 +9,7 @@ use Rebit\Exchange\Application\Advertisement\Port\BybitAdvertisementGatewayInter
 use Rebit\Exchange\Application\Advertisement\UseCase\DeactivateAdvertisementUseCase;
 use Rebit\Exchange\Domain\Advertisement\Entity\Advertisement;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**

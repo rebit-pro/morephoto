@@ -2,7 +2,6 @@
 import { computed, onMounted } from 'vue';
 import { PlugConnectedIcon, RefreshIcon, WalletIcon } from 'vue-tabler-icons';
 import { useWalletStore } from '@/stores/wallet';
-import { useExchangeStore } from '@/stores/exchange';
 import { useCurrencyFormat } from '@/composables/useCurrencyFormat';
 import { useTransactionLabels } from '@/composables/useTransactionLabels';
 import AppEmptyState from '@/components/shared/AppEmptyState.vue';
@@ -10,8 +9,7 @@ import UiParentCard from '@/components/shared/UiParentCard.vue';
 import CurrencyIcon from '@/components/shared/CurrencyIcon.vue';
 
 const wallet = useWalletStore();
-const exchange = useExchangeStore();
-const { parseAmount, formatAmount, formatRub, formatDate } = useCurrencyFormat();
+const { formatAmount, formatRub, formatDate } = useCurrencyFormat();
 const { txLabel, txColor, txIcon } = useTransactionLabels();
 
 const lastSyncedAt = computed(() => {
@@ -24,56 +22,10 @@ const lastSyncedAt = computed(() => {
   return new Date(maxDate).toLocaleString('ru-RU');
 });
 
-const USDT_LIKE_CURRENCIES = new Set(['USDT', 'USDC']);
-
-/** Лучшая цена покупки из стакана — приблизительный курс */
-const bestBuyPrice = computed(() => {
-  let max: number | null = null;
-
-  for (const order of exchange.buyOrders) {
-    const price = parseAmount(order.price);
-
-    if (0 >= price) {
-      continue;
-    }
-
-    if (null === max || price > max) {
-      max = price;
-    }
-  }
-
-  return max;
-});
-
-function rubEquivalent(total: string, currency: string): string | null {
-  if ('RUB' === currency.toUpperCase()) return null;
-  if (null === bestBuyPrice.value) return null;
-  if (!USDT_LIKE_CURRENCIES.has(currency.toUpperCase())) return null;
-  const value = parseAmount(total) * bestBuyPrice.value;
-  return formatRub(value);
-}
-
-const totalRubEquivalent = computed(() => {
-  if (null === bestBuyPrice.value) return null;
-  let total = 0;
-  for (const balance of wallet.balances) {
-    if ('RUB' === balance.currency.toUpperCase()) {
-      total += parseAmount(balance.total);
-    } else if (USDT_LIKE_CURRENCIES.has(balance.currency.toUpperCase())) {
-      total += parseAmount(balance.total) * bestBuyPrice.value;
-    }
-  }
-  return formatRub(total);
-});
-
 const latestTransactions = computed(() => wallet.transactions.slice(0, 5));
 
 onMounted(async () => {
-  await Promise.allSettled([
-    wallet.fetchBalances(),
-    wallet.fetchTransactions({ limit: 5, offset: 0 }),
-    exchange.fetchOrderBook()
-  ]);
+  await Promise.allSettled([wallet.fetchBalances(), wallet.fetchTransactions({ limit: 5, offset: 0 })]);
 });
 
 async function handleSync(): Promise<void> {
@@ -97,14 +49,14 @@ async function handleSync(): Promise<void> {
     </div>
 
     <!-- Общий баланс в рублях -->
-    <v-card v-if="totalRubEquivalent" class="balances-total-card mb-6" rounded="lg">
+    <v-card v-if="null !== wallet.totalRubEquivalent" class="balances-total-card mb-6" rounded="lg">
       <v-card-text class="pa-5 d-flex align-center ga-4">
         <v-avatar size="52" color="primary" variant="tonal">
           <v-icon size="28">mdi-wallet-outline</v-icon>
         </v-avatar>
         <div>
           <div class="text-body-2 text-medium-emphasis">Общий баланс (приблизительно)</div>
-          <div class="text-h4 font-weight-bold">{{ totalRubEquivalent }}</div>
+          <div class="text-h4 font-weight-bold">{{ formatRub(wallet.totalRubEquivalent) }}</div>
         </div>
       </v-card-text>
     </v-card>
@@ -131,8 +83,8 @@ async function handleSync(): Promise<void> {
               <span>Заблокировано: {{ formatAmount(balance.locked, balance.currency) }}</span>
               <span>Всего: {{ formatAmount(balance.total, balance.currency) }}</span>
             </div>
-            <div v-if="rubEquivalent(balance.total, balance.currency)" class="text-body-2 text-primary font-weight-medium">
-              ≈ {{ rubEquivalent(balance.total, balance.currency) }}
+            <div v-if="null != balance.rubEquivalent" class="text-body-2 text-primary font-weight-medium">
+              ≈ {{ formatRub(balance.rubEquivalent ?? 0) }}
             </div>
           </v-card-text>
         </v-card>
@@ -213,7 +165,9 @@ async function handleSync(): Promise<void> {
 .balance-card {
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);

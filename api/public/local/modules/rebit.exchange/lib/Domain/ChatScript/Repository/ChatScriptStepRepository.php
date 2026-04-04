@@ -7,7 +7,7 @@ namespace Rebit\Exchange\Domain\ChatScript\Repository;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStep;
 use Rebit\Exchange\Domain\ChatScript\Entity\ChatScriptStepCollection;
 use Rebit\Exchange\Domain\ChatScript\Entity\Table\ChatScriptStepTable;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class ChatScriptStepRepository

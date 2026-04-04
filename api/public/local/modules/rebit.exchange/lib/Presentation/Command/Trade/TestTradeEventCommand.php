@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Presentation\Command\Trade;
 
 use Rebit\Exchange\Application\Trade\Message\TradeDiscoveredMessage;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Exchange\Application\Trade\Port\TradeEventPublisherInterface;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class TestTradeEventCommand extends RebitCommand
 {
     public function __construct(
-        private readonly MessagePublisherInterface $publisher,
+        private readonly TradeEventPublisherInterface $publisher,
     ) {
         parent::__construct();
     }

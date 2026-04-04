@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Infrastructure\Bybit;
 
-use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitCounterpartyProfileDto;
 use Rebit\Exchange\Application\Trade\Port\BybitCounterpartyGatewayInterface;
+use Rebit\Exchange\Domain\Counterparty\Dto\CounterpartyProfileDto;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
@@ -20,7 +20,7 @@ final readonly class BybitCounterpartyGateway implements BybitCounterpartyGatewa
         private BybitClientInterface $bybitClient,
     ) {}
 
-    public function fetchProfile(int $userId, string $originalUid, string $orderId): BybitCounterpartyProfileDto
+    public function fetchProfile(int $userId, string $originalUid, string $orderId): CounterpartyProfileDto
     {
         $connection = $this->connectionResolver->resolve($userId);
 
@@ -44,7 +44,7 @@ final readonly class BybitCounterpartyGateway implements BybitCounterpartyGatewa
         /** @var array<string, mixed> $profile */
         $profile = $response->result;
 
-        return new BybitCounterpartyProfileDto(
+        return new CounterpartyProfileDto(
             userId: (string)($profile['userId'] ?? ''),
             nickName: (string)($profile['nickName'] ?? ''),
             realName: (string)($profile['realName'] ?? ''),

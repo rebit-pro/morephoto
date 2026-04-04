@@ -7,7 +7,7 @@ namespace Rebit\Exchange\Domain\PaymentMethod\Repository;
 use Rebit\Exchange\Domain\PaymentMethod\Entity\PaymentMethod;
 use Rebit\Exchange\Domain\PaymentMethod\Entity\PaymentMethodCollection;
 use Rebit\Exchange\Domain\PaymentMethod\Entity\Table\PaymentMethodTable;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final class PaymentMethodRepository

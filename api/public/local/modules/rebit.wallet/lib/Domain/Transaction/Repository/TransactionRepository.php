@@ -6,8 +6,8 @@ namespace Rebit\Wallet\Domain\Transaction\Repository;
 
 use Bitrix\Main\ORM\Fields\ExpressionField;
 use Bitrix\Main\Type\DateTime;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Wallet\Domain\Transaction\Entity\Table\TransactionTable;
 use Rebit\Wallet\Domain\Transaction\ValueObject\TransactionFilter;
 use Rebit\Wallet\Domain\Transaction\Entity\Transaction;

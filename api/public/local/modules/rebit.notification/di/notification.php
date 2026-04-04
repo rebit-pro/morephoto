@@ -12,10 +12,9 @@ use Rebit\Notification\Infrastructure\Channel\EmailNotificationChannel;
 use Rebit\Notification\Infrastructure\Notification\Messenger\NotificationMessengerFactory;
 use Rebit\Notification\Presentation\Command\Notification\NotificationConsumerCommand;
 use Rebit\Notification\Presentation\Command\Notification\TestSendNotificationCommand;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Share\Application\Contract\Messenger\MessageConsumerRunnerInterface;
+use Rebit\Share\Application\Contract\Messenger\MessageTransportFactoryInterface;
 use Rebit\Share\Application\Contract\Notification\NotificationPublisherInterface;
-use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
-use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 use Rebit\Share\Shared\Facade\Log;
 
@@ -50,29 +49,17 @@ return [
         ],
     ],
 
-    /**
-     * Publisher для отправки уведомлений из других модулей.
-     *
-     * Использование в DI:
-     *   ServiceLocator::getInstance()->get('notification.publisher')
-     */
-    'notification.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => NotificationMessengerFactory::createPublisher(
-            ServiceLocator::getInstance(),
-        ),
-    ],
-
     NotificationPublisherInterface::class => [
         'constructor' => static fn(): NotificationPublisherInterface => new NotificationPublisherAdapter(
-            ServiceLocator::getInstance()->get('notification.publisher'),
+            NotificationMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
     ],
 
     ConsumeNotificationsUseCase::class => [
         'className' => ConsumeNotificationsUseCase::class,
         'constructorParams' => static fn(): array => [
-            ServiceLocator::getInstance()->get(ConsumerRunnerInterface::class),
-            ServiceLocator::getInstance()->get(AmqpConnectionFactory::class),
+            ServiceLocator::getInstance()->get(MessageConsumerRunnerInterface::class),
+            ServiceLocator::getInstance()->get(MessageTransportFactoryInterface::class),
             NotificationMessengerFactory::createBus(ServiceLocator::getInstance()),
         ],
     ],

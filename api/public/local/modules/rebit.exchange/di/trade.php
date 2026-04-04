@@ -9,6 +9,7 @@ use Rebit\Exchange\Application\Trade\Port\BybitCounterpartyGatewayInterface;
 use Rebit\Exchange\Application\Trade\UseCase\ConsumeTradeEventsUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\EnrichTradeFromBybitUseCase;
 use Rebit\Exchange\Application\Trade\Port\BybitTradeGatewayInterface;
+use Rebit\Exchange\Application\Trade\Port\TradeEventPublisherInterface;
 use Rebit\Exchange\Application\Trade\UseCase\SyncCounterpartyUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmPaymentUseCase;
 use Rebit\Exchange\Application\Trade\UseCase\ConfirmReceiptUseCase;
@@ -18,6 +19,7 @@ use Rebit\Exchange\Application\Trade\UseCase\SyncTradeHistoryUseCase;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Infrastructure\Bybit\BybitTradeGateway;
 use Rebit\Exchange\Infrastructure\Trade\Messenger\ExchangeTradeMessengerFactory;
+use Rebit\Exchange\Infrastructure\Trade\Messenger\TradeEventPublisher;
 use Rebit\Exchange\Presentation\Command\SyncTradeHistoryCommand;
 use Rebit\Exchange\Presentation\Command\SyncTradesCommand;
 use Rebit\Exchange\Presentation\Command\Trade\TestTradeEventCommand;
@@ -27,7 +29,6 @@ use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\ChatScript\Repository\ChatScriptExecutionRepository;
 use Rebit\Exchange\Domain\Counterparty\Repository\CounterpartyRepository;
 use Rebit\Exchange\Domain\PaymentMethod\Repository\PaymentMethodRepository;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Exchange\Presentation\Controller\TradeController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
@@ -87,9 +88,9 @@ return [
             Log::channel(LogChannelEnum::exchange),
         ],
     ],
-    'exchange.trade_event.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => ExchangeTradeMessengerFactory::createPublisher(
-            ServiceLocator::getInstance(),
+    TradeEventPublisherInterface::class => [
+        'constructor' => static fn(): TradeEventPublisherInterface => new TradeEventPublisher(
+            ExchangeTradeMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
     ],
     EnrichTradeFromBybitUseCase::class => [
@@ -144,7 +145,7 @@ return [
             ServiceLocator::getInstance()->get(TradeRepository::class),
             ServiceLocator::getInstance()->get(BybitTradeGatewayInterface::class),
             ServiceLocator::getInstance()->get(BybitConnectionResolverInterface::class),
-            ServiceLocator::getInstance()->get('exchange.trade_event.publisher'),
+            ServiceLocator::getInstance()->get(TradeEventPublisherInterface::class),
             Log::getLogger(LogChannelEnum::exchange),
         ],
     ],
@@ -180,7 +181,7 @@ return [
     TestTradeEventCommand::class => [
         'className' => TestTradeEventCommand::class,
         'constructorParams' => static fn(): array => [
-            ServiceLocator::getInstance()->get('exchange.trade_event.publisher'),
+            ServiceLocator::getInstance()->get(TradeEventPublisherInterface::class),
         ],
     ],
     TradeController::class => [

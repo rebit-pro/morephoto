@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Exchange\Presentation\Command\TradeChat;
 
 use Rebit\Exchange\Application\TradeChat\Message\ExecuteChatScriptStepMessage;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
+use Rebit\Exchange\Application\TradeChat\Port\ChatScriptStepPublisherInterface;
 use Rebit\Share\Presentation\Command\RebitCommand;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class TestChatScriptStepCommand extends RebitCommand
 {
     public function __construct(
-        private readonly MessagePublisherInterface $publisher,
+        private readonly ChatScriptStepPublisherInterface $publisher,
     ) {
         parent::__construct();
     }

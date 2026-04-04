@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Rebit\Exchange\Infrastructure\Bitrix;
 
+use Rebit\Exchange\Application\TradeChat\Port\TradeChatUploadFileLocatorInterface;
 use Rebit\Share\Domain\File\Service\UploadedFileOwnershipService;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
-use Rebit\Share\Infrastructure\Exception\ValidationHttpException;
+use Rebit\Share\Shared\Exception\ValidationHttpException;
 
-final readonly class TradeChatUploadFileLocator
+final readonly class TradeChatUploadFileLocator implements TradeChatUploadFileLocatorInterface
 {
     private const string ALLOWED_UPLOAD_DIR = '/upload/rebit.exchange/';
     private const int MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;

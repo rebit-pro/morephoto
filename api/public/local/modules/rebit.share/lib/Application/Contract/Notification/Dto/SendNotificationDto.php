@@ -4,12 +4,8 @@ declare(strict_types=1);
 
 namespace Rebit\Share\Application\Contract\Notification\Dto;
 
-use Rebit\Notification\Application\Notification\Message\SendNotificationMessage;
-
 /**
  * Межмодульный DTO для публикации уведомлений.
- *
- * @see SendNotificationMessage
  */
 final readonly class SendNotificationDto
 {

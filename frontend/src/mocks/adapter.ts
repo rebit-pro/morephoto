@@ -248,11 +248,11 @@ async function handleMockRequest(config: AxiosRequestConfig): Promise<MockEnvelo
   }
 
   if ('get' === method && '/api/v1/wallet/balances' === path) {
-    return ok({ balances: getBalancesWithMock() });
+    return ok(getBalancesWithMock());
   }
 
   if ('post' === method && '/api/v1/wallet/balances/sync' === path) {
-    return ok({ balances: syncBalancesWithMock() });
+    return ok(syncBalancesWithMock());
   }
 
   if ('get' === method && '/api/v1/wallet/transactions' === path) {

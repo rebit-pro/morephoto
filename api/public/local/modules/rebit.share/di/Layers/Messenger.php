@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
+use Rebit\Share\Application\Contract\Messenger\MessageConsumerRunnerInterface;
+use Rebit\Share\Application\Contract\Messenger\MessageTransportFactoryInterface;
 use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
 use Rebit\Share\Infrastructure\Messenger\BitrixDedupCache;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunner;
@@ -25,6 +27,10 @@ return [
             (string)getenv('MESSENGER_TRANSPORT_DSN'),
         ],
     ],
+    MessageTransportFactoryInterface::class => [
+        'constructor' => static fn(): MessageTransportFactoryInterface => ServiceLocator::getInstance()
+            ->get(AmqpConnectionFactory::class),
+    ],
     ConsumerRunnerInterface::class => [
         'constructor' => static function(): ConsumerRunnerInterface {
             $locator = ServiceLocator::getInstance();
@@ -35,6 +41,10 @@ return [
                 $locator->get(AmqpConnectionFactory::class)->create(MessengerQueueEnum::FAILED),
             );
         },
+    ],
+    MessageConsumerRunnerInterface::class => [
+        'constructor' => static fn(): MessageConsumerRunnerInterface => ServiceLocator::getInstance()
+            ->get(ConsumerRunnerInterface::class),
     ],
     DedupCacheInterface::class => [
         'className' => BitrixDedupCache::class,

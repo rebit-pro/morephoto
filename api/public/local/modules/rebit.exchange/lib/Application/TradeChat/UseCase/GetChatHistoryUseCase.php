@@ -9,10 +9,10 @@ use Rebit\Exchange\Application\TradeChat\Dto\Result\TradeMessageResultDto;
 use Rebit\Exchange\Domain\Trade\Entity\Trade;
 use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
-use Rebit\Share\Shared\Facade\Cache;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
+use Rebit\Share\Shared\Facade\Cache;
 
 /**
  * Получение истории чата из локальной БД с предварительной синхронизацией из Bybit.

@@ -8,8 +8,8 @@ use Bitrix\Main\GroupTable;
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\UserGroupTable;
 use Bitrix\Main\UserTable;
-use Rebit\Exchange\Application\Trade\Dto\Bybit\BybitCounterpartyProfileDto;
-use Rebit\Share\Infrastructure\Repository\RepositoryExceptionTrait;
+use Rebit\Exchange\Domain\Counterparty\Dto\CounterpartyProfileDto;
+use Rebit\Share\Shared\Repository\RepositoryExceptionTrait;
 use Rebit\Share\Shared\Exception\RepositoryException;
 
 final readonly class CounterpartyRepository
@@ -43,7 +43,7 @@ final readonly class CounterpartyRepository
     /**
      * @throws RepositoryException
      */
-    public function upsert(BybitCounterpartyProfileDto $profile): int
+    public function upsert(CounterpartyProfileDto $profile): int
     {
         $existingUserId = $this->findIdByBybitUserId($profile->userId);
         $fields = $this->buildFields($profile);
@@ -117,7 +117,7 @@ final readonly class CounterpartyRepository
     /**
      * @return array<string, int|string>
      */
-    private function buildFields(BybitCounterpartyProfileDto $profile): array
+    private function buildFields(CounterpartyProfileDto $profile): array
     {
         $now = new DateTime();
 

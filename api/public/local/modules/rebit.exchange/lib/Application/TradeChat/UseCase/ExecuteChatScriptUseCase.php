@@ -13,7 +13,7 @@ use Rebit\Exchange\Domain\Trade\Repository\TradeRepository;
 use Rebit\Exchange\Domain\TradeChat\Enum\ContentTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Enum\MessageTypeEnum;
 use Rebit\Exchange\Domain\TradeChat\Repository\TradeMessageRepository;
-use Rebit\Share\Infrastructure\Exception\EntityNotFoundException;
+use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\HttpException;
 use Rebit\Share\Shared\Exception\RepositoryException;
 

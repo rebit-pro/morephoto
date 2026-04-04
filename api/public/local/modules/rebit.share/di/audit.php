@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 use Bitrix\Main\DI\ServiceLocator;
 use Rebit\Share\Application\Audit\Message\Handler\AuditMessageHandler;
+use Rebit\Share\Application\Audit\Port\AuditPublisherInterface;
 use Rebit\Share\Application\Audit\UseCase\ConsumeAuditUseCase;
-use Rebit\Share\Application\Contract\Messenger\MessagePublisherInterface;
 use Rebit\Share\Domain\Audit\Repository\AuditLogRepository;
 use Rebit\Share\Infrastructure\Audit\Messenger\AuditMessengerFactory;
+use Rebit\Share\Infrastructure\Audit\Messenger\AuditPublisher;
 use Rebit\Share\Infrastructure\Messenger\AmqpConnectionFactory;
 use Rebit\Share\Infrastructure\Messenger\ConsumerRunnerInterface;
 use Rebit\Share\Presentation\Command\Audit\AuditConsumerCommand;
@@ -26,9 +27,9 @@ return [
             Log::channel(LogChannelEnum::security),
         ],
     ],
-    'share.audit.publisher' => [
-        'constructor' => static fn(): MessagePublisherInterface => AuditMessengerFactory::createPublisher(
-            ServiceLocator::getInstance(),
+    AuditPublisherInterface::class => [
+        'constructor' => static fn(): AuditPublisherInterface => new AuditPublisher(
+            AuditMessengerFactory::createPublisher(ServiceLocator::getInstance()),
         ),
     ],
     ConsumeAuditUseCase::class => [
@@ -48,7 +49,7 @@ return [
     TestAuditCommand::class => [
         'className' => TestAuditCommand::class,
         'constructorParams' => static fn(): array => [
-            ServiceLocator::getInstance()->get('share.audit.publisher'),
+            ServiceLocator::getInstance()->get(AuditPublisherInterface::class),
         ],
     ],
 ];
