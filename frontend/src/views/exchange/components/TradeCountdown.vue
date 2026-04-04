@@ -49,22 +49,19 @@ onUnmounted(() => {
   if (null !== timer) clearInterval(timer);
 });
 
-watch(() => props.deadline, () => {
-  now.value = Date.now();
-});
+watch(
+  () => props.deadline,
+  () => {
+    now.value = Date.now();
+  }
+);
 </script>
 
 <template>
   <v-card class="trade-countdown" rounded="lg" variant="tonal" :color="progressColor">
     <v-card-text class="d-flex align-center justify-center pa-5">
       <div class="trade-countdown__ring mr-5" :class="{ 'trade-countdown__ring--pulse': isPulsing }">
-        <v-progress-circular
-          :model-value="progress"
-          :size="88"
-          :width="6"
-          :color="progressColor"
-          bg-color="rgba(0,0,0,0.06)"
-        >
+        <v-progress-circular :model-value="progress" :size="88" :width="6" :color="progressColor" bg-color="rgba(0,0,0,0.06)">
           <div class="text-center">
             <v-icon :color="progressColor" size="18" class="mb-1">mdi-timer-outline</v-icon>
             <div class="font-weight-bold trade-countdown__time" :class="`text-${progressColor}`">
@@ -79,7 +76,9 @@ watch(() => props.deadline, () => {
           {{ isExpired ? 'Время на оплату истекло' : 'Время на оплату' }}
         </div>
         <div class="text-body-2 text-medium-emphasis">
-          {{ isExpired ? 'Срок оплаты прошёл. Сделка может быть отменена.' : 'Оплатите до истечения таймера, чтобы сделка не была отменена.' }}
+          {{
+            isExpired ? 'Срок оплаты прошёл. Сделка может быть отменена.' : 'Оплатите до истечения таймера, чтобы сделка не была отменена.'
+          }}
         </div>
       </div>
     </v-card-text>
@@ -103,7 +102,12 @@ watch(() => props.deadline, () => {
 }
 
 @keyframes countdown-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
 }
 </style>

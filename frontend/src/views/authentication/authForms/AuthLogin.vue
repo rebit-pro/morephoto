@@ -217,6 +217,7 @@ onUnmounted(() => {
     <v-text-field
       v-model="email"
       :rules="emailRules"
+      data-testid="login-email"
       label="Email"
       class="mb-4"
       required
@@ -228,6 +229,7 @@ onUnmounted(() => {
     <v-text-field
       v-model="password"
       :rules="passwordRules"
+      data-testid="login-password"
       label="Пароль"
       required
       density="comfortable"
@@ -242,6 +244,7 @@ onUnmounted(() => {
 
     <v-btn
       color="secondary"
+      data-testid="login-submit"
       :loading="isSubmitting || captchaProcessing"
       :disabled="captchaLoading || captchaProcessing || ('' !== geetestCaptchaId && false === captchaReady)"
       block
@@ -259,7 +262,7 @@ onUnmounted(() => {
       {{ captchaError }}
     </v-alert>
 
-    <v-alert v-if="apiError" color="error" class="mt-4" variant="tonal">
+    <v-alert v-if="apiError" color="error" class="mt-4" variant="tonal" data-testid="login-api-error">
       {{ apiError }}
     </v-alert>
   </Form>

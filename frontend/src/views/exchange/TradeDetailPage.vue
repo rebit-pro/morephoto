@@ -68,7 +68,7 @@ const kycLevelLabel = computed(() => {
     0: 'Нет KYC',
     1: 'Базовый (Lv.1)',
     2: 'Продвинутый (Lv.2)',
-    3: 'Полный (Lv.3)',
+    3: 'Полный (Lv.3)'
   });
 });
 
@@ -134,9 +134,11 @@ const canOpenAdvertisement = computed(() => {
 });
 
 const showCountdown = computed(() => {
-  return null !== getTradeValue('paymentDeadline') &&
+  return (
+    null !== getTradeValue('paymentDeadline') &&
     '' !== (getTradeValue('paymentDeadline') ?? '') &&
-    'pending_payment' === getTradeValue('status');
+    'pending_payment' === getTradeValue('status')
+  );
 });
 
 async function loadTrade(): Promise<void> {
@@ -307,7 +309,12 @@ onUnmounted(() => {
             </v-card-text>
           </UiParentCard>
 
-          <UiParentCard title="Информация о пользователе" subtitle="Профиль контрагента на Bybit" icon="mdi-account-box-outline" color="secondary">
+          <UiParentCard
+            title="Информация о пользователе"
+            subtitle="Профиль контрагента на Bybit"
+            icon="mdi-account-box-outline"
+            color="secondary"
+          >
             <v-card-text class="pa-5">
               <template v-if="hasCounterparty">
                 <div class="d-flex align-center ga-3 mb-4">
@@ -375,10 +382,18 @@ onUnmounted(() => {
 
                 <div class="text-caption font-weight-bold text-medium-emphasis mb-2">СТАТИСТИКА СДЕЛОК</div>
                 <div class="d-flex flex-wrap ga-2">
-                  <v-chip size="small" variant="tonal" color="default" prepend-icon="mdi-check-all">{{ counterpartyData.totalFinishCount }} сделок</v-chip>
-                  <v-chip size="small" variant="tonal" color="success" prepend-icon="mdi-arrow-down-bold">{{ counterpartyData.totalFinishBuyCount }} покупок</v-chip>
-                  <v-chip size="small" variant="tonal" color="error" prepend-icon="mdi-arrow-up-bold">{{ counterpartyData.totalFinishSellCount }} продаж</v-chip>
-                  <v-chip size="small" variant="tonal" color="info" prepend-icon="mdi-calendar-month">{{ counterpartyData.recentRate }}% за 30д</v-chip>
+                  <v-chip size="small" variant="tonal" color="default" prepend-icon="mdi-check-all"
+                    >{{ counterpartyData.totalFinishCount }} сделок</v-chip
+                  >
+                  <v-chip size="small" variant="tonal" color="success" prepend-icon="mdi-arrow-down-bold"
+                    >{{ counterpartyData.totalFinishBuyCount }} покупок</v-chip
+                  >
+                  <v-chip size="small" variant="tonal" color="error" prepend-icon="mdi-arrow-up-bold"
+                    >{{ counterpartyData.totalFinishSellCount }} продаж</v-chip
+                  >
+                  <v-chip size="small" variant="tonal" color="info" prepend-icon="mdi-calendar-month"
+                    >{{ counterpartyData.recentRate }}% за 30д</v-chip
+                  >
                 </div>
 
                 <v-divider class="my-3" />
@@ -389,7 +404,9 @@ onUnmounted(() => {
                     <template #prepend><v-icon size="18" color="success">mdi-thumb-up-outline</v-icon></template>
                     <v-list-item-title class="text-body-2">Положительные отзывы</v-list-item-title>
                     <template #append>
-                      <span class="font-weight-medium text-body-2">{{ counterpartyData.goodAppraiseCount }} ({{ counterpartyData.goodAppraiseRate }}%)</span>
+                      <span class="font-weight-medium text-body-2"
+                        >{{ counterpartyData.goodAppraiseCount }} ({{ counterpartyData.goodAppraiseRate }}%)</span
+                      >
                     </template>
                   </v-list-item>
                   <v-list-item>
@@ -488,7 +505,14 @@ onUnmounted(() => {
                   Открыть объявление
                 </v-btn>
 
-                <v-btn class="trade-actions__button" variant="outlined" size="large" rounded="lg" prepend-icon="mdi-open-in-new" @click="openBybitTradePage">
+                <v-btn
+                  class="trade-actions__button"
+                  variant="outlined"
+                  size="large"
+                  rounded="lg"
+                  prepend-icon="mdi-open-in-new"
+                  @click="openBybitTradePage"
+                >
                   Перейти на Bybit
                 </v-btn>
               </div>
@@ -519,7 +543,9 @@ onUnmounted(() => {
         <v-card-actions class="px-6 py-4">
           <v-spacer />
           <v-btn variant="text" @click="confirmPaymentDialog = false">Отмена</v-btn>
-          <v-btn color="secondary" variant="flat" rounded="lg" :loading="trades.actionLoading" @click="handleConfirmPayment"> Подтвердить </v-btn>
+          <v-btn color="secondary" variant="flat" rounded="lg" :loading="trades.actionLoading" @click="handleConfirmPayment">
+            Подтвердить
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -538,9 +564,7 @@ onUnmounted(() => {
         </v-card-item>
         <v-divider />
         <v-card-text class="px-6 py-5">
-          <v-alert type="warning" variant="tonal">
-            Подтвердите только после получения оплаты! Это действие нельзя отменить.
-          </v-alert>
+          <v-alert type="warning" variant="tonal"> Подтвердите только после получения оплаты! Это действие нельзя отменить. </v-alert>
         </v-card-text>
         <v-divider />
         <v-card-actions class="px-6 py-4">

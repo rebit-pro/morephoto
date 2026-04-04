@@ -92,7 +92,8 @@ const orderBookMetrics = computed(() => [
   {
     title: 'Спрэд',
     value: null === spread.value ? '—' : `${formatPrice(spread.value)} ₽`,
-    description: null === spreadPercent.value ? 'Недостаточно данных для расчёта' : `${formatPrice(spreadPercent.value)}% от лучшей продажи`,
+    description:
+      null === spreadPercent.value ? 'Недостаточно данных для расчёта' : `${formatPrice(spreadPercent.value)}% от лучшей продажи`,
     color: 'info',
     icon: 'mdi-chart-line'
   }
@@ -132,7 +133,9 @@ onUnmounted(() => {
               <v-chip :color="hasOrderBookAccess ? 'success' : 'warning'" variant="tonal" size="small" class="font-weight-bold">
                 {{ hasOrderBookAccess ? 'Bybit API активен' : 'Доступ к стакану ограничен' }}
               </v-chip>
-              <v-chip color="secondary" variant="tonal" size="small" class="font-weight-bold">Пара: {{ exchange.selectedPair.label }}</v-chip>
+              <v-chip color="secondary" variant="tonal" size="small" class="font-weight-bold"
+                >Пара: {{ exchange.selectedPair.label }}</v-chip
+              >
               <v-chip color="info" variant="tonal" size="small" class="font-weight-bold">Автообновление раз в 15 секунд</v-chip>
             </div>
 
@@ -144,10 +147,24 @@ onUnmounted(() => {
 
           <v-col cols="12" lg="4">
             <div class="d-flex flex-column ga-3 orderbook-page__hero-actions">
-              <v-btn class="orderbook-page__hero-button text-secondary" color="white" size="large" prepend-icon="mdi-refresh" :loading="exchange.loading" @click="refreshOrderBook">
+              <v-btn
+                class="orderbook-page__hero-button text-secondary"
+                color="white"
+                size="large"
+                prepend-icon="mdi-refresh"
+                :loading="exchange.loading"
+                @click="refreshOrderBook"
+              >
                 Обновить стакан
               </v-btn>
-              <v-btn class="orderbook-page__hero-button text-secondary" color="white" variant="outlined" size="large" prepend-icon="mdi-link-variant" to="/profile/api-connection">
+              <v-btn
+                class="orderbook-page__hero-button text-secondary"
+                color="white"
+                variant="outlined"
+                size="large"
+                prepend-icon="mdi-link-variant"
+                to="/profile/api-connection"
+              >
                 Настроить Bybit API
               </v-btn>
             </div>
@@ -243,7 +260,11 @@ onUnmounted(() => {
         </v-col>
       </v-row>
 
-      <v-sheet v-if="null !== spread && null !== bestBuyPrice && null !== bestSellPrice && null !== spreadPercent" class="orderbook-page__spread mt-4 pa-4" rounded="lg">
+      <v-sheet
+        v-if="null !== spread && null !== bestBuyPrice && null !== bestSellPrice && null !== spreadPercent"
+        class="orderbook-page__spread mt-4 pa-4"
+        rounded="lg"
+      >
         <div class="orderbook-page__spread-layout">
           <v-avatar size="48" color="info" variant="tonal" class="flex-shrink-0">
             <v-icon>mdi-chart-timeline-variant</v-icon>
@@ -252,8 +273,9 @@ onUnmounted(() => {
           <div class="orderbook-page__spread-content">
             <div class="text-subtitle-1 font-weight-bold mb-1">Ситуация по спрэду</div>
             <p class="text-body-2 text-medium-emphasis mb-4 orderbook-page__spread-text">
-              Разница между лучшей покупкой и лучшей продажей сейчас составляет <strong>{{ formatPrice(spread) }} ₽</strong>
-              ({{ formatPrice(spreadPercent) }}%). Это помогает быстро понять текущую плотность рынка.
+              Разница между лучшей покупкой и лучшей продажей сейчас составляет <strong>{{ formatPrice(spread) }} ₽</strong> ({{
+                formatPrice(spreadPercent)
+              }}%). Это помогает быстро понять текущую плотность рынка.
             </p>
 
             <div class="d-flex flex-wrap ga-3">

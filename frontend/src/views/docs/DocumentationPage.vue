@@ -159,11 +159,18 @@ const tips = [
               <div class="text-overline documentation-page__hero-overline">Руководство пользователя</div>
               <h1 class="documentation-page__hero-title">Документация Rebit P2P Trader</h1>
               <p class="documentation-page__hero-text">
-                В одном месте собраны базовые шаги для старта: как подготовить API-ключ Bybit, подключить его в приложении и быстро
-                начать работать со сделками, балансами, отчётами и уведомлениями.
+                В одном месте собраны базовые шаги для старта: как подготовить API-ключ Bybit, подключить его в приложении и быстро начать
+                работать со сделками, балансами, отчётами и уведомлениями.
               </p>
               <div class="documentation-page__hero-actions">
-                <v-btn class="documentation-page__responsive-button" color="secondary" variant="flat" rounded="xl" size="large" :to="heroPrimaryLink">
+                <v-btn
+                  class="documentation-page__responsive-button"
+                  color="secondary"
+                  variant="flat"
+                  rounded="xl"
+                  size="large"
+                  :to="heroPrimaryLink"
+                >
                   {{ heroPrimaryLabel }}
                 </v-btn>
                 <v-btn class="documentation-page__responsive-button" color="white" variant="outlined" rounded="xl" size="large" to="/">
@@ -176,7 +183,13 @@ const tips = [
           <v-col cols="12" md="5" lg="6">
             <v-card class="documentation-page__hero-panel" rounded="lg" elevation="0">
               <div class="documentation-page__hero-panel-grid">
-                <v-card v-for="highlight in heroHighlights" :key="highlight.title" class="documentation-page__hero-metric" rounded="lg" elevation="0">
+                <v-card
+                  v-for="highlight in heroHighlights"
+                  :key="highlight.title"
+                  class="documentation-page__hero-metric"
+                  rounded="lg"
+                  elevation="0"
+                >
                   <v-card-text class="pa-5">
                     <div class="documentation-page__hero-metric-header">
                       <v-avatar size="42" color="secondary" variant="tonal">
@@ -272,7 +285,13 @@ const tips = [
                 <div class="documentation-page__notice-card-layout">
                   <v-avatar size="42" :color="permission.color" variant="tonal" class="flex-shrink-0">
                     <v-icon>
-                      {{ 'info' === permission.color ? 'mdi-information-outline' : 'success' === permission.color ? 'mdi-check-circle-outline' : 'mdi-shield-alert-outline' }}
+                      {{
+                        'info' === permission.color
+                          ? 'mdi-information-outline'
+                          : 'success' === permission.color
+                            ? 'mdi-check-circle-outline'
+                            : 'mdi-shield-alert-outline'
+                      }}
                     </v-icon>
                   </v-avatar>
                   <div>
@@ -339,10 +358,24 @@ const tips = [
               </div>
             </div>
             <div class="documentation-page__tips-actions">
-              <v-btn class="documentation-page__responsive-button" color="secondary" variant="flat" rounded="xl" size="large" :to="tipsPrimaryLink">
+              <v-btn
+                class="documentation-page__responsive-button"
+                color="secondary"
+                variant="flat"
+                rounded="xl"
+                size="large"
+                :to="tipsPrimaryLink"
+              >
                 {{ tipsPrimaryLabel }}
               </v-btn>
-              <v-btn class="documentation-page__responsive-button" color="secondary" variant="outlined" rounded="xl" size="large" :to="tipsSecondaryLink">
+              <v-btn
+                class="documentation-page__responsive-button"
+                color="secondary"
+                variant="outlined"
+                rounded="xl"
+                size="large"
+                :to="tipsSecondaryLink"
+              >
                 {{ tipsSecondaryLabel }}
               </v-btn>
             </div>

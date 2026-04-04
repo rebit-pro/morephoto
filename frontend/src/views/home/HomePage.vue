@@ -153,7 +153,14 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
 
             <div class="landing-page__hero-actions-wrap">
               <div class="landing-page__hero-actions">
-                <v-btn class="landing-page__responsive-button" color="secondary" variant="flat" size="x-large" rounded="xl" :to="primaryActionLink">
+                <v-btn
+                  class="landing-page__responsive-button"
+                  color="secondary"
+                  variant="flat"
+                  size="x-large"
+                  rounded="xl"
+                  :to="primaryActionLink"
+                >
                   {{ primaryActionLabel }}
                 </v-btn>
               </div>
@@ -264,8 +271,7 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
               <div class="text-overline font-weight-bold landing-page__section-overline--light">Как это работает</div>
               <h2 class="landing-page__section-title text-white">Сценарий работы построен вокруг скорости, прозрачности и контроля</h2>
               <p class="landing-page__section-description landing-page__section-description--light">
-                Платформа помогает стандартизировать процесс — от подключения данных до реакции на сделку и анализа финансового
-                результата.
+                Платформа помогает стандартизировать процесс — от подключения данных до реакции на сделку и анализа финансового результата.
               </p>
             </div>
 
@@ -298,8 +304,8 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
               <v-divider />
               <v-card-text class="pa-5">
                 <p class="landing-page__channels-text mb-5">
-                  Сделки, смена статусов, сигналы безопасности и контрольные точки процесса можно отправлять в удобные каналы, чтобы
-                  команда реагировала быстрее и не держала всё на ручном мониторинге.
+                  Сделки, смена статусов, сигналы безопасности и контрольные точки процесса можно отправлять в удобные каналы, чтобы команда
+                  реагировала быстрее и не держала всё на ручном мониторинге.
                 </p>
 
                 <div class="d-flex flex-wrap ga-2 mb-6">
@@ -311,8 +317,8 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
                 <v-sheet class="landing-page__quote" rounded="lg">
                   <div class="text-subtitle-1 font-weight-bold mb-2">Дополнительное преимущество</div>
                   <p class="landing-page__quote-text">
-                    Rebit P2P Trader полезен не только трейдеру, но и операционной команде: он помогает стандартизировать процесс,
-                    ускоряет онбординг и упрощает масштабирование без хаоса в коммуникациях.
+                    Rebit P2P Trader полезен не только трейдеру, но и операционной команде: он помогает стандартизировать процесс, ускоряет
+                    онбординг и упрощает масштабирование без хаоса в коммуникациях.
                   </p>
                 </v-sheet>
               </v-card-text>
@@ -326,7 +332,9 @@ const channelChips = ['Telegram', 'Email', 'Внутренние уведомл�
       <v-container>
         <div class="landing-page__footer-card">
           <div class="landing-page__footer-title">© 2026 Rebit P2P Trader</div>
-          <p class="landing-page__footer-text mb-0">Все права на проект защищены. Единое рабочее пространство для P2P-сделок, контроля балансов и операционных сценариев.</p>
+          <p class="landing-page__footer-text mb-0">
+            Все права на проект защищены. Единое рабочее пространство для P2P-сделок, контроля балансов и операционных сценариев.
+          </p>
         </div>
       </v-container>
     </footer>

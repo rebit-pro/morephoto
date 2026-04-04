@@ -3,7 +3,8 @@ import { computed, type ComputedRef } from 'vue';
 import { useRoute } from 'vue-router';
 
 const SITE_NAME = 'Rebit P2P Trader';
-const DEFAULT_DESCRIPTION = 'Rebit P2P Trader — платформа для P2P-торговли криптовалютой. Быстрый обмен USDT, управление балансами и безопасные сделки.';
+const DEFAULT_DESCRIPTION =
+  'Rebit P2P Trader — платформа для P2P-торговли криптовалютой. Быстрый обмен USDT, управление балансами и безопасные сделки.';
 
 export function useRouteSeo(): void {
   const route = useRoute();
@@ -32,7 +33,7 @@ export function useRouteSeo(): void {
       { name: 'twitter:card', content: 'summary' },
       { name: 'twitter:title', content: title },
       { name: 'twitter:description', content: description },
-      { name: 'twitter:image', content: '/favicon.svg' },
-    ],
+      { name: 'twitter:image', content: '/favicon.svg' }
+    ]
   });
 }
