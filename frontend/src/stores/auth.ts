@@ -93,7 +93,13 @@ export const useAuthStore = defineStore('auth', () => {
 
     const expiresAtTimestamp = resolveExpiresAtTimestamp(expiresAt.value);
 
-    if (null === token.value || null === user.value || null === expiresAt.value || null === expiresAtTimestamp || expiresAtTimestamp <= Date.now()) {
+    if (
+      null === token.value ||
+      null === user.value ||
+      null === expiresAt.value ||
+      null === expiresAtTimestamp ||
+      expiresAtTimestamp <= Date.now()
+    ) {
       clearSession();
       return;
     }
