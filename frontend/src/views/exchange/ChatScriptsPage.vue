@@ -13,7 +13,7 @@ interface FormStep extends ChatScriptStep {
 let stepUidCounter = 0;
 
 function createFormStep(step?: Partial<ChatScriptStep>): FormStep {
-  const contentType = isMockApiEnabled ? step?.contentType ?? 'str' : 'str';
+  const contentType = isMockApiEnabled ? (step?.contentType ?? 'str') : 'str';
 
   return {
     _uid: ++stepUidCounter,
@@ -21,8 +21,8 @@ function createFormStep(step?: Partial<ChatScriptStep>): FormStep {
     message: step?.message ?? '',
     delaySeconds: step?.delaySeconds ?? 0,
     contentType,
-    fileName: isMockApiEnabled ? step?.fileName ?? null : null,
-    fileUrl: isMockApiEnabled ? step?.fileUrl ?? null : null
+    fileName: isMockApiEnabled ? (step?.fileName ?? null) : null,
+    fileUrl: isMockApiEnabled ? (step?.fileUrl ?? null) : null
   };
 }
 
@@ -82,7 +82,6 @@ const canSaveScript = computed(() => {
     return !hasMessage && !hasFile;
   });
 });
-
 
 function openCreate(): void {
   editingId.value = null;
@@ -424,7 +423,12 @@ onMounted(async () => {
               </v-row>
               <div class="d-flex flex-wrap align-center ga-3 mb-2">
                 <label class="d-inline-flex">
-                  <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleStepFileSelected($event, step)" />
+                  <input
+                    class="d-none"
+                    type="file"
+                    accept="image/*,application/pdf,video/*"
+                    @change="handleStepFileSelected($event, step)"
+                  />
                   <v-btn variant="outlined" size="small" prepend-icon="mdi-paperclip" tag="span">
                     {{ null === step.fileUrl ? 'Загрузить файл' : 'Заменить файл' }}
                   </v-btn>
@@ -482,7 +486,16 @@ onMounted(async () => {
         <v-card-actions class="px-6 py-4">
           <v-spacer />
           <v-btn variant="outlined" rounded="lg" @click="formDialog = false">Отмена</v-btn>
-          <v-btn color="secondary" variant="flat" rounded="lg" :loading="scripts.actionLoading" :disabled="!canSaveScript" @click="handleSave"> Сохранить </v-btn>
+          <v-btn
+            color="secondary"
+            variant="flat"
+            rounded="lg"
+            :loading="scripts.actionLoading"
+            :disabled="!canSaveScript"
+            @click="handleSave"
+          >
+            Сохранить
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -540,7 +553,9 @@ onMounted(async () => {
             </v-avatar>
           </template>
           <v-card-title class="text-h6 font-weight-bold">Удалить скрипт?</v-card-title>
-          <v-card-subtitle class="text-wrap">Скрипт будет удалён и отвязан от всех объявлений. Уже запущенные сделки не затрагиваются.</v-card-subtitle>
+          <v-card-subtitle class="text-wrap"
+            >Скрипт будет удалён и отвязан от всех объявлений. Уже запущенные сделки не затрагиваются.</v-card-subtitle
+          >
         </v-card-item>
         <v-divider />
         <v-card-actions class="px-6 py-4">

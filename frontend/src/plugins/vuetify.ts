@@ -21,12 +21,12 @@ export const i18n = createI18n({
   legacy: false as const,
   locale: 'ru',
   fallbackLocale: 'ru',
-  messages,
+  messages
 });
 
 // vue-i18n возвращает union I18n<..., true> | I18n<..., false> несмотря на legacy: false as const.
 // Точечный каст i18n для совместимости с VueI18nAdapterParams.
-const i18nInstance = i18n as unknown as I18n<Record<string, unknown>, {}, {}, string, false>;
+const i18nInstance = i18n as unknown as I18n<Record<string, unknown>, Record<string, never>, Record<string, never>, string, false>;
 
 export default createVuetify({
   locale: {

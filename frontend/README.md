@@ -18,6 +18,8 @@ cp .env.example .env
 - `VITE_GEETEST_CAPTCHA_ID` — ID GeeTest CAPTCHA для реального логина
 - `VITE_API_MOCKS_ENABLED=true` — включает локальные stateful-моки вместо реального API
 
+Пример файла окружения лежит в `frontend/.env.example`.
+
 ## Mock API режим
 
 При `VITE_API_MOCKS_ENABLED=true` фронтенд не ходит в backend, а использует локальный stateful mock-слой.
@@ -74,7 +76,38 @@ npm install
 npm run dev
 npm run build
 npm run typecheck
+npm run typecheck:e2e
 npm run lint
+npm run lint:fix
+npm run test:e2e:install
+npm run test:e2e:run
 ```
 
 Если локально уже установлены зависимости, но системный `npm` недоступен, можно использовать локальные бинарники проекта через `node_modules/.bin`.
+
+## Frontend checks
+
+- `npm run lint` — проверка ESLint без автофикса
+- `npm run lint:fix` — автоисправление ESLint
+- `npm run typecheck` — типизация приложения
+- `npm run typecheck:e2e` — типизация e2e-инфраструктуры
+
+## E2E: Cucumber + TypeScript
+
+E2E-тесты лежат в `frontend/e2e` и запускаются через `@cucumber/cucumber` + Playwright.
+
+По умолчанию e2e-тесты стартуют локальный Vite-сервер в mock-режиме:
+
+- `VITE_API_MOCKS_ENABLED=true`
+- GeeTest CAPTCHA отключена
+- используется тестовый пользователь `owner@rebit.test / secret123`
+
+Полезные команды:
+
+```bash
+npm run test:e2e:install
+npm run test:e2e:run
+npm run test:e2e:headed
+```
+
+После запуска HTML-отчёт Cucumber будет доступен в `frontend/reports/e2e/cucumber-report.html`.

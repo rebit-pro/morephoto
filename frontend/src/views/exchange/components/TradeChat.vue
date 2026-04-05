@@ -229,7 +229,10 @@ onUnmounted(() => {
 
         <!-- Мои сообщения — справа -->
         <div v-else-if="'user' === msg.senderType || 'script' === msg.senderType" class="d-flex justify-end">
-          <div class="trade-chat__bubble trade-chat__bubble--user pa-3" :class="{ 'trade-chat__bubble--script': 'script' === msg.senderType }">
+          <div
+            class="trade-chat__bubble trade-chat__bubble--user pa-3"
+            :class="{ 'trade-chat__bubble--script': 'script' === msg.senderType }"
+          >
             <div class="text-caption font-weight-bold mb-1 trade-chat__sender">
               {{ senderLabels[msg.senderType] ?? msg.senderType }}
             </div>
@@ -253,7 +256,9 @@ onUnmounted(() => {
                   {{ msg.fileName ?? msg.contentType }}
                 </v-chip>
               </a>
-              <div v-if="'' !== msg.message && msg.message !== msg.fileName" class="text-body-2 mt-1" style="white-space: pre-wrap">{{ msg.message }}</div>
+              <div v-if="'' !== msg.message && msg.message !== msg.fileName" class="text-body-2 mt-1" style="white-space: pre-wrap">
+                {{ msg.message }}
+              </div>
             </template>
             <template v-else>
               <div class="text-body-2" style="white-space: pre-wrap">{{ msg.message }}</div>
@@ -295,7 +300,9 @@ onUnmounted(() => {
                   {{ msg.fileName ?? msg.contentType }}
                 </v-chip>
               </a>
-              <div v-if="'' !== msg.message && msg.message !== msg.fileName" class="text-body-2 mt-1" style="white-space: pre-wrap">{{ msg.message }}</div>
+              <div v-if="'' !== msg.message && msg.message !== msg.fileName" class="text-body-2 mt-1" style="white-space: pre-wrap">
+                {{ msg.message }}
+              </div>
             </template>
             <template v-else>
               <div class="text-body-2" style="white-space: pre-wrap">{{ msg.message }}</div>
@@ -316,7 +323,12 @@ onUnmounted(() => {
       <!-- Превью вложения -->
       <div v-if="hasSelectedAttachment" class="d-flex align-center ga-2 mb-3 pa-3 trade-chat__attachment-bar rounded-lg">
         <v-icon size="20" color="secondary">mdi-paperclip</v-icon>
-        <img v-if="hasSelectedImageAttachment()" :src="getSelectedAttachmentUrl()" :alt="getSelectedAttachmentName()" class="trade-chat__image-mini" />
+        <img
+          v-if="hasSelectedImageAttachment()"
+          :src="getSelectedAttachmentUrl()"
+          :alt="getSelectedAttachmentName()"
+          class="trade-chat__image-mini"
+        />
         <span class="text-body-2 font-weight-medium flex-grow-1 text-truncate">{{ getSelectedAttachmentName() }}</span>
         <v-btn icon="mdi-close" size="x-small" variant="text" color="error" @click="clearAttachment" />
       </div>
@@ -324,7 +336,15 @@ onUnmounted(() => {
       <div class="d-flex align-center ga-2">
         <label class="d-inline-flex">
           <input class="d-none" type="file" accept="image/*,application/pdf,video/*" @change="handleFileSelected" />
-          <v-btn icon="mdi-paperclip" size="small" variant="text" color="secondary" tag="span" aria-label="Прикрепить файл" title="Прикрепить файл" />
+          <v-btn
+            icon="mdi-paperclip"
+            size="small"
+            variant="text"
+            color="secondary"
+            tag="span"
+            aria-label="Прикрепить файл"
+            title="Прикрепить файл"
+          />
         </label>
 
         <v-text-field

@@ -20,7 +20,9 @@
         Документация
       </v-btn>
       <v-btn class="public-top-bar__button" variant="text" color="white" rounded="lg" to="/login">Вход</v-btn>
-      <v-btn v-if="!auth.isAuthenticated" class="public-top-bar__button" color="secondary" variant="flat" rounded="lg" to="/register">Регистрация</v-btn>
+      <v-btn v-if="!auth.isAuthenticated" class="public-top-bar__button" color="secondary" variant="flat" rounded="lg" to="/register"
+        >Регистрация</v-btn
+      >
     </div>
   </div>
 </template>

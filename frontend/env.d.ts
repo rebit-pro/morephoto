@@ -34,10 +34,7 @@ declare global {
   }
 
   interface Window {
-    initGeetest4?: (
-      config: GeeTestInitConfig,
-      callback: (captcha: GeeTestCaptchaInstance) => void,
-    ) => void;
+    initGeetest4?: (config: GeeTestInitConfig, callback: (captcha: GeeTestCaptchaInstance) => void) => void;
   }
 }
 
