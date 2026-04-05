@@ -689,14 +689,36 @@ function syncBalancesTimestamp(state: MockState): void {
 }
 
 function getApproximateRubRate(state: MockState, currencyCode: string): number | null {
-  if ('RUB' === currencyCode.toUpperCase()) {
+  const code = currencyCode.toUpperCase();
+
+  if ('RUB' === code) {
     return 1;
   }
 
-  if ('USDT' !== currencyCode.toUpperCase()) {
-    return null;
+  // 1. Прямой P2P-курс из стакана USDT_RUB
+  const usdtRubRate = getBestBuyPrice(state);
+
+  if ('USDT' === code) {
+    return usdtRubRate;
   }
 
+  // 2. Кросс-курс: TOKEN→USDT (spot) × USDT→RUB (P2P)
+  if (null !== usdtRubRate) {
+    const spotPrices: Record<string, number> = {
+      BTC: 84000,
+      USDC: 1
+    };
+    const spotPrice = spotPrices[code] ?? null;
+
+    if (null !== spotPrice) {
+      return spotPrice * usdtRubRate;
+    }
+  }
+
+  return null;
+}
+
+function getBestBuyPrice(state: MockState): number | null {
   let bestBuyPrice: number | null = null;
 
   for (const order of state.orderBook.buy) {

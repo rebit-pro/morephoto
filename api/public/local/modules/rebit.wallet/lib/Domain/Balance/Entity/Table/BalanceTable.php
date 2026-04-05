@@ -30,9 +30,9 @@ final class BalanceTable extends DataManager
 
             new IntegerField('UF_USER_ID'),
             new IntegerField('UF_CURRENCY_ID'),
-            new FloatField('UF_AVAILABLE'),
-            new FloatField('UF_LOCKED'),
-            new FloatField('UF_TOTAL'),
+            (new FloatField('UF_AVAILABLE'))->configureScale(8),
+            (new FloatField('UF_LOCKED'))->configureScale(8),
+            (new FloatField('UF_TOTAL'))->configureScale(8),
             new DatetimeField('UF_SYNCED_AT'),
             new DatetimeField('UF_UPDATED_AT'),
         ];

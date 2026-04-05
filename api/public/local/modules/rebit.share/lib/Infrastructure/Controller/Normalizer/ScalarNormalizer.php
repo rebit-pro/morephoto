@@ -10,6 +10,6 @@ final readonly class ScalarNormalizer implements NormalizerInterface
 {
     public function normalize(mixed $data): mixed
     {
-        return is_float($data) ? round($data, 2) : $data;
+        return $data;
     }
 }

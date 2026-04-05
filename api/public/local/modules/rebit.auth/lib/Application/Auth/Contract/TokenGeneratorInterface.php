@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Rebit\Auth\Application\Auth\Contract;
 
-use Rebit\Auth\Domain\User\Service\TokenGeneratorInterface as DomainTokenGeneratorInterface;
+use Random\RandomException;
 
-interface TokenGeneratorInterface extends DomainTokenGeneratorInterface {}
+interface TokenGeneratorInterface
+{
+    /**
+     * @throws RandomException
+     */
+    public function generate(): string;
+}

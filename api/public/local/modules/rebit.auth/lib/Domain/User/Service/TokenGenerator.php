@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Rebit\Auth\Domain\User\Service;
 
 use Random\RandomException;
+use Rebit\Auth\Application\Auth\Contract\TokenGeneratorInterface;
 
 final readonly class TokenGenerator implements TokenGeneratorInterface
 {
