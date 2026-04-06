@@ -56,27 +56,7 @@ final readonly class BybitBalanceGateway implements BybitBalanceGatewayInterface
             );
         }
 
-        $this->logger->info('Bybit balance raw response', [
-            'userId' => $userId,
-            'result' => $response->result,
-        ]);
-
-        $dto = $this->extractCoins($response->result);
-
-        $this->logger->info('Bybit balance parsed', [
-            'userId' => $userId,
-            'coins' => array_map(
-                static fn(BybitBalanceDto $b): array => [
-                    'coin' => $b->coin,
-                    'available' => $b->available,
-                    'locked' => $b->locked,
-                    'total' => $b->total,
-                ],
-                $dto->items,
-            ),
-        ]);
-
-        return $dto;
+        return $this->extractCoins($response->result);
     }
 
     /**

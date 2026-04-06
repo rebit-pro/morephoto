@@ -65,7 +65,15 @@ class Version20260405120002 extends Version
                     continue;
                 }
 
-                $settings = unserialize($row['SETTINGS'], ['allowed_classes' => false]);
+                $unserializedSettings = unserialize($row['SETTINGS'], ['allowed_classes' => false]);
+
+                if (is_array($unserializedSettings)) {
+                    $settings = $unserializedSettings;
+                } else {
+                    $this->outWarning("{$fieldName}: некорректные SETTINGS, будет пересоздан PRECISION");
+                    $settings = [];
+                }
+
                 $currentPrecision = (int)($settings['PRECISION'] ?? 0);
 
                 if (self::TARGET_PRECISION === $currentPrecision) {

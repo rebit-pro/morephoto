@@ -17,7 +17,7 @@ interface BybitSpotTickerGatewayInterface
      *
      * @param string $symbol Символ пары, например 'BTCUSDT', 'USDCUSDT'
      *
-     * @return float|null Последняя цена или null при ошибке/отсутствии данных
+     * @return null|float Последняя цена или null при ошибке/отсутствии данных
      */
     public function getLastPrice(string $symbol): ?float;
 }

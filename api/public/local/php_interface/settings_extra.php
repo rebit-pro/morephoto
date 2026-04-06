@@ -14,7 +14,7 @@ use Rebit\Share\Shared\Enum\LogChannelEnum;
 return [
     'exception_handling' => [
         'value' => [
-            'debug' => true,
+            'debug' => '1' === ($_ENV['APP_DEBUG'] ?? '0'),
             'handled_errors_types' => 4437,
             'exception_errors_types' => 4437,
             'ignore_silence' => false,

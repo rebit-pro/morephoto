@@ -38,7 +38,19 @@ export const useAuthStore = defineStore('auth', () => {
   const returnUrl = ref<string | null>(null);
   let sessionExpirationTimeoutId: number | null = null;
 
-  const isAuthenticated = computed(() => null !== token.value && null !== user.value && null !== expiresAt.value);
+  const isAuthenticated = computed(() => {
+    if (null === token.value || null === user.value || null === expiresAt.value) {
+      return false;
+    }
+
+    const expiresAtTimestamp = resolveExpiresAtTimestamp(expiresAt.value);
+
+    if (null === expiresAtTimestamp) {
+      return false;
+    }
+
+    return expiresAtTimestamp > Date.now();
+  });
 
   function clearSessionExpirationTimer(): void {
     if (null === sessionExpirationTimeoutId) {
@@ -91,15 +103,19 @@ export const useAuthStore = defineStore('auth', () => {
       return;
     }
 
+    if (null === token.value || null === user.value) {
+      clearSession();
+      return;
+    }
+
+    // Старая сессия без expiresAt — оставляем до первого 401, не разлогиниваем
+    if (null === expiresAt.value) {
+      return;
+    }
+
     const expiresAtTimestamp = resolveExpiresAtTimestamp(expiresAt.value);
 
-    if (
-      null === token.value ||
-      null === user.value ||
-      null === expiresAt.value ||
-      null === expiresAtTimestamp ||
-      expiresAtTimestamp <= Date.now()
-    ) {
+    if (null === expiresAtTimestamp || expiresAtTimestamp <= Date.now()) {
       clearSession();
       return;
     }
@@ -135,8 +151,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function getAccessToken(): string | null {
-    restoreSession();
-
     return isAuthenticated.value ? token.value : null;
   }
 
