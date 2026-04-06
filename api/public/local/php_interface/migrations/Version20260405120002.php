@@ -85,9 +85,10 @@ class Version20260405120002 extends Version
 
                 $settings['PRECISION'] = self::TARGET_PRECISION;
                 $serialized = $helper->forSql(serialize($settings));
+                $userFieldId = (int)$row['ID'];
 
                 $connection->queryExecute(
-                    "UPDATE b_user_field SET SETTINGS = '{$serialized}' WHERE ID = {$row['ID']}",
+                    "UPDATE b_user_field SET SETTINGS = '{$serialized}' WHERE ID = {$userFieldId}",
                 );
             }
         }

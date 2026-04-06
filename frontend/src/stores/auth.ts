@@ -39,8 +39,13 @@ export const useAuthStore = defineStore('auth', () => {
   let sessionExpirationTimeoutId: number | null = null;
 
   const isAuthenticated = computed(() => {
-    if (null === token.value || null === user.value || null === expiresAt.value) {
+    if (null === token.value || null === user.value) {
       return false;
+    }
+
+    // Legacy-сессия без expiresAt — считаем аутентифицированной до первого 401
+    if (null === expiresAt.value) {
+      return true;
     }
 
     const expiresAtTimestamp = resolveExpiresAtTimestamp(expiresAt.value);
