@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Rebit\Auth\Tests\Domain\User\Service;
+namespace Rebit\Auth\Tests\Infrastructure\Adapter;
 
 use PHPUnit\Framework\TestCase;
-use Rebit\Auth\Domain\User\Service\TokenGenerator;
+use Rebit\Auth\Infrastructure\Adapter\TokenGenerator;
 
 /**
  * @internal

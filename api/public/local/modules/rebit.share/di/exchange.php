@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Rebit\Share\Application\Contract\Exchange\CurrencyRubRateQueryInterface;
-use Rebit\Share\Application\Contract\Exchange\NullCurrencyRubRateQuery;
-
-return [
-    CurrencyRubRateQueryInterface::class => [
-        'constructor' => static fn(): CurrencyRubRateQueryInterface => new NullCurrencyRubRateQuery(),
-    ],
-];
+/**
+ * Контракты Exchange-модуля.
+ *
+ * Реальные реализации CurrencyRubRateQueryInterface регистрируются
+ * в rebit.exchange/di/currency.php. Здесь пусто, чтобы не блокировать
+ * override в Bitrix ServiceLocator.
+ */
+return [];

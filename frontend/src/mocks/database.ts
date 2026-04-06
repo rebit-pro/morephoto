@@ -1,4 +1,4 @@
-import type { AuthUser, LoginRequest, RegisterRequest, RequestRegistrationCodeResponse } from '@/api/auth';
+import type { AuthUser, LoginRequest, LoginResponse, RegisterRequest, RequestRegistrationCodeResponse } from '@/api/auth';
 import type { ChatContentType, ChatMessage, ChatScript, ChatScriptStep, Advertisement, OrderBookResponseDto, Trade } from '@/api/exchange';
 import type { ApiConnectionMode, ApiConnectionState, ApiConnectionStatus } from '@/api/identity';
 import type { Balance, BalanceListResponse, CashFlowFilters, CashFlowReport, Transaction, TransactionFilters } from '@/api/wallet';
@@ -6,6 +6,7 @@ import type { Balance, BalanceListResponse, CashFlowFilters, CashFlowReport, Tra
 const STORAGE_KEY = 'rebit:p2p:mock-state:v1';
 const DEFAULT_USER_EMAIL = 'owner@rebit.test';
 const DEFAULT_USER_PASSWORD = 'secret123';
+const MOCK_TOKEN_TTL_MINUTES = 60 * 24;
 
 type DictionaryCurrency = {
   id: number;
@@ -688,14 +689,36 @@ function syncBalancesTimestamp(state: MockState): void {
 }
 
 function getApproximateRubRate(state: MockState, currencyCode: string): number | null {
-  if ('RUB' === currencyCode.toUpperCase()) {
+  const code = currencyCode.toUpperCase();
+
+  if ('RUB' === code) {
     return 1;
   }
 
-  if ('USDT' !== currencyCode.toUpperCase()) {
-    return null;
+  // 1. Прямой P2P-курс из стакана USDT_RUB
+  const usdtRubRate = getBestBuyPrice(state);
+
+  if ('USDT' === code) {
+    return usdtRubRate;
   }
 
+  // 2. Кросс-курс: TOKEN→USDT (spot) × USDT→RUB (P2P)
+  if (null !== usdtRubRate) {
+    const spotPrices: Record<string, number> = {
+      BTC: 84000,
+      USDC: 1
+    };
+    const spotPrice = spotPrices[code] ?? null;
+
+    if (null !== spotPrice) {
+      return spotPrice * usdtRubRate;
+    }
+  }
+
+  return null;
+}
+
+function getBestBuyPrice(state: MockState): number | null {
   let bestBuyPrice: number | null = null;
 
   for (const order of state.orderBook.buy) {
@@ -870,7 +893,7 @@ export function generateTradeForActiveAdvertisement(advertisementId?: number): M
   return null;
 }
 
-export function loginWithMock(request: LoginRequest): { token: string; user: AuthUser } {
+export function loginWithMock(request: LoginRequest): LoginResponse {
   const state = getMockState();
   const normalizedEmail = request.email.trim().toLowerCase();
   const user = findUserByEmail(state, normalizedEmail);
@@ -889,6 +912,7 @@ export function loginWithMock(request: LoginRequest): { token: string; user: Aut
 
   return {
     token,
+    expiresAt: shiftIso(MOCK_TOKEN_TTL_MINUTES),
     user: {
       id: user.id,
       email: user.email,
@@ -915,7 +939,7 @@ export function requestRegistrationCodeWithMock(request: RegisterRequest): Reque
   };
 }
 
-export function confirmRegistrationWithMock(email: string, code: string): { token: string; user: AuthUser } {
+export function confirmRegistrationWithMock(email: string, code: string): LoginResponse {
   const state = getMockState();
 
   if (null === state.registration || email.trim().toLowerCase() !== state.registration.email) {
@@ -934,6 +958,7 @@ export function confirmRegistrationWithMock(email: string, code: string): { toke
 
   return {
     token,
+    expiresAt: shiftIso(MOCK_TOKEN_TTL_MINUTES),
     user: {
       id: user.id,
       email: user.email,

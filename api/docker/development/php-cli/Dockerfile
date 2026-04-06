@@ -12,6 +12,7 @@ RUN apt-get update \
         libxml2-dev \
         libpq-dev \
         librabbitmq-dev \
+        libcurl4-openssl-dev \
         curl \
         libldap2-dev \
         unzip \
@@ -25,6 +26,7 @@ RUN apt-get update \
     && docker-php-ext-install \
         gd \
         bcmath \
+        curl \
         exif \
         mysqli \
         opcache \
@@ -65,6 +67,12 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 
 # Заменить RUN curl ... на:
 COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
+
+# Сменить UID/GID www-data на хостовый (1000) — чтобы CLI-процессы
+# могли писать в bind-mounted volume (логи, кеш и т.д.)
+# Должен совпадать с php-fpm, иначе entrypoint fix_log_permissions
+# выставит UID 33, и FPM-воркеры (1000) потеряют доступ к логам.
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 WORKDIR /app
 

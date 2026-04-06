@@ -6,6 +6,7 @@ namespace Rebit\Auth\Domain\User\Repository;
 
 use Bitrix\Main\Type\DateTime;
 use Bitrix\Main\UserTable;
+use Rebit\Auth\Application\Auth\Contract\LoginUserRepositoryInterface;
 use Rebit\Auth\Domain\User\Entity\UserCredentials;
 use Rebit\Auth\Domain\User\Entity\UserRegistrationState;
 use Rebit\Auth\Domain\User\Entity\UserToken;

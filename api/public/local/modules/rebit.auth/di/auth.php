@@ -17,7 +17,7 @@ use Rebit\Auth\Application\Auth\UseCase\RequestRegistrationCodeUseCase;
 use Rebit\Auth\Domain\Registration\Repository\RegistrationConfirmationRepository;
 use Rebit\Auth\Domain\Registration\Service\RegistrationCodeGenerator;
 use Rebit\Auth\Domain\User\Repository\UserRepository;
-use Rebit\Auth\Domain\User\Service\TokenGenerator;
+use Rebit\Auth\Infrastructure\Adapter\TokenGenerator;
 use Rebit\Auth\Presentation\Controller\AuthController;
 use Rebit\Share\Application\Contract\Auth\TokenResolverInterface;
 use Rebit\Share\Infrastructure\HttpClient\RebitHttpClientFactory;

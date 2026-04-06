@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Wallet\Infrastructure\Bybit;
 
+use Psr\Log\LoggerInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitApiException;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
 use Rebit\Share\Application\Contract\Bybit\BybitConnectionResolverInterface;
@@ -27,6 +28,7 @@ final readonly class BybitBalanceGateway implements BybitBalanceGatewayInterface
     public function __construct(
         private BybitConnectionResolverInterface $connectionResolver,
         private BybitClientInterface $bybitClient,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -43,6 +45,11 @@ final readonly class BybitBalanceGateway implements BybitBalanceGatewayInterface
                 ['accountType' => 'FUND'],
             );
         } catch (BybitApiException $e) {
+            $this->logger->error('Bybit balance API error', [
+                'userId' => $userId,
+                'message' => $e->getMessage(),
+            ]);
+
             throw new HttpException(
                 'Ошибка синхронизации с Bybit: ' . $e->getMessage(),
                 502,

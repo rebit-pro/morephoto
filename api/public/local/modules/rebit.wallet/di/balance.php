@@ -82,6 +82,7 @@ return [
             return new BybitBalanceGateway(
                 $sl->get(BybitConnectionResolverInterface::class),
                 $sl->get(BybitClientInterface::class),
+                Log::channel(LogChannelEnum::bybit),
             );
         },
     ],

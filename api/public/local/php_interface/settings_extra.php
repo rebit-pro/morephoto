@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bitrix\Main\Diag\FileExceptionHandlerLog;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Formatter\LogstashFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -11,11 +12,30 @@ use Rebit\Share\Infrastructure\Logger\CommonLoggerProcessor;
 use Rebit\Share\Shared\Enum\LogChannelEnum;
 
 return [
+    'exception_handling' => [
+        'value' => [
+            'debug' => '1' === ($_ENV['APP_DEBUG'] ?? '0'),
+            'handled_errors_types' => 4437,
+            'exception_errors_types' => 4437,
+            'ignore_silence' => false,
+            'assertion_throws_exception' => true,
+            'assertion_error_type' => 256,
+            'log' => [
+                'class_name' => FileExceptionHandlerLog::class,
+                'required_file' => '',
+                'settings' => [
+                    'file' => dirname(__DIR__, 3) . '/logs/bx_error.log',
+                    'log_size' => 1000000,
+                ],
+            ],
+        ],
+        'readonly' => false,
+    ],
     'monolog' => [
         'value' => [
             'logstash' => [
                 'handler' => static fn(LogChannelEnum $channel) => new RotatingFileHandler(
-                    dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/logstash/' . $channel->value . '.log',
+                    filename: dirname(__DIR__, 3) . '/logs/logstash/' . $channel->value . '.log',
                     maxFiles: 5,
                     level: Logger::INFO,
                     filePermission: 0644,

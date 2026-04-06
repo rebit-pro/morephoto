@@ -16,10 +16,13 @@ const api = axios.create({
 
 // Request: подставляем JWT-токен
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const auth = useAuthStore();
+  const token = auth.getAccessToken();
+
   if (null !== token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 

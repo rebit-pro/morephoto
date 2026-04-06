@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libpq-dev \
     librabbitmq-dev \
+    libcurl4-openssl-dev \
     curl \
     libldap2-dev \
     unzip \
@@ -21,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install \
         gd \
         bcmath \
+        curl \
         exif \
         mysqli \
         opcache \
