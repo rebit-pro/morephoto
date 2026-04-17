@@ -13,6 +13,8 @@ use Rebit\Exchange\Domain\Advertisement\Enum\AdvertisementStatusEnum;
 use Rebit\Exchange\Domain\Advertisement\Enum\PriceTypeEnum;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
+use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntry;
+use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
 use Rebit\Exchange\Domain\Shared\Enum\SideEnum;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
 use Rebit\Share\Shared\Exception\EntityNotFoundException;
@@ -29,6 +31,7 @@ final readonly class CreateAdvertisementUseCase
     public function __construct(
         private AdvertisementRepository $advertisementRepository,
         private CurrencyPairRepository $currencyPairRepository,
+        private OrderBookRepository $orderBookRepository,
         private BybitAdvertisementGatewayInterface $bybitGateway,
         private BalanceQueryInterface $balanceQuery,
     ) {}
@@ -63,6 +66,13 @@ final readonly class CreateAdvertisementUseCase
             }
         }
 
+        $calculatedPrice = $this->resolvePriceByOrderBook(
+            currencyPairId: $dto->currencyPairId,
+            side: $side,
+            quantity: $dto->quantity,
+            fallbackPrice: $dto->price,
+        );
+
         $bybitAdId = $this->bybitGateway->create(
             $userId,
             new BybitCreateAdvertisementDto(
@@ -71,7 +81,7 @@ final readonly class CreateAdvertisementUseCase
                 side: $side->toBybit(),
                 priceType: $priceType->toBybit(),
                 premium: $dto->premium ?? '',
-                price: $dto->price,
+                price: $calculatedPrice,
                 minAmount: $dto->minAmount,
                 maxAmount: $dto->maxAmount,
                 paymentIds: $dto->paymentMethodIds,
@@ -101,7 +111,7 @@ final readonly class CreateAdvertisementUseCase
             currencyPairId: $dto->currencyPairId,
             side: $side->value,
             priceType: $priceType->value,
-            price: (float)$dto->price,
+            price: (float)$calculatedPrice,
             premium: null !== $dto->premium ? (float)$dto->premium : null,
             quantity: (float)$dto->quantity,
             minAmount: (float)$dto->minAmount,
@@ -115,6 +125,86 @@ final readonly class CreateAdvertisementUseCase
         );
 
         return $this->toResultDto($ad);
+    }
+
+    /**
+     * @throws RepositoryException
+     */
+    private function resolvePriceByOrderBook(
+        int $currencyPairId,
+        SideEnum $side,
+        string $quantity,
+        string $fallbackPrice,
+    ): string {
+        $averagePrice = $this->calculateAveragePriceByOrderBook(
+            currencyPairId: $currencyPairId,
+            side: $side,
+            quantity: $quantity,
+        );
+
+        if (null === $averagePrice) {
+            return $fallbackPrice;
+        }
+
+        return number_format($averagePrice, 2, '.', '');
+    }
+
+    /**
+     * Рассчитывает среднюю цену по стакану для объёма объявления.
+     * Для buy берутся лучшие bid сверху вниз, для sell — лучшие ask снизу вверх.
+     *
+     * @throws RepositoryException
+     */
+    private function calculateAveragePriceByOrderBook(
+        int $currencyPairId,
+        SideEnum $side,
+        string $quantity,
+    ): ?float {
+        $targetQuantity = (float)$quantity;
+        if (0.0 >= $targetQuantity) {
+            return null;
+        }
+
+        $orderBookEntries = iterator_to_array(
+            $this->orderBookRepository->findByCurrencyPairAndSide($currencyPairId, $side->value)->getIterator(),
+        );
+
+        usort(
+            $orderBookEntries,
+            static function(OrderBookEntry $left, OrderBookEntry $right) use ($side): int {
+                return match ($side) {
+                    SideEnum::Buy => $right->getUfPrice() <=> $left->getUfPrice(),
+                    SideEnum::Sell => $left->getUfPrice() <=> $right->getUfPrice(),
+                };
+            },
+        );
+
+        $processedQuantity = 0.0;
+        $weightedPriceSum = 0.0;
+
+        foreach ($orderBookEntries as $entry) {
+            $entryPrice = $entry->getUfPrice();
+            $entryQuantity = $entry->getUfQuantity();
+
+            if (0.0 >= $entryPrice || 0.0 >= $entryQuantity) {
+                continue;
+            }
+
+            $remainingQuantity = $targetQuantity - $processedQuantity;
+            if (0.0 >= $remainingQuantity) {
+                break;
+            }
+
+            $matchedQuantity = min($entryQuantity, $remainingQuantity);
+            $weightedPriceSum += $entryPrice * $matchedQuantity;
+            $processedQuantity += $matchedQuantity;
+        }
+
+        if (0.0 >= $processedQuantity) {
+            return null;
+        }
+
+        return round($weightedPriceSum / $processedQuantity, 2);
     }
 
     private function toResultDto(Advertisement $ad): AdvertisementResultDto

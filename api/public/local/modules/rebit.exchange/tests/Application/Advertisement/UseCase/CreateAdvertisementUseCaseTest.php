@@ -15,6 +15,9 @@ use Rebit\Exchange\Domain\Advertisement\Entity\Advertisement;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Entity\CurrencyPair;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
+use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntry;
+use Rebit\Exchange\Domain\OrderBook\Entity\OrderBookEntryCollection;
+use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
 use Rebit\Share\Application\Contract\Wallet\BalanceQueryInterface;
 use Rebit\Share\Shared\Exception\EntityNotFoundException;
 use Rebit\Share\Shared\Exception\ValidationHttpException;
@@ -30,12 +33,14 @@ final class CreateAdvertisementUseCaseTest extends TestCase
     private function createUseCase(
         AdvertisementRepository $advertisementRepository,
         CurrencyPairRepository $currencyPairRepository,
+        OrderBookRepository $orderBookRepository,
         BybitAdvertisementGatewayInterface $bybitGateway,
         BalanceQueryInterface $balanceQuery,
     ): CreateAdvertisementUseCase {
         return new CreateAdvertisementUseCase(
             advertisementRepository: $advertisementRepository,
             currencyPairRepository: $currencyPairRepository,
+            orderBookRepository: $orderBookRepository,
             bybitGateway: $bybitGateway,
             balanceQuery: $balanceQuery,
         );
@@ -66,13 +71,8 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $pair->method('getUfCode')->willReturn('USDT_RUB');
         $pair->method('getUfTokenCurrencyId')->willReturn(10);
 
-        $currencyPairRepo = $this->createMock(CurrencyPairRepository::class);
-        $currencyPairRepo
-            ->expects($this->once())
-            ->method('findById')
-            ->with(1)
-            ->willReturn($pair)
-        ;
+        $currencyPairRepo = $this->createStub(CurrencyPairRepository::class);
+        $currencyPairRepo->method('findById')->willReturn($pair);
 
         $bybitGateway = $this->createMock(BybitAdvertisementGatewayInterface::class);
         $bybitGateway
@@ -86,16 +86,18 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         // Для buy баланс не проверяется — не должен вызываться
         $balanceQuery->method('hasAvailableBalance')->willReturn(false);
 
-        $ad = $this->createAdStub();
-
-        $adRepo = $this->createMock(AdvertisementRepository::class);
-        $adRepo
-            ->expects($this->once())
-            ->method('create')
-            ->willReturn($ad)
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
+        $orderBookRepo
+            ->method('findByCurrencyPairAndSide')
+            ->willReturn($this->createOrderBookCollection())
         ;
 
-        $result = $this->createUseCase($adRepo, $currencyPairRepo, $bybitGateway, $balanceQuery)
+        $ad = $this->createAdStub();
+
+        $adRepo = $this->createStub(AdvertisementRepository::class);
+        $adRepo->method('create')->willReturn($ad);
+
+        $result = $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
             ->execute($dto, self::USER_ID)
         ;
 
@@ -124,6 +126,12 @@ final class CreateAdvertisementUseCaseTest extends TestCase
             ->willReturn(true)
         ;
 
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
+        $orderBookRepo
+            ->method('findByCurrencyPairAndSide')
+            ->willReturn($this->createOrderBookCollection())
+        ;
+
         $bybitGateway = $this->createStub(BybitAdvertisementGatewayInterface::class);
         $bybitGateway->method('create')->willReturn(new BybitAdvertisementCreateResultDto(itemId: 'bybit-ad-456'));
 
@@ -131,7 +139,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $adRepo = $this->createStub(AdvertisementRepository::class);
         $adRepo->method('create')->willReturn($ad);
 
-        $result = $this->createUseCase($adRepo, $currencyPairRepo, $bybitGateway, $balanceQuery)
+        $result = $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
             ->execute($dto, self::USER_ID)
         ;
 
@@ -157,13 +165,19 @@ final class CreateAdvertisementUseCaseTest extends TestCase
             ->willReturn(false)
         ;
 
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
+        $orderBookRepo
+            ->method('findByCurrencyPairAndSide')
+            ->willReturn($this->createOrderBookCollection())
+        ;
+
         $bybitGateway = $this->createStub(BybitAdvertisementGatewayInterface::class);
         $adRepo = $this->createStub(AdvertisementRepository::class);
 
         $this->expectException(ValidationHttpException::class);
         $this->expectExceptionMessage('Недостаточно средств для создания объявления на продажу');
 
-        $this->createUseCase($adRepo, $currencyPairRepo, $bybitGateway, $balanceQuery)
+        $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
             ->execute($dto, self::USER_ID)
         ;
     }
@@ -175,6 +189,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $currencyPairRepo = $this->createStub(CurrencyPairRepository::class);
         $currencyPairRepo->method('findById')->willReturn(null);
 
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
         $bybitGateway = $this->createStub(BybitAdvertisementGatewayInterface::class);
         $balanceQuery = $this->createStub(BalanceQueryInterface::class);
         $adRepo = $this->createStub(AdvertisementRepository::class);
@@ -182,7 +197,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $this->expectException(EntityNotFoundException::class);
         $this->expectExceptionMessage('Валютная пара не найдена');
 
-        $this->createUseCase($adRepo, $currencyPairRepo, $bybitGateway, $balanceQuery)
+        $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
             ->execute($dto, self::USER_ID)
         ;
     }
@@ -197,6 +212,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $currencyPairRepo = $this->createStub(CurrencyPairRepository::class);
         $currencyPairRepo->method('findById')->willReturn($pair);
 
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
         $bybitGateway = $this->createStub(BybitAdvertisementGatewayInterface::class);
         $balanceQuery = $this->createStub(BalanceQueryInterface::class);
         $adRepo = $this->createStub(AdvertisementRepository::class);
@@ -204,9 +220,165 @@ final class CreateAdvertisementUseCaseTest extends TestCase
         $this->expectException(ValidationHttpException::class);
         $this->expectExceptionMessage('Некорректный формат кода валютной пары');
 
-        $this->createUseCase($adRepo, $currencyPairRepo, $bybitGateway, $balanceQuery)
+        $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
             ->execute($dto, self::USER_ID)
         ;
+    }
+
+    public function testUsesWeightedAveragePriceFromBuyOrderBook(): void
+    {
+        $dto = $this->createDefaultDto('buy');
+
+        $pair = $this->createStub(CurrencyPair::class);
+        $pair->method('getUfCode')->willReturn('USDT_RUB');
+        $pair->method('getUfTokenCurrencyId')->willReturn(10);
+
+        $currencyPairRepo = $this->createStub(CurrencyPairRepository::class);
+        $currencyPairRepo->method('findById')->willReturn($pair);
+
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
+        $orderBookRepo
+            ->method('findByCurrencyPairAndSide')
+            ->willReturn($this->createOrderBookCollection(
+                $this->createOrderBookEntryStub(price: 90.0, quantity: 100.0),
+                $this->createOrderBookEntryStub(price: 100.0, quantity: 100.0),
+            ))
+        ;
+
+        $bybitGateway = $this->createMock(BybitAdvertisementGatewayInterface::class);
+        $bybitGateway
+            ->expects($this->once())
+            ->method('create')
+            ->with(
+                self::USER_ID,
+                $this->callback(static function(BybitCreateAdvertisementDto $dto): bool {
+                    self::assertSame('96.67', $dto->price);
+
+                    return true;
+                }),
+            )
+            ->willReturn(new BybitAdvertisementCreateResultDto(itemId: 'bybit-ad-123'))
+        ;
+
+        $balanceQuery = $this->createStub(BalanceQueryInterface::class);
+        $adRepo = $this->createStub(AdvertisementRepository::class);
+        $adRepo->method('create')->willReturn($this->createAdStub());
+
+        $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
+            ->execute($dto, self::USER_ID)
+        ;
+    }
+
+    public function testFallsBackToRequestPriceWhenOrderBookIsEmpty(): void
+    {
+        $dto = $this->createDefaultDto('buy');
+
+        $pair = $this->createStub(CurrencyPair::class);
+        $pair->method('getUfCode')->willReturn('USDT_RUB');
+        $pair->method('getUfTokenCurrencyId')->willReturn(10);
+
+        $currencyPairRepo = $this->createStub(CurrencyPairRepository::class);
+        $currencyPairRepo->method('findById')->willReturn($pair);
+
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
+        $orderBookRepo
+            ->method('findByCurrencyPairAndSide')
+            ->willReturn($this->createOrderBookCollection())
+        ;
+
+        $bybitGateway = $this->createMock(BybitAdvertisementGatewayInterface::class);
+        $bybitGateway
+            ->expects($this->once())
+            ->method('create')
+            ->with(
+                self::USER_ID,
+                $this->callback(static function(BybitCreateAdvertisementDto $dto): bool {
+                    self::assertSame('95.50', $dto->price);
+
+                    return true;
+                }),
+            )
+            ->willReturn(new BybitAdvertisementCreateResultDto(itemId: 'bybit-ad-123'))
+        ;
+
+        $balanceQuery = $this->createStub(BalanceQueryInterface::class);
+        $adRepo = $this->createStub(AdvertisementRepository::class);
+        $adRepo->method('create')->willReturn($this->createAdStub());
+
+        $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
+            ->execute($dto, self::USER_ID)
+        ;
+    }
+
+    public function testUsesWeightedAveragePriceFromSellOrderBook(): void
+    {
+        $dto = $this->createDefaultDto('sell');
+
+        $pair = $this->createStub(CurrencyPair::class);
+        $pair->method('getUfCode')->willReturn('USDT_RUB');
+        $pair->method('getUfTokenCurrencyId')->willReturn(10);
+
+        $currencyPairRepo = $this->createStub(CurrencyPairRepository::class);
+        $currencyPairRepo->method('findById')->willReturn($pair);
+
+        $orderBookRepo = $this->createStub(OrderBookRepository::class);
+        $orderBookRepo
+            ->method('findByCurrencyPairAndSide')
+            ->willReturn($this->createOrderBookCollection(
+                $this->createOrderBookEntryStub(price: 101.0, quantity: 50.0),
+                $this->createOrderBookEntryStub(price: 99.0, quantity: 100.0),
+            ))
+        ;
+
+        $bybitGateway = $this->createMock(BybitAdvertisementGatewayInterface::class);
+        $bybitGateway
+            ->expects($this->once())
+            ->method('create')
+            ->with(
+                self::USER_ID,
+                $this->callback(static function(BybitCreateAdvertisementDto $dto): bool {
+                    self::assertSame('99.67', $dto->price);
+
+                    return true;
+                }),
+            )
+            ->willReturn(new BybitAdvertisementCreateResultDto(itemId: 'bybit-ad-789'))
+        ;
+
+        $balanceQuery = $this->createMock(BalanceQueryInterface::class);
+        $balanceQuery
+            ->expects($this->once())
+            ->method('hasAvailableBalance')
+            ->with(self::USER_ID, 10, 100.0)
+            ->willReturn(true)
+        ;
+
+        $adRepo = $this->createStub(AdvertisementRepository::class);
+        $adRepo->method('create')->willReturn($this->createAdStub());
+
+        $this->createUseCase($adRepo, $currencyPairRepo, $orderBookRepo, $bybitGateway, $balanceQuery)
+            ->execute($dto, self::USER_ID)
+        ;
+    }
+
+    private function createOrderBookCollection(OrderBookEntry ...$entries): OrderBookEntryCollection
+    {
+        $collection = $this->createStub(OrderBookEntryCollection::class);
+        $collection
+            ->method('getIterator')
+            ->willReturn(new \ArrayIterator($entries))
+        ;
+
+        return $collection;
+    }
+
+    private function createOrderBookEntryStub(float $price, float $quantity): OrderBookEntry
+    {
+        $entry = $this->createStub(OrderBookEntry::class);
+        $entry->method('getUfPrice')->willReturn($price);
+        $entry->method('getUfQuantity')->willReturn($quantity);
+
+        return $entry;
     }
 
     private function createAdStub(): Advertisement
