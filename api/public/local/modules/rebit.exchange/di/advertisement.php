@@ -10,6 +10,7 @@ use Rebit\Exchange\Application\Advertisement\UseCase\ListAdvertisementsUseCase;
 use Rebit\Exchange\Application\Advertisement\UseCase\ToggleAdvertisementUseCase;
 use Rebit\Exchange\Domain\Advertisement\Repository\AdvertisementRepository;
 use Rebit\Exchange\Domain\Currency\Repository\CurrencyPairRepository;
+use Rebit\Exchange\Domain\OrderBook\Repository\OrderBookRepository;
 use Rebit\Exchange\Infrastructure\Bybit\BybitAdvertisementGateway;
 use Rebit\Exchange\Presentation\Controller\AdvertisementController;
 use Rebit\Share\Application\Contract\Bybit\BybitClientInterface;
@@ -35,6 +36,7 @@ return [
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(AdvertisementRepository::class),
             ServiceLocator::getInstance()->get(CurrencyPairRepository::class),
+            ServiceLocator::getInstance()->get(OrderBookRepository::class),
             ServiceLocator::getInstance()->get(BybitAdvertisementGatewayInterface::class),
             ServiceLocator::getInstance()->get(BalanceQueryInterface::class),
         ],

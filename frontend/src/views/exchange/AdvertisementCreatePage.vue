@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useExchangeStore } from '@/stores/exchange';
 import { useAdvertisementsStore } from '@/stores/advertisements';
 import { useChatScriptsStore } from '@/stores/chatScripts';
-import type { CreateAdvertisementPayload, AdvertisementSide, PriceType } from '@/api/exchange';
+import { exchangeApi, type CreateAdvertisementPayload, type AdvertisementSide, type OrderBookEntry, type OrderBookResponse, type PriceType } from '@/api/exchange';
 import { isMockApiEnabled } from '@/mocks/config';
 import UiFormCard from '@/components/shared/UiFormCard.vue';
 
@@ -15,6 +15,8 @@ const chatScripts = useChatScriptsStore();
 
 const formError = ref<string | null>(null);
 const submitting = ref(false);
+const orderBookLoading = ref(false);
+const priceCalculationError = ref<string | null>(null);
 
 // Форма
 const side = ref<AdvertisementSide>('sell');
@@ -30,6 +32,7 @@ const paymentPeriod = ref(15);
 const conditions = ref('');
 const chatScriptId = ref<number | null>(null);
 const createAsActive = ref(true);
+const orderBook = ref<OrderBookResponse>({ buy: [], sell: [] });
 
 const sideOptions = [
   { title: 'Продать', value: 'sell' },
@@ -65,6 +68,30 @@ const chatScriptOptions = computed(() => [
   { title: 'Без скрипта', value: null as number | null },
   ...chatScripts.scripts.filter((s) => s.isActive).map((s) => ({ title: s.name, value: s.id as number | null }))
 ]);
+
+const selectedCurrencyPair = computed(() => exchange.currencyPairs.find((pair) => pair.id === currencyPairId.value) ?? null);
+
+const averagePrice = computed(() => calculateAveragePriceByOrderBook(side.value, quantity.value, orderBook.value));
+
+const priceHint = computed(() => {
+  if (orderBookLoading.value) {
+    return 'Рассчитываем цену по актуальному стакану...';
+  }
+
+  if (null !== averagePrice.value) {
+    return 'Цена рассчитана как средняя по стакану для выбранного объёма.';
+  }
+
+  if (null !== priceCalculationError.value) {
+    return 'Не удалось получить стакан. Цену можно указать вручную.';
+  }
+
+  if ('' === quantity.value) {
+    return 'Укажите количество, чтобы рассчитать среднюю цену по стакану.';
+  }
+
+  return 'Недостаточно данных в стакане. Цену можно указать вручную.';
+});
 
 const isFormValid = computed(() => {
   return (
@@ -113,6 +140,117 @@ async function handleSubmit(): Promise<void> {
     submitting.value = false;
   }
 }
+
+function createEmptyOrderBook(): OrderBookResponse {
+  return {
+    buy: [],
+    sell: []
+  };
+}
+
+function parsePositiveNumber(value: string): number | null {
+  const parsedValue = Number.parseFloat(value);
+
+  if (!Number.isFinite(parsedValue) || 0 >= parsedValue) {
+    return null;
+  }
+
+  return parsedValue;
+}
+
+function compareOrderBookEntries(left: OrderBookEntry, right: OrderBookEntry, currentSide: AdvertisementSide): number {
+  const leftPrice = Number.parseFloat(left.price);
+  const rightPrice = Number.parseFloat(right.price);
+
+  if (!Number.isFinite(leftPrice) || !Number.isFinite(rightPrice)) {
+    return 0;
+  }
+
+  return 'buy' === currentSide ? rightPrice - leftPrice : leftPrice - rightPrice;
+}
+
+function calculateAveragePriceByOrderBook(
+  currentSide: AdvertisementSide,
+  requestedQuantity: string,
+  snapshot: OrderBookResponse
+): string | null {
+  const targetQuantity = parsePositiveNumber(requestedQuantity);
+
+  if (null === targetQuantity) {
+    return null;
+  }
+
+  const relevantEntries = [...('buy' === currentSide ? snapshot.buy : snapshot.sell)].sort((left, right) =>
+    compareOrderBookEntries(left, right, currentSide)
+  );
+
+  let processedQuantity = 0;
+  let weightedPriceSum = 0;
+
+  for (const entry of relevantEntries) {
+    const entryPrice = parsePositiveNumber(entry.price);
+    const entryQuantity = parsePositiveNumber(entry.amount);
+
+    if (null === entryPrice || null === entryQuantity) {
+      continue;
+    }
+
+    const remainingQuantity = targetQuantity - processedQuantity;
+    if (0 >= remainingQuantity) {
+      break;
+    }
+
+    const matchedQuantity = Math.min(entryQuantity, remainingQuantity);
+    weightedPriceSum += entryPrice * matchedQuantity;
+    processedQuantity += matchedQuantity;
+  }
+
+  if (0 >= processedQuantity) {
+    return null;
+  }
+
+  return (weightedPriceSum / processedQuantity).toFixed(2);
+}
+
+async function loadOrderBook(): Promise<void> {
+  const pair = selectedCurrencyPair.value;
+  if (null === pair) {
+    orderBook.value = createEmptyOrderBook();
+    priceCalculationError.value = null;
+
+    return;
+  }
+
+  orderBookLoading.value = true;
+  priceCalculationError.value = null;
+
+  try {
+    orderBook.value = await exchangeApi.getOrderBook(pair.token, pair.fiat);
+  } catch (e: unknown) {
+    orderBook.value = createEmptyOrderBook();
+    priceCalculationError.value = e instanceof Error ? e.message : 'Ошибка загрузки стакана';
+  } finally {
+    orderBookLoading.value = false;
+  }
+}
+
+watch(
+  selectedCurrencyPair,
+  () => {
+    void loadOrderBook();
+  },
+  { immediate: true }
+);
+
+watch(
+  averagePrice,
+  (value) => {
+    if (null !== value) {
+      price.value = value;
+    }
+  },
+  { immediate: true }
+);
 
 onMounted(async () => {
   await Promise.all([exchange.fetchCurrencyPairs(), exchange.fetchPaymentMethods(), chatScripts.fetchScripts()]);
@@ -189,7 +327,17 @@ onMounted(async () => {
       <v-row>
         <!-- Цена -->
         <v-col cols="12" sm="6">
-          <v-text-field v-model="price" label="Цена *" variant="outlined" density="compact" type="number" step="0.01" />
+          <v-text-field
+            v-model="price"
+            label="Цена *"
+            variant="outlined"
+            density="compact"
+            type="number"
+            step="0.01"
+            :loading="orderBookLoading"
+            :hint="priceHint"
+            persistent-hint
+          />
         </v-col>
 
         <!-- Премиум -->

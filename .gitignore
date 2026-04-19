@@ -33,3 +33,11 @@
 /api/public/local/routes/*
 !/api/public/local/routes/.gitkeep
 /api/public/local/composer.lock
+
+# Docs
+/docs/
+!/docs/.gitkeep
+!/docs/api.md
+!/docs/domain.md
+!/docs/modules.md
+!/docs/scenario.md
