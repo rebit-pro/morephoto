@@ -82,6 +82,8 @@ services:
             target: rebit_smtp_password
           - source: rebit_rabbitmq_password
             target: rebit_rabbitmq_password
+          - source: rebit_telegram_bot_token
+            target: rebit_telegram_bot_token
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -412,6 +414,9 @@ secrets:
     rebit_rabbitmq_password:
         external: true
         name: ${REBIT_RABBITMQ_PASSWORD_SECRET_NAME}
+    rebit_telegram_bot_token:
+        external: true
+        name: ${REBIT_TELEGRAM_BOT_TOKEN_SECRET_NAME}
 networks:
     traefik-public:
         external: true
