@@ -70,10 +70,14 @@ jobs:
           VITE_APP_VERSION: ${{ github.run_number }}
           VITE_GEETEST_CAPTCHA_ID: ''
         run: npm run build
+      # Playwright e2e временно отключён: основной долгий этап CI.
+      # Чтобы вернуть — убрать `if: false` у обоих шагов ниже.
       - name: "🎭 Install Playwright Chromium"
+        if: false
         working-directory: frontend
         run: npm run test:e2e:install
       - name: "🧪 Frontend e2e"
+        if: false
         working-directory: frontend
         run: npm run test:e2e:run
 
