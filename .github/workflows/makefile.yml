@@ -187,6 +187,12 @@ jobs:
           SSH_HOST: ${{ secrets.HOST }}
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
+          # Держим серверную копию скрипта в актуальном состоянии (иначе новые
+          # секреты, например rebit_telegram_bot_token, не публикуются).
+          scp -P "${SSH_PORT}" deploy/swarm-publish-runtime.sh \
+            root@"${SSH_HOST}":/srv/rebit-p2p/swarm/swarm-publish-runtime.sh
+          ssh -p "${SSH_PORT}" root@"${SSH_HOST}" \
+            'chmod +x /srv/rebit-p2p/swarm/swarm-publish-runtime.sh'
           ssh -p "${SSH_PORT}" root@"${SSH_HOST}" \
             "VERSION=${BUILD_NUMBER} OUTPUT_ENV_FILE=/srv/rebit-p2p/swarm/runtime-objects.env /srv/rebit-p2p/swarm/swarm-publish-runtime.sh"
 
