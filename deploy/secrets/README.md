@@ -45,3 +45,29 @@ MESSENGER_TRANSPORT_DSN=amqp://rebit:__RABBITMQ_PASSWORD__@rabbitmq:5672/rebit
 Важно:
 - `rebit_rabbitmq_password` — имя source-файла;
 - `rebit_rabbitmq_password_145` — имя versioned Swarm secret для `BUILD_NUMBER=145`.
+
+## Telegram bot token для приёма заявок (POST /api/v1/lead)
+
+1. Скопируйте шаблон:
+
+```bash
+cp deploy/secrets/rebit_telegram_bot_token.example /srv/rebit-p2p/swarm/secrets/rebit_telegram_bot_token
+```
+
+2. Откройте файл на production-сервере и замените содержимое на **токен бота от @BotFather**.
+3. Файл должен содержать только токен, без комментариев и без лишних данных.
+4. Остальные (несекретные) переменные заявок добавьте в `/srv/rebit-p2p/swarm/backend.env`:
+
+```
+REBIT_NOTIFICATION_TELEGRAM_CHAT_ID=123456789
+REBIT_NOTIFICATION_LEAD_ALLOWED_ORIGIN=https://rebit-pro.ru
+REBIT_NOTIFICATION_TELEGRAM_API_URL=https://api.telegram.org
+```
+
+5. Создайте versioned Swarm secret через `deploy/swarm-publish-runtime.sh` (скрипт сам находит
+   новый файл в `secrets/`). `runtime-env.php` пробрасывает секрет в переменную
+   `REBIT_NOTIFICATION_TELEGRAM_BOT_TOKEN`.
+
+Важно:
+- `rebit_telegram_bot_token` — имя source-файла;
+- `rebit_telegram_bot_token_145` — имя versioned Swarm secret для `BUILD_NUMBER=145`.
