@@ -241,7 +241,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
             ->method('findByCurrencyPairAndSide')
             ->willReturn($this->createOrderBookCollection(
                 $this->createOrderBookEntryStub(price: 90.0, quantity: 100.0),
-                $this->createOrderBookEntryStub(price: 100.0, quantity: 100.0),
+                $this->createOrderBookEntryStub(price: 100.0, quantity: 60.0),
             ))
         ;
 
@@ -252,7 +252,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
             ->with(
                 self::USER_ID,
                 $this->callback(static function(BybitCreateAdvertisementDto $dto): bool {
-                    self::assertSame('96.67', $dto->price);
+                    self::assertSame('96.00', $dto->price);
 
                     return true;
                 }),
@@ -326,7 +326,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
             ->method('findByCurrencyPairAndSide')
             ->willReturn($this->createOrderBookCollection(
                 $this->createOrderBookEntryStub(price: 101.0, quantity: 50.0),
-                $this->createOrderBookEntryStub(price: 99.0, quantity: 100.0),
+                $this->createOrderBookEntryStub(price: 99.0, quantity: 60.0),
             ))
         ;
 
@@ -337,7 +337,7 @@ final class CreateAdvertisementUseCaseTest extends TestCase
             ->with(
                 self::USER_ID,
                 $this->callback(static function(BybitCreateAdvertisementDto $dto): bool {
-                    self::assertSame('99.67', $dto->price);
+                    self::assertSame('99.80', $dto->price);
 
                     return true;
                 }),
