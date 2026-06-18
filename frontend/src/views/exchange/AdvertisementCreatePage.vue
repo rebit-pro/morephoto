@@ -4,7 +4,14 @@ import { useRouter } from 'vue-router';
 import { useExchangeStore } from '@/stores/exchange';
 import { useAdvertisementsStore } from '@/stores/advertisements';
 import { useChatScriptsStore } from '@/stores/chatScripts';
-import { exchangeApi, type CreateAdvertisementPayload, type AdvertisementSide, type OrderBookEntry, type OrderBookResponse, type PriceType } from '@/api/exchange';
+import {
+  exchangeApi,
+  type CreateAdvertisementPayload,
+  type AdvertisementSide,
+  type OrderBookEntry,
+  type OrderBookResponse,
+  type PriceType
+} from '@/api/exchange';
 import { isMockApiEnabled } from '@/mocks/config';
 import UiFormCard from '@/components/shared/UiFormCard.vue';
 

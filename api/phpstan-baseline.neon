@@ -115,6 +115,12 @@ parameters:
 			path: public/local/modules/rebit.exchange/lib/Infrastructure/Adapter/CurrencyRubRateQueryAdapter.php
 
 		-
+			message: '#^Call to an undefined method Rebit\\Exchange\\Domain\\OrderBook\\Entity\\OrderBookEntry\:\:getUfPrice\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: public/local/modules/rebit.exchange/lib/Application/Advertisement/UseCase/CreateAdvertisementUseCase.php
+
+		-
 			message: '#^Call to an undefined method Rebit\\Exchange\\Domain\\OrderBook\\Entity\\OrderBookEntry\:\:setUfBybitOrderId\(\)\.$#'
 			identifier: method.notFound
 			count: 1
