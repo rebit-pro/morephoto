@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Rebit\Notification\Application\Lead\UseCase;
 
+use Rebit\Notification\Application\Lead\Dto\LeadAttachmentDto;
 use Rebit\Notification\Application\Lead\Dto\LeadMessageDto;
 use Rebit\Notification\Application\Lead\Dto\Request\SubmitLeadRequestDto;
 use Rebit\Notification\Application\Lead\Dto\Result\SubmitLeadResultDto;
@@ -20,9 +21,11 @@ final readonly class SubmitLeadUseCase
     ) {}
 
     /**
+     * @param null|LeadAttachmentDto $attachment опциональный файл ТЗ (уже прошедший валидацию)
+     *
      * @throws HttpException
      */
-    public function execute(SubmitLeadRequestDto $dto): SubmitLeadResultDto
+    public function execute(SubmitLeadRequestDto $dto, ?LeadAttachmentDto $attachment = null): SubmitLeadResultDto
     {
         // honeypot: поле заполнено только ботом — тихо принимаем, не доставляя.
         if ('' !== $dto->company) {
@@ -35,7 +38,9 @@ final readonly class SubmitLeadUseCase
                 phone: trim($dto->phone),
                 description: trim($dto->description),
                 page: trim($dto->page),
+                email: trim($dto->email),
             ),
+            $attachment,
         );
 
         return new SubmitLeadResultDto();
