@@ -37,7 +37,6 @@ return [
         'className' => LeadController::class,
         'constructorParams' => static fn(): array => [
             ServiceLocator::getInstance()->get(SubmitLeadUseCase::class),
-            (string)(getenv('REBIT_NOTIFICATION_LEAD_ALLOWED_ORIGIN') ?: 'https://rebit-pro.ru'),
         ],
     ],
 ];
