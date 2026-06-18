@@ -12,6 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * Поле company — honeypot: скрыто от пользователей, заполняется только ботами.
  * Поле page — служебное: адрес страницы, с которой пришла заявка.
+ * Поле source — какая форма отправила заявку (dialog, estimate, ...).
  */
 final readonly class SubmitLeadRequestDto implements RequestDtoInterface
 {
@@ -26,7 +27,12 @@ final readonly class SubmitLeadRequestDto implements RequestDtoInterface
         #[Assert\NotBlank(message: 'Опишите задачу.')]
         #[Assert\Length(min: 10, max: 3000, minMessage: 'Опишите задачу подробнее.')]
         public string $description,
+        #[Assert\Email(message: 'Проверьте email.')]
+        #[Assert\Length(max: 180)]
+        public string $email = '',
         public string $company = '',
         public string $page = '',
+        #[Assert\Length(max: 40)]
+        public string $source = '',
     ) {}
 }

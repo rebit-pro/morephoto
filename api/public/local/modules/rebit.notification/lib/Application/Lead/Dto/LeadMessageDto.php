@@ -14,5 +14,6 @@ final readonly class LeadMessageDto
         public string $phone,
         public string $description,
         public string $page,
+        public string $email = '',
     ) {}
 }
