@@ -22,6 +22,7 @@
 | 7 | `rebit.exchange` | P2P-торговля, сделки, чат, контрагенты | `Rebit\Exchange` | `rebit.share` | ✅ |
 | 8 | `rebit.notification` | Уведомления, каналы доставки | `Rebit\Notification` | `rebit.share` | 🔜 запланирован |
 | 9 | `rebit.security` | Сессии, 2FA, аудит | `Rebit\Security` | `rebit.share` | 🔜 запланирован |
+| 10 | `rebit.leadhunter` | Мониторинг заявок внешних площадок (fl.ru) по ключевым словам/разделам → Telegram | `Rebit\Leadhunter` | `rebit.share` | ✅ |
 
 ### Правило зависимостей
 
@@ -40,7 +41,8 @@ rebit.share
     ├── rebit.wallet         (потребляет BybitClientInterface, BybitConnectionResolverInterface, CurrencyQueryInterface; реализует BalanceQueryInterface)
     ├── rebit.exchange       (потребляет BybitClientInterface, BybitConnectionResolverInterface, BalanceQueryInterface; реализует CurrencyQueryInterface)
     ├── rebit.notification   (запланирован)
-    └── rebit.security       (запланирован)
+    ├── rebit.security       (запланирован)
+    └── rebit.leadhunter     (потребляет TelegramBotApiClient из share)
 ```
 
 ---
@@ -1913,6 +1915,7 @@ POST   /api/v1/security/alerts/{id}/resolve
 | Синхронизация сделок | `rebit.exchange` | `Presentation/Command/SyncTradesCommand` | Polling `order/pending/simplifyList` → обнаружение новых ордеров, синхронизация контрагентов в `b_user` (группа «Контрагенты») и обновление статусов | 10 сек |
 | Синхронизация истории сделок | `rebit.exchange` | `Presentation/Command/SyncTradeHistoryCommand` | Polling `order/simplifyList` → дозагрузка завершённых ордеров в `rebit_trade` | 10 мин |
 | Выполнение шагов скриптов | `rebit.exchange` | `Presentation/Command/ExecuteChatScriptsCommand` | Отправка отложенных сообщений из `rebit_chat_script_execution` через `order/message/send` | 5 сек |
+| Охота за лидами | `rebit.leadhunter` | `Presentation/Command/LeadHunt/ScanLeadsCommand` | Мониторинг лент внешних площадок (RSS fl.ru) по правилам `REBIT_LEADHUNTER_RULES` (ключевые слова и/или разделы), дедупликация в `rebit_leadhunter_external_lead`, отправка новых заявок в Telegram | 5 мин |
 
 ### Запланированные
 

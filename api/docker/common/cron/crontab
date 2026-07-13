@@ -24,3 +24,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # SyncTradeHistory — дозагрузка завершённых сделок из Bybit (каждые 10 мин)
 */10 * * * * cd /app/public && php local/bin/bitrix-console app:exchange:sync-trade-history 2>&1
+
+# ScanLeads — мониторинг заявок внешних площадок (fl.ru) с отправкой в Telegram (каждые 5 мин)
+*/5 * * * * cd /app/public && php local/bin/bitrix-console app:leadhunter:scan 2>&1

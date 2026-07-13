@@ -312,6 +312,7 @@ Rebit — P2P-платформа для торговли криптовалют�
 | `CleanStaleOrders` | 1 мин | Удаление записей стакана старше 5 мин из локальной БД |
 | `ExecuteChatScripts` | 5 сек | Отправка отложенных шагов скриптов через `POST /v5/p2p/order/message/send` |
 | `MonitorSuspiciousActivity` | 5 мин | Анализ паттернов подозрительной активности |
+| `ScanLeads` | 5 мин | Мониторинг заявок внешних площадок (RSS fl.ru) по правилам `REBIT_LEADHUNTER_RULES` → отправка новых в Telegram |
 
 ---
 

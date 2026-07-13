@@ -8,21 +8,17 @@ use Psr\Log\LoggerInterface;
 use Rebit\Notification\Application\Lead\Dto\LeadAttachmentDto;
 use Rebit\Notification\Application\Lead\Dto\LeadMessageDto;
 use Rebit\Notification\Application\Lead\Port\LeadNotifierInterface;
+use Rebit\Share\Infrastructure\Telegram\TelegramBotApiClient;
 use Rebit\Share\Shared\Exception\HttpException;
 
 /**
  * Доставка заявки в Telegram через Bot API (sendMessage + sendDocument).
  *
- * Используем cURL напрямую (а не RebitHttpClient/Bitrix HttpClient), потому что
- * с сервера api.telegram.org заблокирован и запрос идёт через прокси, в т.ч.
- * SOCKS5 — это умеет cURL, но не Bitrix HttpClient. Тип прокси определяется
- * по схеме в $proxy (например socks5h://user:pass@host:port или http://...).
- *
  * Порядок доставки: сначала текст заявки (быстро, критично), затем — файл ТЗ
  * (медленнее). Если текст ушёл, а файл нет, запрос не валим: заявка уже принята,
  * ошибку вложения логируем и отдельным сообщением предупреждаем получателя.
  *
- * Токен бота, chat_id и прокси берутся из окружения сервера.
+ * chat_id берётся из окружения сервера; транспорт (токен, прокси) — в TelegramBotApiClient.
  */
 final readonly class TelegramLeadNotifier implements LeadNotifierInterface
 {
@@ -32,10 +28,8 @@ final readonly class TelegramLeadNotifier implements LeadNotifierInterface
 
     public function __construct(
         private LoggerInterface $logger,
-        private string $botToken,
+        private TelegramBotApiClient $client,
         private string $chatId,
-        private string $apiBaseUrl,
-        private string $proxy,
     ) {}
 
     /**
@@ -43,14 +37,14 @@ final readonly class TelegramLeadNotifier implements LeadNotifierInterface
      */
     public function notify(LeadMessageDto $lead, ?LeadAttachmentDto $attachment = null): void
     {
-        if ('' === $this->botToken || '' === $this->chatId) {
+        if (!$this->client->isConfigured() || '' === $this->chatId) {
             $this->logger->error('Telegram-получатель заявок не настроен: пустой токен или chat_id');
 
             throw new HttpException('Сервис заявок временно недоступен', 503);
         }
 
         // 1. Текст заявки — критичная часть: при провале возвращаем ошибку.
-        $textSent = $this->request(
+        $textSent = $this->client->call(
             'sendMessage',
             http_build_query([
                 'chat_id' => $this->chatId,
@@ -70,7 +64,7 @@ final readonly class TelegramLeadNotifier implements LeadNotifierInterface
         }
 
         // 2. Файл ТЗ — best-effort: заявка уже доставлена, провал файла не валит запрос.
-        $documentSent = $this->request(
+        $documentSent = $this->client->call(
             'sendDocument',
             [
                 'chat_id' => $this->chatId,
@@ -83,7 +77,7 @@ final readonly class TelegramLeadNotifier implements LeadNotifierInterface
 
         if (!$documentSent) {
             // Текст уже у получателя — предупреждаем его, что файл не дошёл (тоже best-effort).
-            $this->request(
+            $this->client->call(
                 'sendMessage',
                 http_build_query([
                     'chat_id' => $this->chatId,
@@ -92,73 +86,6 @@ final readonly class TelegramLeadNotifier implements LeadNotifierInterface
                 self::TIMEOUT_SECONDS,
             );
         }
-    }
-
-    /**
-     * Низкоуровневая отправка метода Bot API через прокси.
-     *
-     * @param array<string, mixed>|string $postFields http_build_query-строка (обычный POST)
-     *                                                или массив (multipart с CURLFile)
-     *
-     * @return bool успешно ли Telegram принял запрос (ok=true)
-     */
-    private function request(string $method, array|string $postFields, int $timeout): bool
-    {
-        $handle = curl_init($this->buildMethodUrl($method));
-
-        if (false === $handle) {
-            $this->logger->error('Не удалось инициализировать запрос в Telegram', ['method' => $method]);
-
-            return false;
-        }
-
-        $options = [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_TIMEOUT => $timeout,
-            CURLOPT_CONNECTTIMEOUT => self::TIMEOUT_SECONDS,
-            CURLOPT_POSTFIELDS => $postFields,
-        ];
-
-        if ('' !== $this->proxy) {
-            $options[CURLOPT_PROXY] = $this->proxy;
-        }
-
-        curl_setopt_array($handle, $options);
-
-        $response = curl_exec($handle);
-        $status = (int)curl_getinfo($handle, CURLINFO_HTTP_CODE);
-        $error = curl_error($handle);
-        curl_close($handle);
-
-        if (!is_string($response) || 200 !== $status) {
-            $this->logger->error('Не удалось отправить запрос в Telegram', [
-                'method' => $method,
-                'status' => $status,
-                'error' => $error,
-                'response' => is_string($response) ? mb_substr($response, 0, 500) : '',
-            ]);
-
-            return false;
-        }
-
-        $decoded = json_decode($response, true);
-
-        if (!is_array($decoded) || true !== ($decoded['ok'] ?? false)) {
-            $this->logger->error('Telegram отклонил запрос', [
-                'method' => $method,
-                'response' => mb_substr($response, 0, 500),
-            ]);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    private function buildMethodUrl(string $method): string
-    {
-        return sprintf('%s/bot%s/%s', rtrim($this->apiBaseUrl, '/'), $this->botToken, $method);
     }
 
     private function buildText(LeadMessageDto $lead): string

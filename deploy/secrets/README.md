@@ -71,3 +71,16 @@ REBIT_NOTIFICATION_TELEGRAM_API_URL=https://api.telegram.org
 Важно:
 - `rebit_telegram_bot_token` — имя source-файла;
 - `rebit_telegram_bot_token_145` — имя versioned Swarm secret для `BUILD_NUMBER=145`.
+
+## Охота за лидами (rebit.leadhunter, команда app:leadhunter:scan)
+
+Секретов не требует: токен и прокси Telegram общие с приёмом заявок (см. выше).
+Правила мониторинга добавьте в `/srv/rebit-p2p/swarm/backend.env` одной строкой:
+
+```
+REBIT_LEADHUNTER_RULES='[{"source":"flRu","keywords":["битрикс","bitrix"]},{"source":"flRu","params":{"category":2,"subcategory":27},"keywords":[]}]'
+```
+
+Формат правил и остальные переменные (`REBIT_LEADHUNTER_TELEGRAM_CHAT_ID` — если нужен
+отдельный чат вместо общего с заявками) — см. `.env.example` в корне репозитория.
+Для fl.ru «Сайты под ключ» = `category=2, subcategory=27`.
