@@ -13,6 +13,7 @@ return [
             require __DIR__ . '/di/audit.php',
             require __DIR__ . '/di/exchange.php',
             require __DIR__ . '/di/file.php',
+            require __DIR__ . '/di/telegram.php',
         ),
         'readonly' => true,
     ],
