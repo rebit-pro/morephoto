@@ -277,6 +277,12 @@ parameters:
 			path: public/local/modules/rebit.identity/lib/Presentation/Controller/ApiConnectionController.php
 
 		-
+			message: '#^Call to an undefined static method Rebit\\Leadhunter\\Domain\\LeadHunt\\Entity\\Table\\ExternalLeadTable\:\:delete\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: public/local/modules/rebit.leadhunter/lib/Infrastructure/LeadHunt/Repository/BitrixExternalLeadRepository.php
+
+		-
 			message: '#^Variable \$currentUser on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.variable
 			count: 1

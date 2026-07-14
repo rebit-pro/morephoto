@@ -16,6 +16,7 @@ parameters:
             - public/local/modules/rebit.dev/install
             - public/local/modules/rebit.exchange/install
             - public/local/modules/rebit.identity/install
+            - public/local/modules/rebit.leadhunter/install
             - public/local/modules/rebit.share/install
             - public/local/modules/rebit.wallet/install
             - public/local/modules/rebit.notification/install
@@ -23,6 +24,7 @@ parameters:
             - public/local/modules/rebit.bybit/tests
             - public/local/modules/rebit.exchange/tests
             - public/local/modules/rebit.identity/tests
+            - public/local/modules/rebit.leadhunter/tests
             - public/local/modules/rebit.notification/tests
             - public/local/modules/rebit.share/tests
             - public/local/modules/rebit.wallet/tests
