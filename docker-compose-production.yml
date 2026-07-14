@@ -130,6 +130,8 @@ services:
             target: rebit_smtp_password
           - source: rebit_rabbitmq_password
             target: rebit_rabbitmq_password
+          - source: rebit_telegram_bot_token
+            target: rebit_telegram_bot_token
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
@@ -164,6 +166,8 @@ services:
             target: rebit_smtp_password
           - source: rebit_rabbitmq_password
             target: rebit_rabbitmq_password
+          - source: rebit_telegram_bot_token
+            target: rebit_telegram_bot_token
         volumes:
           - type: bind
             source: /srv/rebit-p2p/bitrix
