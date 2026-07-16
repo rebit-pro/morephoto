@@ -76,14 +76,23 @@ final readonly class FlRuRssFeed implements LeadFeedInterface
             $leads[] = new ExternalLeadDto(
                 source: LeadSourceEnum::FL_RU,
                 guid: $guid,
-                title: trim((string)$item->title),
-                description: trim((string)$item->description),
+                title: $this->text($item->title),
+                description: $this->text($item->description),
                 url: $url,
                 publishedAt: $this->parsePubDate((string)$item->pubDate),
             );
         }
 
         return $leads;
+    }
+
+    /**
+     * Текст fl.ru приходит в CDATA с HTML-энтити внутри (&#8381; и т.п.) —
+     * XML-парсер их не трогает, декодируем сами до чистого UTF-8.
+     */
+    private function text(?\SimpleXMLElement $node): string
+    {
+        return trim(html_entity_decode((string)$node, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
     private function buildUrl(HuntRule $rule): string

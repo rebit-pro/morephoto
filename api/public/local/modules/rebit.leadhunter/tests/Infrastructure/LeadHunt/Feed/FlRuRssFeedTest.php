@@ -31,7 +31,7 @@ final class FlRuRssFeedTest extends TestCase
 
         self::assertSame(LeadSourceEnum::FL_RU, $first->source);
         self::assertSame('https://www.fl.ru/projects/1000001/dorabotat-sayt-na-bitriks.html', $first->guid);
-        self::assertSame('Доработать сайт на Битрикс (бюджет: 50 000 руб.)', $first->title);
+        self::assertSame('Доработать сайт на Битрикс (бюджет: 50 000 ₽)', $first->title);
         self::assertSame('Нужно доработать каталог интернет-магазина на 1С-Битрикс.', $first->description);
         self::assertSame('https://www.fl.ru/projects/1000001/dorabotat-sayt-na-bitriks.html', $first->url);
         self::assertNotNull($first->publishedAt);
