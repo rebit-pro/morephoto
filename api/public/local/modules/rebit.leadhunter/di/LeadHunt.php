@@ -12,6 +12,8 @@ use Rebit\Leadhunter\Domain\LeadHunt\Enum\LeadSourceEnum;
 use Rebit\Leadhunter\Domain\LeadHunt\Service\KeywordMatcher;
 use Rebit\Leadhunter\Infrastructure\LeadHunt\Config\EnvHuntRuleProvider;
 use Rebit\Leadhunter\Infrastructure\LeadHunt\Feed\FlRuRssFeed;
+use Rebit\Leadhunter\Infrastructure\LeadHunt\Notifier\EmailHuntNotifier;
+use Rebit\Leadhunter\Infrastructure\LeadHunt\Notifier\FallbackHuntNotifier;
 use Rebit\Leadhunter\Infrastructure\LeadHunt\Notifier\TelegramHuntNotifier;
 use Rebit\Leadhunter\Infrastructure\LeadHunt\Repository\BitrixExternalLeadRepository;
 use Rebit\Leadhunter\Presentation\Command\LeadHunt\ScanLeadsCommand;
@@ -51,10 +53,27 @@ return [
     HuntNotifierInterface::class => [
         'constructor' => static function(): HuntNotifierInterface {
             // Чат общий с заявками с сайта; свой chat_id — через REBIT_LEADHUNTER_TELEGRAM_CHAT_ID.
-            return new TelegramHuntNotifier(
+            $telegram = new TelegramHuntNotifier(
                 Log::channel(LogChannelEnum::leadhunter),
                 ServiceLocator::getInstance()->get(TelegramBotApiClient::class),
                 (string)(getenv('REBIT_LEADHUNTER_TELEGRAM_CHAT_ID') ?: getenv('REBIT_NOTIFICATION_TELEGRAM_CHAT_ID') ?: ''),
+            );
+
+            $fallbackEmail = (string)(getenv('REBIT_LEADHUNTER_FALLBACK_EMAIL') ?: '');
+
+            if ('' === $fallbackEmail) {
+                return $telegram;
+            }
+
+            return new FallbackHuntNotifier(
+                Log::channel(LogChannelEnum::leadhunter),
+                $telegram,
+                new EmailHuntNotifier(
+                    Log::channel(LogChannelEnum::leadhunter),
+                    $fallbackEmail,
+                    (string)(getenv('REBIT_AUTH_MAIL_EVENT_SITE_ID') ?: 's1'),
+                ),
+                ScanLeadsUseCase::MAX_SEND_ATTEMPTS,
             );
         },
     ],

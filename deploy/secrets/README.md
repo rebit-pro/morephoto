@@ -82,5 +82,6 @@ REBIT_LEADHUNTER_RULES='[{"source":"flRu","keywords":["битрикс","bitrix"]
 ```
 
 Формат правил и остальные переменные (`REBIT_LEADHUNTER_TELEGRAM_CHAT_ID` — если нужен
-отдельный чат вместо общего с заявками) — см. `.env.example` в корне репозитория.
+отдельный чат вместо общего с заявками; `REBIT_LEADHUNTER_FALLBACK_EMAIL` — резервная
+доставка письмом при недоступном Telegram) — см. `.env.example` в корне репозитория.
 Для fl.ru «Сайты под ключ» = `category=2, subcategory=27`.

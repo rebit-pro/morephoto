@@ -29,9 +29,9 @@ use Rebit\Leadhunter\Domain\LeadHunt\Service\KeywordMatcher;
  */
 final readonly class ScanLeadsUseCase
 {
-    private const int SEND_LIMIT_PER_RUN = 20;
+    public const int MAX_SEND_ATTEMPTS = 5;
 
-    private const int MAX_SEND_ATTEMPTS = 5;
+    private const int SEND_LIMIT_PER_RUN = 20;
 
     private const int SEND_DELAY_SECONDS = 3;
 
